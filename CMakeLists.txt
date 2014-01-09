@@ -27,16 +27,13 @@ MESSAGE( STATUS "The installation is realized in ${CMAKE_INSTALL_PREFIX}. Use 'c
 
 CONFIGURE_FILE(config.h.cmake config.h)
 
-SET(COVERAGE 0 CACHE BOOL "if true activate code coverage option for tests")
-SET(PYTHON   1 CACHE BOOL "if true python binding. It needs the python library.")
-SET(MATH     1 CACHE BOOL "if true compile the math interface.")
-SET(CANTERA  1 CACHE BOOL "if true include the Cantera interface. It needs the cantera library.")
-SET(QUESO    1 CACHE BOOL "if true compile the QUESO interface. It needs the queso library.")
-SET(ATOMISM  1 CACHE BOOL "if true compile the Atomism interface.")
-SET(POLYMER  1 CACHE BOOL "if true compile the polymer part.")
-SET(NASA     1 CACHE BOOL "if true compile the Nasa part.")
-SET(VTK      0 CACHE BOOL "if true enabled 3D using VTK.")
-SET(ANTIOCH  0 CACHE BOOL "if true include antioch.")
+SET( COVERAGE 0 CACHE BOOL "if true activate code coverage option for tests")
+SET( PYTHON   1 CACHE BOOL "if true python binding. It needs the python library.")
+SET( ATOMISM  1 CACHE BOOL "if true compile the Atomism interface.")
+SET( MATH     1 CACHE BOOL "if true compile the math interface.")
+SET( ANTIOCH  0 CACHE BOOL "if true include antioch.")
+SET( QUESO    0 CACHE BOOL "if true include the QUESO library.")
+SET( VTK      0 CACHE BOOL "if true enabled 3D using VTK.")
 
 IF( PYTHON )
    MESSAGE( STATUS "Python binding activated (-DPYTHON=0 to desactivate)")
@@ -113,30 +110,7 @@ GET_DIRECTORY_PROPERTY (ANTIOCH_INCLUDE_DIRS DIRECTORY 	  ./src/Antioch		DEFINIT
 
 GET_DIRECTORY_PROPERTY (ANTIOCH_LIBRARIES    DIRECTORY    ./src/Antioch    DEFINITION     ANTIOCH_LIBRARIES
                        )
-                       
-#-- Cantera
-
-ADD_SUBDIRECTORY( ${CMAKE_CURRENT_SOURCE_DIR}/src/Cantera
-                 )
-
-GET_DIRECTORY_PROPERTY (CANTERA_INCLUDE_DIRS DIRECTORY 	  ./src/Cantera		DEFINITION     CANTERA_INCLUDE_DIRS
-                        )
-
-GET_DIRECTORY_PROPERTY (CANTERA_LIBRARIES    DIRECTORY    ./src/Cantera     DEFINITION     CANTERA_LIBRARIES
-                       )
-
-
-#-- POLYMER
-
-ADD_SUBDIRECTORY( ${CMAKE_CURRENT_SOURCE_DIR}/src/Polymer
-                 )
-
-GET_DIRECTORY_PROPERTY (POLYMER_INCLUDE_DIRS DIRECTORY 	  ./src/Polymer		DEFINITION     POLYMER_INCLUDE_DIRS
-                        )
-
-GET_DIRECTORY_PROPERTY (POLYMER_LIBRARIES    DIRECTORY    ./src/Polymer    DEFINITION     POLYMER_LIBRARIES
-                       )
-                       
+             
 #-- QUESO
 
 ADD_SUBDIRECTORY( ${CMAKE_CURRENT_SOURCE_DIR}/src/Queso
@@ -148,18 +122,6 @@ GET_DIRECTORY_PROPERTY (QUESO_INCLUDE_DIRS DIRECTORY 	  ./src/Queso		DEFINITION 
 GET_DIRECTORY_PROPERTY (QUESO_LIBRARIES    DIRECTORY    ./src/Queso     DEFINITION     QUESO_LIBRARIES
                        )
 
-
-                       
-#-- NASA
-
-ADD_SUBDIRECTORY( ${CMAKE_CURRENT_SOURCE_DIR}/src/Nasa
-                 )
-
-GET_DIRECTORY_PROPERTY (NASA_INCLUDE_DIRS DIRECTORY 	  ./src/Nasa		DEFINITION     NASA_INCLUDE_DIRS
-                        )
-
-GET_DIRECTORY_PROPERTY (NASA_LIBRARIES    DIRECTORY    ./src/Nasa    DEFINITION     NASA_LIBRARIES
-                       )
 
 # Graphical Interface
 
@@ -208,8 +170,8 @@ message(STATUS "Includes:  ${IMPACT_INCLUDE_DIRS}")
 
 add_library ( impact   SHARED src/launcher.cpp )
              
-SET_TARGET_PROPERTIES( impact PROPERTIES COMPILE_FLAGS -fPIC )
-SET_TARGET_PROPERTIES( impact PROPERTIES COMPILE_FLAGS -O3 )
+SET_TARGET_PROPERTIES( impact PROPERTIES COMPILE_FLAGS -std=c++11 -O3 -fPIC )
+
 set_target_properties( impact PROPERTIES  SUFFIX .so)
 TARGET_LINK_LIBRARIES( impact ${IMPACT_LIBRARIES} )
 

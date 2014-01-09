@@ -21,6 +21,7 @@
 #ifndef msMIXTURE_H
 #define msMIXTURE_H
 
+#include "antioch/vector_utils_decl.h"
 #include "antioch/chemical_mixture.h"
 
 #include <msConstituent.h>
@@ -85,7 +86,7 @@ namespace impact {
                 msPhysicalInterface::update();
 		
 		msChildren<msConstituent>::iterator it = Constituents.begin();
-		Calculator = boost::shared_ptr<Antioch::ChemicalMixture>( new Antioch::ChemicalMixture(vector<string>() ) );
+		Calculator = boost::shared_ptr<Antioch::ChemicalMixture<double> >( new Antioch::ChemicalMixture<double>(vector<string>() ) );
 		
 		for(;it!=Constituents.end();++it)  addConstituent(*it);
 		
@@ -108,8 +109,6 @@ namespace impact {
                 
                 msTreeMapper::declareChildren<msConstituent>(Constituents,"Constituents");
                 msTreeMapper::declareAttribute(MoleFractions,"MoleFractions");
-		                
-		//Calculator = boost::shared_ptr<Antioch::ChemicalChemicalMixture>(new Antioch::ChemicalChemicalMixture() );
 		
                 LOGGER_EXIT_FUNCTION2("void msChemicalMixture::initialize()");
             }
@@ -125,7 +124,7 @@ namespace impact {
             }
             
             
-            virtual double getDensity() {
+            virtual double getDensity() const {
 	      
 	         msError e("getDenisty is not implemented in chemical mixture, you need to use derived class (like gas phase)",
 		   "virtual double msChemicalMixture::getDensity()",getFullId());
@@ -133,7 +132,7 @@ namespace impact {
 		 BOOST_THROW_EXCEPTION(e);
 	    }
 	    
-            boost::shared_ptr<Antioch::ChemicalMixture> getCalculator(){
+            boost::shared_ptr<Antioch::ChemicalMixture<double> > getCalculator(){
 	      
 	         return Calculator;
                 
@@ -142,15 +141,15 @@ namespace impact {
             
             size_t noOfConstituents() const {
                 
-            /*    if(Calculator->n_species() != Constituents.size()) {
+                if(Calculator->n_species() != Constituents.size()) {
                     
                     stringstream out;
-                    out<<"Number of species in Cantera Calculator ("<<Calculator->nSpecies()<<")"
+                    out<<"Number of species in Cantera Calculator ("<<Calculator->n_species()<<")"
                     <<"are different than the number of constituents declared to the interface ("<<Constituents.size()<<").";
                     msError e(out.str(),"size_t msChemicalMixture::noOfConstituents() const",getFullId());
                     BOOST_THROW_EXCEPTION(e);
-                }*/
-                return Constituents.size();
+                }
+                return Calculator->n_species();
             }
             
             boost::shared_ptr<msTreeMapper> addConstituent( boost::shared_ptr<msConstituent> entity ) {
@@ -169,18 +168,32 @@ namespace impact {
                 return mySharedPtr();
             }
             
+            size_t getIndex(string id) const {
+	        
+	        vector<std::string> names = getConstituentsNames();
+		vector<std::string>::iterator it =std::find(names.begin(), names.end(), "id");
+		
+		if(it==names.end()) {
+		  
+		     msError e("Can not find the specie of name "+id,
+		       "size_t msChemicalMixture::getIndex(string id)",getFullId());
+		    BOOST_THROW_EXCEPTION(e); 
+		}
+		return it-names.begin();
+	    }
+	    
             boost::shared_ptr<msConstituent> getConstituentFromIndex( size_t i) {
                 
 	        boost::shared_ptr<msConstituent> cons;
 	        try {
-	             cons = Constituents[i];
+	             cons = Constituents[i].getSharedPtr();
 		}
 		catch(msError& e){
 		     
 		     e.addContext("boost::shared_ptr<msConstituent> msChemicalMixture::getConstituentFromIndex( size_t i)");
 		     BOOST_THROW_EXCEPTION(e);
 		}
-                return Constituents.getElementFromId(id);
+                return cons;
             }
             
             boost::shared_ptr<msConstituent> getConstituentFromId( std::string id ) {
@@ -203,13 +216,12 @@ namespace impact {
                 
                 testCalculator("void msChemicalMixture::getConstituentsNames() const");
 		std::vector<string> vec;
-		/*
-		const std::map<std::string,Species>& namesMap = Calculator->species_name_map();
-                const std::map<std::string,Species>::iterator it = namesMap.begin();
 		
+		const std::map<std::string,Antioch::Species>& namesMap = Calculator->species_name_map();
+                std::map<std::string,Antioch::Species>::const_iterator it = namesMap.begin();
 		
 		for(;it!=namesMap.end();++it) vec.push_back( (*it).first);
-		*/
+		
                 return vec;
             }
             
@@ -239,18 +251,18 @@ namespace impact {
             double getMoleFractionByName(std::string name) const {
               
                 testCalculator("double msChemicalMixture::getMoleFractionByName(std::string name) const");
-                /*
-		const std::map<std::string,unsigned int>& map = Calculator->active_species_name_map();
+                double r =0;
 		
-		if( map.find(name)== map.end() ){
+		try{ 
+		    r = getMoleFractions()[getIndex(name)];
+		}
+		catch(msError& e) {
 		  
-                    msError e("The specie of name "+name+" has not been found",
-                              "double msMicroscopicPhase::getMoleFractionByName(std::string name) const",
-                              getFullId());
-                    BOOST_THROW_EXCEPTION(e);
-                }
-                */
-                return 0;//map[name];
+		    e.addContext("double msChemicalMixture::getMoleFractionByName(std::string name) const");
+		    BOOST_THROW_EXCEPTION(e);
+		}
+		
+                return r;//map[name];
             }
  
             /*! \brief Return a specie's mole fraction
@@ -261,15 +273,15 @@ namespace impact {
               
                 testCalculator("vector<double> msChemicalMixture::getMolarDensities() const");
 		
-		vector<double> molarDensity;
-		double density = getUnits()->convertTo("kg.m^-3",getDensity());
+		vector<double> molarDensity(noOfConstituents());
+		double density = getUnits()->convertTo(getDensity(),msUnit("kg.m^-3"));
 		Calculator->molar_densities( density, getMassFractions(), molarDensity);
 		
-		for( size_t i=0;i<density.size();i++) {
+		for( size_t i=0;i<molarDensity.size();i++) {
 		  
-		    density[i] *= getUnits()->convert("mol.m^-3",1);
+		    molarDensity[i] *= getUnits()->convert("mol.m^-3",1);
 		}
-                return density;
+                return molarDensity;
             } 
             
             /*! \brief Return a specie's mole fraction
@@ -278,24 +290,23 @@ namespace impact {
              */
             double getMassFractionByName(std::string name) const {
               
-                testCalculator("double msChemicalMixture::getMoleFractionByName(std::string name) const");
-                /*
-		const std::map<std::string,unsigned int>& map = Calculator->active_species_name_map();
+                testCalculator("double msChemicalMixture::getMassFractionByName(std::string name) const");
+                double r =0;
 		
-		if( map.find(name)== map.end() ){
+		try{ 
+		    r = getMassFractions()[getIndex(name)];
+		}
+		catch(msError& e) {
 		  
-                    msError e("The specie of name "+name+" has not been found",
-                              "double msMicroscopicPhase::getMoleFractionByName(std::string name) const",
-                              getFullId());
-                    BOOST_THROW_EXCEPTION(e);
-                }
-                */
-                return 0;//Constituents[ map[name] ]->getMass() / totalMass();
+		    e.addContext("double msChemicalMixture::getMassFractionByName(std::string name) const");
+		    BOOST_THROW_EXCEPTION(e);
+		}
+		
+                return r;
             }
                         
             std::ostream& print(std::ostream& out) const ;
             
-            //virtual void updateInCalculator(Cantera::Kinetics calculator);
             
         protected:
             
@@ -316,7 +327,7 @@ namespace impact {
             vector<double> MoleFractions;
             //@}
             
-	    boost::shared_ptr<Antioch::ChemicalMixture> Calculator;
+	    boost::shared_ptr<Antioch::ChemicalMixture<double>> Calculator;
 	    
         };
     }

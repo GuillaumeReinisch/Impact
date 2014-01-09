@@ -25,19 +25,25 @@
 #include <iomanip>
 #include <limits>
 #include <vector>
-/*
+
+#include "antioch/vector_utils_decl.h"
 #include "antioch/vector_utils.h"
 #include "antioch/physical_constants.h"
-#include "antioch/chemical_species.h"*/
-//#include "antioch/kinetics_type.h"
-
+#include "antioch/chemical_species.h"
+#include "antioch/kinetics_type.h"
+#include "antioch/kooij_rate.h"
+#include "antioch/berthelot_rate.h"
+#include "antioch/berthelothercourtessen_rate.h"
+#include "antioch/arrhenius_rate.h"
+#include "antioch/hercourtessen_rate.h"
+#include "antioch/vanthoff_rate.h"
 #include <msPhysicalInterface.h>
 
 namespace impact {
     
     namespace antioch {
         
-        class msKineticsType : public msPhysicalInterface
+      class msKineticsType : public msPhysicalInterface
         {
             
         private:
@@ -58,19 +64,17 @@ namespace impact {
             msKineticsType() : msPhysicalInterface() {
 	      
 	        constructVar("msKineticsType","KineticsType","kinetic model for reaction rate"); 
-		Order = 0;
 	    }
 	    
             void initialize() { 
 	      
 	        msPhysicalInterface::initialize();
-		msTreeMapper::declareAttribute(Order,"Order");
+		msTreeMapper::declareAttribute(Coefficients,"Coefficients");
             }
             
             void update()     { 
 	        
 	        msPhysicalInterface::update();
-		setOrder(Order);
             }
             
             static boost::shared_ptr<msKineticsType> New(){
@@ -83,10 +87,137 @@ namespace impact {
                 return T;
             }
             
-	    virtual map<string,double> getCoefficients();
+            boost::shared_ptr<Antioch::KineticsType<double> > getCalculator() {
+	      
+	        return Calculator;
+	    }
+	    virtual boost::shared_ptr<msTreeMapper> setCoefficient(string name,double value) {
+	      
+	        throwNotImplemented("virtual boost::shared_ptr<msTreeMapper> msKineticsType::setCoefficient(string name,double value)");
+	    } 
+	    virtual double computeRate(double T) {
+	      
+	        throwNotImplemented("virtual double msKineticsType::computeRate()");
+		return -1;
+	    }
 	    
-	    virtual boost::shared_ptr<msTreeMapper> setCoefficient(string name,double value);
+	    template<class T>
+	    boost::shared_ptr<T> getCastedCalculator() {
+	      
+	        return boost::static_pointer_cast<T >(Calculator);
+	    }
 	    
+	    map<string,double> getCoefficients(){ 
+	     
+	        return Coefficients;
+	    };
+	    
+	    virtual double getOrder() const{ 
+	      throwNotImplemented("virtual double msKineticsType::getOrder() const"); 
+	    };
+	    
+	    virtual boost::shared_ptr<msTreeMapper> setOrder(size_t value){ 
+	      throwNotImplemented("virtual boost::shared_ptr<msTreeMapper> msKineticsType::setOrder(size_t value)"); 
+	    };
+	    /*
+	    virtual boost::shared_ptr<Antioch::KineticsType<double> > getCalculator(){ 
+	      throwNotImplemented("virtual boost::shared_ptr<Antioch::KineticsType<double> > msKineticsType::getCalculator()"); 
+	    };
+	    */
+	protected:
+	  
+	    virtual boost::shared_ptr<msTreeMapper> setCalculator(boost::shared_ptr<Antioch::KineticsType<double> > calculator){ 
+	      throwNotImplemented("virtual boost::shared_ptr<msTreeMapper> msKineticsType::setCalculator(boost::shared_ptr<Antioch::KineticsType<double> > calculator)"); 
+	    };
+	    
+	    map<string, double> Coefficients;
+	    
+	    boost::shared_ptr<Antioch::KineticsType<double> > Calculator;
+	    
+	    void throwNotImplemented(string fctName) const {
+	      
+	        msError e("The class msReactionBase if virtual",fctName,getFullId());
+		BOOST_THROW_EXCEPTION(e);
+	    }
+        };
+	
+	
+	
+	template<class AntiochCalculatorType>
+        class msKineticsTypeDerived: public msKineticsType
+        {
+            
+        private:
+            
+            //!\name from msRegister
+            //@{
+            static msRegistrar Registrar;
+            static bool  isKineticsTypeDerivedRegisteredInPython;
+            static msRegister* createInstance() {  new msKineticsTypeDerived<AntiochCalculatorType>; }
+            
+            static string nameType;
+	    static string doc;
+            //@}
+            
+        protected:
+            
+            void registryInPython() {
+            
+#if USE_PYTHON
+                msKineticsType::registryInPython();
+            
+                if( ! msKineticsTypeDerived::isKineticsTypeDerivedRegisteredInPython ) {
+                
+                    using namespace boost::python;
+                
+                    class_< msKineticsTypeDerived<AntiochCalculatorType> ,
+		           bases<msKineticsType>,
+			   boost::shared_ptr<msKineticsTypeDerived<AntiochCalculatorType> > 
+			   >
+                    (msKineticsTypeDerived<AntiochCalculatorType >::nameType.c_str(),
+                     msKineticsTypeDerived<AntiochCalculatorType >::doc.c_str(), no_init
+                     ) 
+                    .def( "New", &msKineticsTypeDerived<AntiochCalculatorType>::New ,
+                          "Create a new object.")
+                    .staticmethod("New");
+                
+                msKineticsTypeDerived::isKineticsTypeDerivedRegisteredInPython = 1;
+            }
+#endif
+        }
+            
+        public:
+            
+            msKineticsTypeDerived() : msKineticsType() {
+	      
+	        constructVar(msKineticsTypeDerived<AntiochCalculatorType >::nameType,msKineticsTypeDerived<AntiochCalculatorType >::nameType,
+			     msKineticsTypeDerived<AntiochCalculatorType >::nameType); 
+		Order = 0;
+	    }
+	    
+            void initialize();
+            
+            void update()     { 
+	        
+	        msKineticsType::update();
+		setOrder(Order);
+            }
+            
+            static boost::shared_ptr<msKineticsTypeDerived> New(){
+                
+                LOGGER_ENTER_FUNCTION_DBG("static boost::shared_ptr<msKineticsTypeDerived> msKineticsTypeDerived::New()","");
+                boost::shared_ptr<msKineticsTypeDerived> T( new msKineticsTypeDerived() );
+                T->initialize();
+                T->update();
+                LOGGER_EXIT_FUNCTION2("static boost::shared_ptr<msKineticsTypeDerived> msKineticsTypeDerived::New()");
+                return T;
+            }
+            
+
+	    boost::shared_ptr<msTreeMapper> setCoefficient(string name,double value);
+	    
+	    double computeRate(double T) { return getCastedCalculator<AntiochCalculatorType>()->rate(T); 
+	    }
 	    
 	    double getOrder() const { return Order; }
 	    
@@ -95,29 +226,27 @@ namespace impact {
 		Order = value;
 	        return mySharedPtr();
 	    }
+	    /*
+	    boost::shared_ptr<AntiochCalculatorType > getCalculator(){
+	      
+	        return Calculator;
+	    }*/
 	    
 	protected:
-	  
-            template<class T>
-            boost::shared_ptr<T> getCalculator(){
+
+	    boost::shared_ptr<msTreeMapper> setCalculator(boost::shared_ptr<AntiochCalculatorType > calculator){
 	      
-	        //return boost::static_pointer_cast<T>(Calculator);
-	    }
-/*
-	    boost::shared_ptr<msTreeMapper> setCalculator(boost::shared_ptr<Antioch::KineticsType<double> > calculator){
-	      
-	        //Calculator = calculator;
+	        Calculator = calculator;
 	        return mySharedPtr();
-	    }*/
+	    }
 	    
 	private:
 	  
-	   // boost::shared_ptr<Antioch::KineticsType<double> > Calculator;
-	     
+	   // boost::shared_ptr<AntiochCalculatorType > Calculator;
 	    
 	    size_t Order;
         };
-        
+ 
     }
 }
 #endif // PA0DCSTSTP_H
