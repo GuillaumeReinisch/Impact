@@ -10,7 +10,7 @@ from PySide import QtCore, QtGui
 from msWidget import *
 import inspect
 import itertools            
-
+from TreeModels.simpletreemodel import *
 
 class msUnitsManagerDialog(QtGui.QDialog):
 
@@ -69,6 +69,27 @@ class msUnitsManagerDialog(QtGui.QDialog):
         self.close()
 
 
+class ObjectOfUnitsTreeModel(TreeModel):
+    def __init__(self, data, parent=None):
+        super(ObjectOfUnitsTreeModel, self).__init__(data,"msTreeMapper",parent)
+
+        self.rootItem = TreeItem(("id","variable","type"))
+        self.addDataChildren(data, self.rootItem )
+        
+    def addDataChildren(self,data,parent):
+        
+        a = data.getObjectsUsingMe()
+        for i in a:
+	    textData=[]
+	    textData.append( i.getId() )
+            textData.append( i.getFullVariableName() )
+            textData.append( i.getType().split(':')[-2])
+            item=TreeItem(textData)
+            parent.appendChild(item)
+        
+        return data
+      
+      
 class msUnitsManagerWidget(msWidget):
     
     def __init__(self,data,mainwindows):
@@ -91,10 +112,21 @@ class msUnitsManagerWidget(msWidget):
         updateUnitsButton = QtGui.QPushButton("update")
         updateUnitsButton.clicked.connect(self.update)
         self.gridbox.addWidget(updateUnitsButton,len(self.targets)+1,2)
-        self.vbox.addLayout(self.gridbox)
         
-        self.setMinimumSize(200,40 * i )
-        self.setMaximumSize(200,40 * i )
+        hbox = QtGui.QHBoxLayout()
+        hbox.addLayout(self.gridbox)
+        hbox.addSpacing(20)
+        vbox = QtGui.QVBoxLayout()
+        vbox.addWidget(QtGui.QLabel("Objects using the unit system:"))
+        self.listObj = QtGui.QTreeView()
+        self.listObj.setModel( ObjectOfUnitsTreeModel(data) )
+        vbox.addWidget(self.listObj)
+        hbox.addLayout(vbox)
+        
+        self.vbox.addLayout(hbox)
+        
+        self.setMinimumSize(520,40 * i )
+        self.setMaximumSize(520,40 * i )
         self.groupbox.setTitle("Units manager")
 
     def update(self):
