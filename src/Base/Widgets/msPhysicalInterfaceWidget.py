@@ -10,6 +10,30 @@ from msWidget import *
 from msUnitsManagerWidget import *
 from msParamsManagerWidget  import *
 
+
+
+
+class PhysicalVariableTreeModel(TreeModel):
+    def __init__(self, data, parent=None):
+        super(PhysicalVariableTreeModel, self).__init__(data,"msTreeMapper",parent)
+
+        self.rootItem = TreeItem(("name",
+                                  "value","unit"))
+        self.addDataChildren(data, self.rootItem )
+        
+    def addDataChildren(self,data,parent):
+        
+        a = data.getPhysicalVariables()
+        for i in a:
+	    textData=[]
+            textData.append( i.getName() )
+            textData.append( i.getValue() )
+            textData.append( i.getUnit().getStr() )
+            item=TreeItem(textData)
+            parent.appendChild(item)
+            
+        return data
+
 class msPhysicalInterfaceWidget(msWidget):
     
     def __init__(self,data,mainwindows):
@@ -24,11 +48,14 @@ class msPhysicalInterfaceWidget(msWidget):
        
         self.vbox.addWidget(self.Units)
         self.vbox.addWidget(self.Parameters)
-        self.setMinimumHeight(550)
-        self.setMaximumHeight(550)
-
-        self.setMinimumWidth(550)
-        self.setMaximumWidth(550)
+        
+        self.vbox.addWidget(QtGui.QLabel("Declared physical variables:"))
+        self.physVars = QtGui.QTreeView()
+        self.physVars.setModel( PhysicalVariableTreeModel(data) )
+        self.vbox.addWidget(self.physVars)
+        
+        self.setMinimumSize(550,600 )
+        self.setMaximumSize(550,600 )
         self.groupbox.setTitle("&Physical interface")
 
  
