@@ -13,27 +13,35 @@ endif(COMMAND cmake_policy)
 
 STRING(REGEX REPLACE "/" "_" COMPILER_PATH ${CMAKE_CXX_COMPILER})
 
-SET( LIBRARY_OUTPUT_PATH
-          ${CMAKE_CURRENT_SOURCE_DIR}/build/libs${COMPILER_PATH}
-    )
-
-MESSAGE( STATUS "The libraries are collected in ${LIBRARY_OUTPUT_PATH}")
-
 MESSAGE( STATUS "The installation is realized in ${CMAKE_INSTALL_PREFIX}. Use 'cmake -DCMAKE_INSTALL_PREFIX=$install_dir CMakeList.txt' to change the installation directory to $install_dir")
 
 #-------------------------------------------------------------------------------------------------
 #------------------ Options for compilation                      ---------------------------------
 #-------------------------------------------------------------------------------------------------
 
-CONFIGURE_FILE(config.h.cmake config.h)
+CONFIGURE_FILE(impact_config.h.cmake impact_config.h)
 
+
+SET( ANTIOCH  0 CACHE BOOL "if true include antioch.")
+SET( QUESO    0 CACHE BOOL "if true include the QUESO library.")
+SET( VTK      0 CACHE BOOL "if true enabled 3D using VTK.")
+SET( CMAKE_INSTALL_PREFIX  ${CMAKE_INSTALL_PREFIX} CACHE PATH "Install directory"  )
+
+SET( ANTIOCH_INCLUDE_PATH "" CACHE PATH "Include directory of antioch. Used if the option -DANTIOCH=1 is set."  )
+SET( QUESO_INCLUDE_PATH   "" CACHE PATH "Include directory of queso. Used if the option -DQUESO=1 is set."  )
+SET( QUESO_LIBRARIES_PATH "" CACHE PATH "Libraries path of queso. Used if the option -DQUESO=1 is set."  )
+
+SET( INCLUDE_INSTALL_PREFIX  ${CMAKE_INSTALL_PREFIX}/include/impact CACHE PATH "Include files install directory" )
+SET( LIB_INSTALL_PREFIX      ${CMAKE_INSTALL_PREFIX}/lib            CACHE PATH "Libraries install directory"  )
+SET( DOC_INSTALL_PREFIX      ${CMAKE_INSTALL_PREFIX}/doc            CACHE PATH "Documentation install directory"  )
+SET( PYTHON_INSTALL_PREFIX   ${CMAKE_INSTALL_PREFIX}/python         CACHE PATH "Python install directory"  )
+
+#------------------ Options for developpers 
 SET( COVERAGE 0 CACHE BOOL "if true activate code coverage option for tests")
 SET( PYTHON   1 CACHE BOOL "if true python binding. It needs the python library.")
 SET( ATOMISM  1 CACHE BOOL "if true compile the Atomism interface.")
 SET( MATH     1 CACHE BOOL "if true compile the math interface.")
-SET( ANTIOCH  0 CACHE BOOL "if true include antioch.")
-SET( QUESO    0 CACHE BOOL "if true include the QUESO library.")
-SET( VTK      0 CACHE BOOL "if true enabled 3D using VTK.")
+#-------------------
 
 IF( PYTHON )
    MESSAGE( STATUS "Python binding activated (-DPYTHON=0 to desactivate)")
@@ -74,14 +82,13 @@ file(WRITE ${LAUNCHER_FILE} "" )
 ADD_SUBDIRECTORY( ${CMAKE_CURRENT_SOURCE_DIR}/src/Base 
                 )
 
-GET_DIRECTORY_PROPERTY (IMPACT_BASE_INCLUDE_DIRS DIRECTORY 	  ./src/Base 	DEFINITION 	IMPACT_BASE_INCLUDE_DIRS
+GET_DIRECTORY_PROPERTY (BASE_INCLUDE_DIRS DIRECTORY 	  ./src/Base 	DEFINITION 	BASE_INCLUDE_DIRS
                         )
 
-GET_DIRECTORY_PROPERTY (IMPACT_BASE_LIBRARIES DIRECTORY 	      ./src/Base 	DEFINITION 	IMPACT_BASE_LIBRARIES 
+GET_DIRECTORY_PROPERTY (BASE_LIBRARIES DIRECTORY 	      ./src/Base 	DEFINITION 	BASE_LIBRARIES 
                         )
 
 #-- Math
-
 ADD_SUBDIRECTORY( ${CMAKE_CURRENT_SOURCE_DIR}/src/Math )
 
 GET_DIRECTORY_PROPERTY (MATH_INCLUDE_DIRS DIRECTORY        ./src/Math  	DEFINITION 	MATH_INCLUDE_DIRS
@@ -91,7 +98,6 @@ GET_DIRECTORY_PROPERTY (MATH_LIBRARIES DIRECTORY 	      ./src/Math 	DEFINITION 	
                         )
 
 #-- Atomism
-
 ADD_SUBDIRECTORY( ${CMAKE_CURRENT_SOURCE_DIR}/src/Atomism )
 
 GET_DIRECTORY_PROPERTY (ATOMISM_INCLUDE_DIRS DIRECTORY        ./src/Atomism  	DEFINITION 	ATOMISM_INCLUDE_DIRS
@@ -101,7 +107,6 @@ GET_DIRECTORY_PROPERTY (ATOMISM_LIBRARIES DIRECTORY 	      ./src/Atomism 	DEFINI
                         )
 
 #-- Antioch
-
 ADD_SUBDIRECTORY( ${CMAKE_CURRENT_SOURCE_DIR}/src/Antioch
                  )
 
@@ -112,7 +117,6 @@ GET_DIRECTORY_PROPERTY (ANTIOCH_LIBRARIES    DIRECTORY    ./src/Antioch    DEFIN
                        )
              
 #-- QUESO
-
 ADD_SUBDIRECTORY( ${CMAKE_CURRENT_SOURCE_DIR}/src/Queso
                  )
 
@@ -132,30 +136,20 @@ ENDIF( PYTHON )
 
 
 SET( IMPACT_INCLUDE_DIRS
-     ${IMPACT_BASE_INCLUDE_DIRS}
-     ${MATH_INCLUDE_DIRS}
-     ${ATOMISM_INCLUDE_DIRS}
-     ${CANTERA_INCLUDE_DIRS}
-     ${POLYMER_INCLUDE_DIRS}
-     ${NASA_INCLUDE_DIRS}
-     ${QUESO_INCLUDE_DIRS}
-     ${ANTIOCH_INCLUDE_DIRS}
+     ${BASE_INCLUDE_DIRS}
+      ${MATH_INCLUDE_DIRS}
+      ${ATOMISM_INCLUDE_DIRS}
+      ${QUESO_INCLUDE_DIRS}
+      ${ANTIOCH_INCLUDE_DIRS}
     )
 
 SET( IMPACT_LIBRARIES
-     ${IMPACT_BASE_LIBRARIES}
-     ${MATH_LIBRARIES}
-     ${ATOMISM_LIBRARIES}
-     ${CANTERA_LIBRARIES}   
-     ${POLYMER_LIBRARIES}
-     ${NASA_LIBRARIES}
-     ${QUESO_LIBRARIES}
-     ${ANTIOCH_LIBRARIES}
+     ${BASE_LIBRARIES}
+      ${MATH_LIBRARIES}
+      ${ATOMISM_LIBRARIES}
+      ${QUESO_LIBRARIES}
+      ${ANTIOCH_LIBRARIES}
       )
-
-FILE(GLOB DOC_FILES  
-     ${CMAKE_CURRENT_SOURCE_DIR}/doc/html/*.*
-     )
      
 #-------------------------------------------------------------------------------------------------
 #------------------ compile library       --------------------------------------------------------
@@ -163,7 +157,7 @@ FILE(GLOB DOC_FILES
 
 include_directories( ${IMPACT_INCLUDE_DIRS} )
 
-message(STATUS "\n----------------------------------------------\n----------./CMakeLists.txt----------\n----------------------------------------------")
+message(STATUS "\n\n All \n")
 
 message(STATUS "Libraries: ${IMPACT_LIBRARIES}")
 message(STATUS "Includes:  ${IMPACT_INCLUDE_DIRS}")
@@ -175,9 +169,11 @@ SET_TARGET_PROPERTIES( impact PROPERTIES COMPILE_FLAGS -std=c++11 -O3 -fPIC )
 set_target_properties( impact PROPERTIES  SUFFIX .so)
 TARGET_LINK_LIBRARIES( impact ${IMPACT_LIBRARIES} )
 
-INSTALL(TARGETS impact DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/lib )
-INSTALL(TARGETS impact DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/bin )
-INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/doc/mainpage.dox  DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/bin )
-INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile      DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/bin )
+#-------------------------------------------------------------------------------------------------
+#------------------ installation   ---------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
 
-INSTALL(FILES  ${DOC_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/doc/html )
+INSTALL(TARGETS impact DESTINATION ${CMAKE_INSTALL_PREFIX}/lib )
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/doc/mainpage.dox  DESTINATION ${DOC_INSTALL_PREFIX} )
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/impact_config.h   DESTINATION ${CMAKE_INSTALL_PREFIX}/bin )
+INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/databases   DESTINATION   ${CMAKE_INSTALL_PREFIX}/ )
