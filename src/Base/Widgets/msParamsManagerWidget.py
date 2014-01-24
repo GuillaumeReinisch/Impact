@@ -14,7 +14,7 @@ class ParamTreeModel(TreeModel):
     def __init__(self, data, parent=None):
         super(ParamTreeModel, self).__init__(parent)
 
-        self.rootItem = TreeItem(("Id","Value","Unit","Comment"))
+        self.rootItem = TreeItem(("Id","Value","Unit","Description"))
         self.addDataChildren(data, self.rootItem )
         self.filter="msParam"
     
