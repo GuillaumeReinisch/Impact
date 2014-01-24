@@ -21,14 +21,15 @@
 #ifndef MSMOTIONCEA_H
 #define MSMOTIONCEA_H
 
-
-#include "antioch/reaction.h"
+#include "antioch/chemical_mixture.h"
+#include "antioch/cea_evaluator.h"
+#include "antioch/cea_mixture.h"
+#include "antioch/cea_thermo.h"
+/*
 #include "antioch/input_utils.h"
-
+#include "antioch/cea_curve_fit.h"
+#include "antioch/temp_cache.h"*/
 #include <msMotion.h>
-
-#include <boost/graph/graph_concepts.hpp>
-
 
 
 namespace impact {
@@ -61,14 +62,26 @@ namespace impact {
                 
                 LOGGER_ENTER_FUNCTION_DBG("void msMotionCEA::update()",getFullId());
                 msMotion::update();
+		updateCalculator();
                 LOGGER_EXIT_FUNCTION2("void msMotionCEA::update()");
             }
             
         public:
             
-	    msMotionCEA(): msMotion() {
+	    msMotionCEA(): msMotion(), nFit(0) {
                 
                 constructVar("msMotionCEA","MotionCEA","motion CEA");
+            }
+            
+            static boost::shared_ptr<msMotionCEA> New(){
+                
+                LOGGER_ENTER_FUNCTION_DBG("static boost::shared_ptr<msMotionCEA> msMotionCEA::New()","");
+                boost::shared_ptr<msMotionCEA> T( new msMotionCEA() );
+                T->initialize();
+                T->setParameters( msMotionParams::New() );
+                T->update();
+                LOGGER_EXIT_FUNCTION2("static boost::shared_ptr<msMotionCEA> msMotionCEA::New()");
+                return T;
             }
             
             void initialize() {
@@ -76,6 +89,10 @@ namespace impact {
                 LOGGER_ENTER_FUNCTION_DBG("void msMotionCEA::initialize()","");
                 
                 msMotion::initialize();
+		
+		declareAttribute(CoeffsFit_200_1000,"CoeffsFit_200_1000");
+		declareAttribute(CoeffsFit_1000_6000,"CoeffsFit_1000_6000");
+		declareAttribute(CoeffsFit_6000_20000,"CoeffsFit_6000_20000");
 		
                 LOGGER_EXIT_FUNCTION2("void msMotionCEA::initialize()");
             }
@@ -123,6 +140,19 @@ namespace impact {
 		return vector<double>();
 	    };
 	    
+	    vector<double> getAllCoeffsOfFit() {
+	      
+	        std::vector<double> coefs;
+		for( size_t i=0;i<CoeffsFit_200_1000.size();i++) 
+		  coefs.push_back(CoeffsFit_200_1000[i]);
+		for( size_t i=0;i<CoeffsFit_1000_6000.size();i++) 
+		  coefs.push_back(CoeffsFit_1000_6000[i]);
+		for( size_t i=0;i<CoeffsFit_6000_20000.size();i++) 
+		  coefs.push_back(CoeffsFit_6000_20000[i]);
+		
+		return coefs;
+	    };
+	    
 	    //! @name msMotion  methods
             //@{
 	    
@@ -145,8 +175,6 @@ namespace impact {
 			   getFullId());
 		          
 		BOOST_THROW_EXCEPTION(e);
-		
-                return QfromDOS(T);
             };;
             
             
@@ -159,40 +187,36 @@ namespace impact {
 		          
 		BOOST_THROW_EXCEPTION(e);
 		
-                return QfromDOS(T);
             };
 
             double H(double T)   { 
 	      
-	        vector<double> a = getFit(T);
-		
-		double H_on_RT = - a[0]*pow(T,-2) + a[1]*pow(T,-1)*log(T) + a[2] 
-		                 + a[3]*T/2. + a[4]*T*T /3. + a[5]*pow(T,3)/4. 
-		                 + a[6]*pow(T,4)/5. + a[8]/T;
-				 
-		return H_on_RT* T * getUnits()->convert( msUnit::J_mol,  csts::R );
+	        updateCalculator();
+		Antioch::TempCache<double> cache(T);
+		const double* a = Calculator->coefficients( Calculator->interval(cache.T) );
+		double  H_on_RT    =  -a[0]/cache.T2 + a[1]*cache.lnT/cache.T + a[2] + a[3]*cache.T/2.0 + a[4]*cache.T2/3.0 + a[5]*cache.T3/4.0 + a[6]*cache.T4/5.0 + a[8]/cache.T;
+ 
+		return H_on_RT * T * getUnits()->convert( "J.mol^-1.K^-1",  csts::R );
 	        };
 	    
             double S(double T) { 
 	      
-	        vector<double> a = getFit(T);
-		
-		double S_on_R = - a[0]*pow(T,-2)/2. + a[1]*pow(T,-1) + a[2]*log(T) 
-		                 + a[3]*T + a[4]*T*T /2. + a[5]*pow(T,3)/3. 
-		                 + a[6]*pow(T,4)/4. + a[9];
-				 
-		return S_on_R * getUnits()->convert( msUnit::J_mol,  csts::R );
-	        };  	
+	        updateCalculator();
+	        Antioch::TempCache<double> cache(T);
+		const double* a = Calculator->coefficients( Calculator->interval(cache.T) );
+		double  S_on_R    =  -a[0]/cache.T2/2.0 - a[1]/cache.T + a[2]*cache.lnT + a[3]*cache.T + a[4]*cache.T2/2.0 + a[5]*cache.T3/3.0 + a[6]*cache.T4/4.0 + a[9];
+ 
+		return S_on_R * getUnits()->convert( "J.mol^-1.K^-1",  csts::R );
+	        };
+	     
             
 	    double Cv(double T) { 
 	      
-	        vector<double> a = getFit(T);
-		double Cp_on_R = - a[0]*pow(T,-2)/ + a[1]*pow(T,-1) + a[2]
-		                 + a[3]*T + a[4]*T*T + a[5]*pow(T,3) 
-		                 + a[6]*pow(T,4);
-				 
-	        double R = getUnits()->convert( msUnit::J_mol,  csts::R );
-		
+	        updateCalculator();
+	        Antioch::TempCache<double> cache(T);
+		const double* a = Calculator->coefficients( Calculator->interval(cache.T) );
+		double  Cp_on_R =  a[0]/cache.T2 + a[1]/cache.T + a[2] + a[3]*cache.T + a[4]*cache.T2 + a[5]*cache.T3 + a[6]*cache.T4;
+		double R = getUnits()->convert( "J.mol^-1.K^-1",  csts::R );
 		return Cp_on_R * R - R;
 	        };  		
             
@@ -200,6 +224,21 @@ namespace impact {
 	    
             std::ostream& print(std::ostream& out) const ;
 	   
+	    void addCoeffsFit(vector<double>& fit) {
+	    
+	        if( nFit==0 ) CoeffsFit_200_1000 = fit;
+	        if( nFit==1 ) CoeffsFit_1000_6000 = fit;
+	        if( nFit==2 ) CoeffsFit_6000_20000 = fit;
+	        if( nFit>=3 ) {
+	      
+	            msError e("CEA fit support 3 fits maximum",
+			      "add msMotionCEA:: addCoeffsFit(vector<double>& fit) ",
+		  	      getFullId());
+		    BOOST_THROW_EXCEPTION(e);
+	        }
+		nFit++;
+	  }
+	  
 	protected:
 	   	  
 	  vector<double> getFit(double T) {
@@ -211,9 +250,9 @@ namespace impact {
 			    getFullId());
 		  BOOST_THROW_EXCEPTION(e);
 	      }
-	      if( T>=200 & T < 1000 )    return CoeffsFit_200_1000;
-	      if( T>=1000 & T < 6000 )   return CoeffsFit_1000_6000;
-	      if( T>=6000 & T <= 20000 ) return CoeffsFit_6000_20000;
+	      if( T>=200  && T < 1000 )    return CoeffsFit_200_1000;
+	      if( T>=1000 && T < 6000 )    return CoeffsFit_1000_6000;
+	      if( T>=6000 && T <= 20000 )  return CoeffsFit_6000_20000;
 	  }
 	  	    
         private:
@@ -222,22 +261,15 @@ namespace impact {
 	  vector<double> CoeffsFit_1000_6000;
 	  vector<double> CoeffsFit_6000_20000;
 	  
+	  boost::shared_ptr<Antioch::CEACurveFit<double> > Calculator;
+	  
+	  void updateCalculator() {
+	    Calculator = boost::shared_ptr<Antioch::CEACurveFit<double> >(
+		             new Antioch::CEACurveFit<double>(getAllCoeffsOfFit())
+									      );
+	  }
 	  size_t nFit;
 	  
-	  void addCoeffsFit(vector<double>& fit) {
-	    
-	      if( nFit==0 ) CoeffsFit_200_1000 = fit;
-	      if( nFit==1 ) CoeffsFit_1000_6000 = fit;
-	      if( nFit==2 ) CoeffsFit_6000_20000 = fit;
-	      if( nFit>=3 ) {
-	      
-	          msError e("CEA fit support 3 fits maximum",
-			    "add msMotionCEA:: addCoeffsFit(vector<double>& fit) ",
-			    getFullId());
-		  BOOST_THROW_EXCEPTION(e);
-	      }
-	      
-	  }
 	};
         
     }

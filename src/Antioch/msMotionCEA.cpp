@@ -23,7 +23,7 @@ namespace impact {
     
     namespace antioch {
         
-        bool msMotionCEA::isMotionCEAdRegisteredInPython=0;
+        bool msMotionCEA::isMotionCEARegisteredInPython=0;
         
         msRegistrar msMotionCEA::Registrar("msMotionCEA", msMotionCEA::createInstance);
         
