@@ -274,8 +274,8 @@ namespace impact {
             boost::shared_ptr<msVectorFit1d> getS() {
                 
                 boost::shared_ptr<msVectorFit1d> fct = msVectorFit1d::New();
-                fct->set(Tmin,Tmax,DeltaT,getUnits()->getTempStr(),"");
-                
+                fct->set(Tmin,Tmax,DeltaT,getUnits()->getTempStr(),getUnits()->getStr(msUnit::vEntropyByQuantity));
+                fct->getCoordinates()->getVariable(0)->setId("T");
                 for(size_t i=1;i<fct->size(); i++)
                 (*fct)[i] = S(Tmin+i*DeltaT);
                 
@@ -286,8 +286,8 @@ namespace impact {
             boost::shared_ptr<msVectorFit1d> getCp() {
                 
                 boost::shared_ptr<msVectorFit1d> fct = msVectorFit1d::New();
-                fct->set(Tmin,Tmax,DeltaT,getUnits()->getTempStr(),"");
-                
+                fct->set(Tmin,Tmax,DeltaT,getUnits()->getTempStr(),getUnits()->getStr(msUnit::vEntropyByQuantity));
+                fct->getCoordinates()->getVariable(0)->setId("T");
                 for(size_t i=1;i<fct->size(); i++)
                 (*fct)[i] = Cp(Tmin+i*DeltaT);
                 

@@ -282,7 +282,6 @@ namespace impact {
                          + output::getString<double>(DOS(n*dE)*exp(-(n-1)*dE/ (R * T) )));
             
             LOGGER_EXIT_FUNCTION2("void msMotion::QfromDOS( msScalarFunction& DOS  , double T)");
-            cout<<DOS<<endl;
             return Q;
         }
         //-------------------------------------------------------------------------------------------------

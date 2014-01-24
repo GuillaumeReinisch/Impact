@@ -296,7 +296,7 @@ namespace impact {
             }
             
             //! add an element
-            void addElement(boost::shared_ptr<msElement> elem);
+            boost::shared_ptr<msTreeMapper> addElement(boost::shared_ptr<msElement> elem);
             
             /** \bried add a degree of freedom
              *

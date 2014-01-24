@@ -59,6 +59,7 @@ namespace impact {
                 .def( "getEigenInertia", &msEntity::getEigenInertia,
                      "return a vector of double of the eigen moment of inertia");
                 
+		msTreeMapper::finalizeDeclarationForPython<msEntity>("msEntity");
                 msEntity::isEntityRegisteredInPython=1;
             }
 #endif
@@ -67,11 +68,12 @@ namespace impact {
         //-----------------------------------------------------------------------------
         //-----------------------------------------------------------------------------
         
-        void msEntity::addElement(boost::shared_ptr<msElement> elem) {
+         boost::shared_ptr<msTreeMapper> msEntity::addElement(boost::shared_ptr<msElement> elem) {
             
             if(!elem->hasParent()) elem->setAffiliation(mySharedPtr());
 	    
             msTreeMapper::addElementToChildren<msElement>(Elements,elem);
+	    return mySharedPtr();
         }
         
         //-----------------------------------------------------------------------------
