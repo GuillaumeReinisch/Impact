@@ -14,6 +14,7 @@ class msMotionWidget(msWidget):
     def __init__(self,data,mainwindows):
         msWidget.__init__(self,data,mainwindows)
 
+        """
         self.vbox.addWidget(QtGui.QLabel("Number of degrees of freedom: "+str(data.noOfDof())))
         
         hbox = QtGui.QHBoxLayout() 
@@ -31,7 +32,7 @@ class msMotionWidget(msWidget):
         multBttn.clicked.connect(self.setMultipicity)
         hbox.addWidget(multBttn)
         self.vbox.addLayout(hbox)
-        
+        """
         groupBox = QtGui.QGroupBox("Canonical ensemble")
         gbox = QtGui.QGridLayout() 
         gbox.addWidget(QtGui.QLabel("Temperature [K]: "),1,1)
@@ -71,7 +72,7 @@ class msMotionWidget(msWidget):
         self.plotSbttn.clicked.connect(self.plotS)
         gbox.addWidget(self.plotSbttn,4,4)
 
-        gbox.addWidget(QtGui.QLabel("Calorific capacity []: "),5,1)
+        gbox.addWidget(QtGui.QLabel("Cp []: "),5,1)
         self.labelCp = QtGui.QLabel( "0" )
         gbox.addWidget(self.labelCp,5,2)
         self.Cpbttn = QtGui.QPushButton("compute")
@@ -117,8 +118,8 @@ class msMotionWidget(msWidget):
         self.vbox.addWidget(groupBox)
 
         self.groupbox.setTitle("Motion")
-        self.setMinimumSize(550,500)
-        self.setMaximumSize(550,500)
+        self.setMinimumSize(550,400)
+        self.setMaximumSize(550,400)
         #self.evaluateField()
 
     def setSymmetryNumber(self):
