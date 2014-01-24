@@ -6,7 +6,7 @@ message(STATUS "\n----------------------------------------------\n----------src/
 IF( ANTIOCH )
    MESSAGE( STATUS "Include the Antioch interface for chemical kinetics resolution, cantera library needed for linking (-DANTIOCH=0 to desactivate)")
 
-set(LIB_NAME msAntioch)
+set(LIB_NAME impact_antioch)
 
 #-------------------------------------------------------------------------------------------------
 #------------------ include directories of Base and set source files-----------------------------
@@ -14,8 +14,8 @@ set(LIB_NAME msAntioch)
 
 message(STATUS "Molecule include directories: ${ATOMISM_INCLUDE_DIRS}")
 message(STATUS "Molecule libraries: ${ATOMISM_LIBRARIES}")
-message(STATUS "impact base include directories: ${IMPACT_BASE_INCLUDE_DIRS}")
-message(STATUS "impact base libraries: ${IMPACT_BASE_LIBRARIES}")
+message(STATUS "impact base include directories: ${BASE_INCLUDE_DIRS}")
+message(STATUS "impact base libraries: ${BASE_LIBRARIES}")
 #-----------------------
 #-----------------------
 
@@ -45,12 +45,12 @@ FILE(GLOB  PYTHON_FILES
 
 SET( INCLUDE_DIRS
                         ${CMAKE_CURRENT_SOURCE_DIR}/
-                        ${IMPACT_BASE_INCLUDE_DIRS}
+                        ${BASE_INCLUDE_DIRS}
                         ${ATOMISM_INCLUDE_DIRS}
                         ${ANTIOCH_INCLUDE_DIRS}
         )
 SET( DEPENDANCIES
-			${IMPACT_BASE_LIBRARIES}
+			${BASE_LIBRARIES}
                        ${ATOMISM_LIBRARIES}
                         ${ANTIOCH_LIBRARIES}
     )
@@ -78,16 +78,16 @@ foreach(next_ITEM ${SRC_FILES})
    file(APPEND ${LAUNCHER_FILE} "#include<${next_ITEM}>\n" )
 endforeach(next_ITEM ${SRC_FILES})
 
-INSTALL(FILES  ${HEADER_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/include )
-INSTALL(FILES  ${PYTHON_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/python/widgets )
-INSTALL(TARGETS ${LIB_NAME}    DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/lib )
-INSTALL(TARGETS ${LIB_NAME}    DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/bin )
+INSTALL(FILES  ${HEADER_FILES} DESTINATION ${INCLUDE_INSTALL_PREFIX}/ )
+INSTALL(FILES  ${PYTHON_FILES} DESTINATION ${PYTHON_INSTALL_PREFIX}/widgets )
+INSTALL(TARGETS ${LIB_NAME}    DESTINATION ${LIB_INSTALL_PREFIX} )
+
 #-----------------------
 #-----------------------
 
 SET( ANTIOCH_INCLUDE_DIRS
             ${CMAKE_CURRENT_SOURCE_DIR}/
-                        ${ANTIOCH_INCLUDE_DIRS}
+            ${ANTIOCH_INCLUDE_DIRS}
     )
 
 SET( ANTIOCH_LIBRARIES
