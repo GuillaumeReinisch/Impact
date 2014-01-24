@@ -25,18 +25,21 @@
 #include <msLikelihood.h>
 #include <msUtilitiesBayes.h>
 
-#include <uqGslMatrix.h>
-#include <uqGslVector.h>
-#include <uqStatisticalInverseProblem.h>
-#include <uqStatisticalForwardProblem.h>
-#include <uqInfoTheory.h>
+#include <queso/GslMatrix.h>
+#include <queso/GslVector.h>
+#include <queso/StatisticalInverseProblem.h>
+#include <queso/StatisticalForwardProblem.h>
+#include <queso/InfoTheory.h>
+#include <queso/GenericScalarFunction.h>
+#include <queso/UniformVectorRV.h>
 
 namespace impact {
     
     namespace queso {
         
         using namespace impact::math;
-        
+        using namespace QUESO;
+	
         /*! \class msInverseProblem
          * \brief Class that handles inverse problem
 	 * 
@@ -49,29 +52,47 @@ namespace impact {
         class msInverseProblem : public msSolver
         {
             
-	    friend  double likelihoodRoutine_(const uqGslVectorClass& paramValues,
-					      const uqGslVectorClass* paramDirection,
+	    friend  double likelihoodRoutine_(const GslVector& paramValues,
+					      const GslVector* paramDirection,
 					      const void*  Data,
-					      uqGslVectorClass*  gradVector,
-					      uqGslMatrixClass*  hessianMatrix,
-					      uqGslVectorClass* hessianEffect
+					      GslVector*  gradVector,
+					      GslMatrix*  hessianMatrix,
+					      GslVector* hessianEffect
 					      );
 	    
+	    
+	    /*! \class msInverseProblemParams
+	     * 
+	     *  Parameters used by msInverseProblem
+	     */ 
             class msInverseProblemParams : public msParamsManager
             {
                 static msRegistrar Registrar;
                 static msRegister* createInstance() { return new msInverseProblemParams; }
                 
             public:
+	      
                 void initialize() {
+		  
                     msParamsManager::initialize();
-                    addParameter( "ChainLength" ,     "1000" , "Default chain length" ,    msUnit() );
-                    addParameter( "LastChainLength" , "1000" , "Last level chain length" , msUnit() );
-                    addParameter( "DisplayStep" , "100" , "Period of log of the inference process" , msUnit() );
+		    
+                    addParameter( "ChainLength" ,     
+				  "1000" , 
+				  "Default chain length" ,    
+				  msUnit() );
+                    addParameter( "LastChainLength" , 
+				  "1000" , 
+				  "Last level chain length" , 
+				  msUnit() );
+                    addParameter( "DisplayStep" ,     
+				  "100" , 
+				  "Period of log of the inference process" , 
+				  msUnit() );
                 }
                 
-                static boost::shared_ptr<msInverseProblemParams> New()
-                { boost::shared_ptr<msInverseProblemParams> T( new msInverseProblemParams );
+                static boost::shared_ptr<msInverseProblemParams> New() {
+		  
+		    boost::shared_ptr<msInverseProblemParams> T( new msInverseProblemParams );
                     T->initialize(); T->update();
                     return T;
                 }
@@ -79,6 +100,7 @@ namespace impact {
                 msInverseProblemParams() : msParamsManager() {};
             };
             
+	    
         protected:
             
             static msRegistrar Registrar;
@@ -100,9 +122,12 @@ namespace impact {
                 
                 msSolver::initialize();
                 
-                declareChild<msLikelihood>(Likelihood,msLikelihood::New(),"Likelihood");
-		declareChild<msSamplerExplicit>(LastChainSamples,msSamplerExplicit::New(),"LastChainSamples");
-		declareChild<msGeneralizedCoordinates>(AllParametersContainer,msGeneralizedCoordinates::New(),"AllParametersContainer");
+                declareChild<msLikelihood>(      Likelihood,msLikelihood::New(),
+						 "Likelihood");
+		declareChild<msSamplerExplicit>( LastChainSamples,msSamplerExplicit::New(),
+						 "LastChainSamples");
+		declareChild<msGeneralizedCoordinates>( AllParametersContainer,msGeneralizedCoordinates::New(),
+							"AllParametersContainer");
             };
             
             static boost::shared_ptr<msInverseProblem> New(){
@@ -133,9 +158,15 @@ namespace impact {
                 return Likelihood.getSharedPtr();
             }
                         
-          
+            /*! \brief solve the inverse problem
+             */
             boost::shared_ptr<msTreeMapper> solve() ;
             
+            /*! \brief compute the CI for all the QoI for all scenario 
+	     * 
+	     * The function are storred in the CIcontainer child, if 
+	     * this child already exist, its content get updated.
+             */	    
             boost::shared_ptr<msTreeMapper> computeCisOverScenario() ;
 	     
             /*! \brief return the predictive model
@@ -161,9 +192,9 @@ namespace impact {
             
         private:
             
-            msChild<msLikelihood>       Likelihood;
+            msChild<msLikelihood>             Likelihood;
             
-	    msChild<msSamplerExplicit>  LastChainSamples;
+	    msChild<msSamplerExplicit>        LastChainSamples;
 	    
 	    msChild<msGeneralizedCoordinates> AllParametersContainer;
 	    
@@ -179,7 +210,7 @@ namespace impact {
              *
              *\param params values of the parameters
              */
-            double likelihood(const uqGslVectorClass& params);
+            double likelihood(const GslVector& params);
         };
     }
     

@@ -10,8 +10,8 @@ IF( QUESO )
 #-------------------------------------------------------------------------------------------------
 set(LIB_NAME impact_queso)
 
-message(STATUS "impact base include directories: ${IMPACT_BASE_INCLUDE_DIRS}")
-message(STATUS "impact base libraries: ${IMPACT_BASE_LIBRARIES}")
+message(STATUS "impact base include directories: ${BASE_INCLUDE_DIRS}")
+message(STATUS "impact base libraries: ${BASE_LIBRARIES}")
 
 message(STATUS "math include directories: ${MATH_INCLUDE_DIRS}")
 message(STATUS "math libraries: ${MATH_LIBRARIES}")
@@ -58,7 +58,7 @@ FILE(GLOB  PYTHON_FILES
 
 SET( INCLUDE_DIRS
                         ${CMAKE_CURRENT_SOURCE_DIR}/
-                        ${IMPACT_BASE_INCLUDE_DIRS}
+                        ${BASE_INCLUDE_DIRS}
                         ${PECOSQUESO_INCLUDE_DIRS}
                         ${MATH_INCLUDE_DIRS}
                         ${MPI_INCLUDE_PATH}
@@ -66,7 +66,7 @@ SET( INCLUDE_DIRS
                         ${HDF5_INCLUDE_DIRS}
         )
 SET( DEPENDANCIES
-                        ${IMPACT_BASE_LIBRARIES}
+                        ${BASE_LIBRARIES}
                         ${PECOSQUESO_LIBRARIES}
                         ${MATH_LIBRARIES}
                         ${GSL_LIBRARIES}
@@ -95,10 +95,10 @@ foreach(next_ITEM ${SRC_FILES})
    file(APPEND ${LAUNCHER_FILE} "#include<${next_ITEM}>\n" )
 endforeach(next_ITEM ${SRC_FILES})
 
-INSTALL(FILES  ${HEADER_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/include )
-INSTALL(FILES  ${PYTHON_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/python/widgets )
-INSTALL(TARGETS ${LIB_NAME}    DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/lib )
-INSTALL(TARGETS ${LIB_NAME}    DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/bin )
+INSTALL(FILES   ${HEADER_FILES} DESTINATION ${INCLUDE_INSTALL_PREFIX} )
+INSTALL(FILES   ${PYTHON_FILES} DESTINATION ${PYTHON_INSTALL_PREFIX}/widgets )
+INSTALL(TARGETS ${LIB_NAME}     DESTINATION ${LIB_INSTALL_PREFIX} )
+
 #-----------------------
 #-----------------------
 

@@ -110,12 +110,12 @@ namespace impact {
         //-------------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------
         
-        double likelihoodRoutine_(const uqGslVectorClass& paramValues,
-                                  const uqGslVectorClass* paramDirection,
+        double likelihoodRoutine_(const GslVector& paramValues,
+                                  const GslVector* paramDirection,
                                   const void*  Data,
-                                  uqGslVectorClass*  gradVector,
-                                  uqGslMatrixClass*  hessianMatrix,
-                                  uqGslVectorClass* hessianEffect) {
+                                  GslVector*  gradVector,
+                                  GslMatrix*  hessianMatrix,
+                                  GslVector* hessianEffect) {
             
             double result = 0;
             
@@ -124,7 +124,7 @@ namespace impact {
                 
             } catch (msError& e) {
                 
-                e.addContext("double likelihoodRoutine_(const uqGslVectorClass& paramValues,const uqGslVectorClass* paramDirection,const void*  Data,uqGslVectorClass*  gradVector,uqGslMatrixClass*  hessianMatrix,uqGslVectorClass* hessianEffect)");
+                e.addContext("double likelihoodRoutine_(const GslVector& paramValues,const GslVector* paramDirection,const void*  Data,GslVector*  gradVector,GslMatrix*  hessianMatrix,GslVector* hessianEffect)");
                 BOOST_THROW_EXCEPTION(e);
             }
             
@@ -134,7 +134,7 @@ namespace impact {
         //-------------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------
         
-        double msInverseProblem::likelihood( const uqGslVectorClass& paramValues) {
+        double msInverseProblem::likelihood( const GslVector& paramValues) {
             
 	    size_t n = getPredictiveModel()->getParameterSpace()->noOfDim();
 	    size_t nerror = getLikelihood()->getErrorModelParameters()->noOfDim();
@@ -184,8 +184,8 @@ namespace impact {
             
             writeInputQueso();
             
-            boost::shared_ptr<uqFullEnvironmentClass> Environment =
-            boost::shared_ptr<uqFullEnvironmentClass> (new uqFullEnvironmentClass(MPI_COMM_WORLD,"queso.inp","",NULL));
+            boost::shared_ptr<FullEnvironment> Environment =
+            boost::shared_ptr<FullEnvironment> (new FullEnvironment(MPI_COMM_WORLD,"queso.inp","",NULL));
             
             LikelihoodMax =-1e30;
             CurrentSolverIteration = 0 ;
@@ -197,13 +197,13 @@ namespace impact {
             
             LOGGER_WRITE(msLogger::INFO,"Step 1 of 5: Instantiate the parameter space of dim "+output::getString<int>(nParam+nParamError));
             
-            uqVectorSpaceClass<uqGslVectorClass,uqGslMatrixClass>  paramSpace( *Environment, "param_", nParam + nParamError, NULL);
+            VectorSpace<GslVector,GslMatrix>  paramSpace( *Environment, "param_", nParam + nParamError, NULL);
             
             
             LOGGER_WRITE(msLogger::INFO,"Step 2 of 5: Instantiate the parameter domain");
             
-            uqGslVectorClass paramMins(paramSpace.zeroVector());
-            uqGslVectorClass paramMaxs(paramSpace.zeroVector());
+            GslVector paramMins(paramSpace.zeroVector());
+            GslVector paramMaxs(paramSpace.zeroVector());
             
 	    for(int i=0;i<AllParametersContainer->noOfDim(); i++ ) {
 	       
@@ -218,16 +218,15 @@ namespace impact {
                 LOGGER_WRITE3COLUMNS(msLogger::INFO, i ,paramMins[i] , paramMaxs[i] );
             }
             
-            uqBoxSubsetClass<uqGslVectorClass,uqGslMatrixClass>
+            BoxSubset<GslVector,GslMatrix>
             paramDomain("param_",paramSpace,paramMins,paramMaxs);
             
             
             LOGGER_WRITE(msLogger::INFO,"Step 3 of 5: Instantiate the likelihood function object");
             
-            uqGslVectorClass meanVector(paramSpace.zeroVector());
-            // uqGslMatrixClass* covMatrix = paramSpace.newMatrix();
+            GslVector meanVector(paramSpace.zeroVector());
             
-            uqGenericScalarFunctionClass<uqGslVectorClass,uqGslMatrixClass>
+            GenericScalarFunction<GslVector,GslMatrix>
             likelihoodFunctionObj("like_",
                                   paramDomain,
                                   likelihoodRoutine_,
@@ -238,31 +237,27 @@ namespace impact {
             
             LOGGER_WRITE(msLogger::INFO,"Step 4 of 5: Instantiate the inverse problem with uniform priors");
             
-            uqUniformVectorRVClass<uqGslVectorClass,uqGslMatrixClass> priorRv("prior_", paramDomain);
-            uqGenericVectorRVClass<uqGslVectorClass,uqGslMatrixClass>  postRv("post_", paramSpace);
-            uqStatisticalInverseProblemClass<uqGslVectorClass,uqGslMatrixClass>
+            UniformVectorRV<GslVector,GslMatrix> priorRv("prior_", paramDomain);
+            GenericVectorRV<GslVector,GslMatrix>  postRv("post_", paramSpace);
+            StatisticalInverseProblem<GslVector,GslMatrix>
             ip("", NULL, priorRv, likelihoodFunctionObj, postRv);
             
             
             LOGGER_WRITE(msLogger::INFO,"Step 5 of 5:  Solve the inverse problem");
             int world_size;
             MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-	    cout<<"number of process available:"<<world_size<<endl;
-	    
-            std::cout<<"Does everithing seems ok? "<<std::endl;
-            char ans[10];
-            std::cin>>ans;
+  
+	    LOGGER_WRITE(msLogger::INFO,"Number of process available: "+output::getString<int>(world_size));
+	    LOGGER_WRITE(msLogger::INFO,"Does everithing seems ok ?");
+            char ans[10]; std::cin>>ans;
             
             InverseProblem = boost::static_pointer_cast<msInverseProblem>(mySharedPtr());
             
             ip.solveWithBayesMLSampling();
-            //for(size_t i=0;i<25000;i++) double l = likelihood(paramMaxs);
-	      
 	      
             LOGGER_WRITE(msLogger::INFO,"Inverse problem solved, prepare data");
 	   
-            uqGslVectorClass tmpVec(postRv.imageSet().vectorSpace().zeroVector());
+            GslVector tmpVec(postRv.imageSet().vectorSpace().zeroVector());
             vector<double> LastChain_i( nParam + nParamError , 0 );
 	    
 	    LastChainSamples->clear();
@@ -273,34 +268,8 @@ namespace impact {
              			
 		for(int j = 0; j<nParam + nParamError; j++)  LastChain_i[j] = tmpVec[j];
 		
-             LastChainSamples->addSample(LastChain_i);
+                LastChainSamples->addSample(LastChain_i);
              }
-             /*
-             int Lchain= postRv.realizer().subPeriod();
-             ChainLenght=Lchain;
-             double CImin;
-             double CImax;
-             double CImean;
-             
-             vector<double> values;
-             values.resize(ChainLenght);
-             
-             pCImin.resize(0);
-             pCImax.resize(0);
-             pCImean.resize(0);
-             
-             LOGGER_HEADER4COLUMNS(msLogger::INFO, "Param index","", "CI_Min", "", "CI_Max","","CI_mean","" )
-             for(int p=0;p<nParam;p++) {
-             
-             for(int i = 0; i < ChainLenght; ++i) values[i]=LastChain[i][p]*nominals[p];
-             
-             AnalyseHisto(&values,*&CImin,*&CImax,*&CImean);
-             *(params[p])=CImean;
-             
-             LOGGER_WRITE4COLUMNS(msLogger::INFO, i ,CImin ,CImax, CImean );
-             
-             //pCImin.push_back(CImin);pCImax.push_back(CImax);pCImean.push_back(CImean);
-             }  */
 	     
              return mySharedPtr();
         }
