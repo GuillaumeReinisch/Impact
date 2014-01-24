@@ -1,44 +1,37 @@
 
 # Load common modules
-try:
-    import sys,traceback
-    import math
-    import re
-    import functools
-    import inspect
-    import logging
-    import datetime
-    import os
-    from os import listdir
-    from os.path import isfile, join
-    from subprocess import call
-except:
-    print sys.exc_info()
-    print "A common module of python can not be loaded, they usually come with a standard installation of python. Is your version of python recent?"
-
-# Load libimpact
-try:
-    from libimpact import *
-except:
-    raise Exception("unable to load the libimpact module: is the libimpact library in the current directory or in Python paths? You should add to the PYTHONPATH environment variable the path to the 'python' subdirectory of the 'impact' installation directory used when 'make install' was executed (make sure that libimpact is in this directory, if not did you execute 'make install'?).")
+import imp
+import json
+import sys,traceback
+import math
+import re
+import functools
+import inspect
+import logging
+import datetime
+import os
+from os import listdir
+from os.path import isfile, join
+from subprocess import call
 
 # Load Pyside basic modules
-try:
-    from PySide import QtCore, QtGui
-except:
-    raise Exception("unable to load QtCore or QtGui of PySide module: did you install PySide ? You need it to launch the graphical integrated development environment")
+from PySide import QtCore, QtGui, QtWebKit
 
-# Load Pyside basic the WebKit
 try:
-    from PySide import QtWebKit
-except:
-    raise Exception("unable to load QtWebKit of PySide module: you should try to install a newer version of PySide.")
+    with open('./config.json'):
+        config = json.loads(open('./config.json').read())
+except IOError:
+    raise Exception("Can not open the configuration file, it is created when running impact_gui.py.")
+   
+# Load libimpact
+impact = imp.load_dynamic("libimpact",config["LIB_INSTALL_PREFIX"]+"/libimpact.so")
+from libimpact import *
 
 from DockElements    import *
 from Dialogs         import *
 from Dialogs.msMethodCallDialog         import *
 from Dialogs.msNewObjectDialog         import *
-from Dialogs.PreferencesWidget         import *
+from Dialogs.ConfigurationWidget         import *
 from TreeModels      import *
 from ScriptTemplates.NewClassScriptTemplateWidget      import *
 from ScriptTemplates.uiNewGraphicScriptTemplate      import *
@@ -47,8 +40,7 @@ from Misc            import *
 from LoadersSavers.msXmlLoader   import *
 from LoadersSavers.msXmlWritter  import *
 
-docDirectory = "../doc"
-        
+
 class MainWindow(QtGui.QMainWindow):
     
     rootObject = msTreeMapper.New()
@@ -57,18 +49,16 @@ class MainWindow(QtGui.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         
-        self.setWindowTitle("impact development interface")
-        self.setUnifiedTitleAndToolBarOnMac(True)        
+        self.config = config
         
-         # impact logger
+        # start impact logger
         self.Logger = msLogger
         self.Logger.setPriorityMin(Priority.INFO)
         self.Logger.startTreeRepresentation()
         
         self.initUI()
-        sys.stdout = ScriptWidget.OutLog( self.outStream, sys.stdout)
            
-        # python logger
+        # set python logger
         dialogHandler = Misc.QtStreamHandler(self.outStream,  self)
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger().addHandler(dialogHandler)
@@ -76,32 +66,36 @@ class MainWindow(QtGui.QMainWindow):
         # new object root
         self.rootObject.setId("workspace")
         self.setRootObject()
+        
     
     @staticmethod
     def getObject():
         return MainWindow.rootObject
-        
+                    
     def initUI(self):
         """ initialize the graphical interface elements: 
         the script widget (central element), the toolbars and the dock's parts
         """
-        self.docDirectory = "../doc"
+        self.setWindowTitle("impact development interface")
+        self.setUnifiedTitleAndToolBarOnMac(True)        
+        
         # script widget
         self.outStream = ""
         self.scriptWidget = ScriptWidget.uiScriptWidget(self)
         self.scriptWidget.setStdOut(self.outStream)
         self.setCentralWidget(self.scriptWidget)
                 
-        # toolobars
-        
         self.createMenusAndAction()
         #self.createToolBars()
         
         # dock's elements        
         self.createDockElements()
         
+        sys.stdout = ScriptWidget.OutLog( self.outStream, sys.stdout)
+        
         self.isInit = 1
         self.statusBar().showMessage("Ready")
+        
                  
     def setRootObject( self ):
         """ load self.rootObject as root in the graphical interface
@@ -153,7 +147,17 @@ class MainWindow(QtGui.QMainWindow):
         outDock2   = QtGui.QDockWidget("Doc", self)
         #docTab  = QtGui.QTabWidget()
         self.webView=QtWebKit.QWebView()
-        self.webView.load("file:///Users/chico/Projects/impact/trunk/doc/html/index.html#overview")
+        
+        try:
+	    with open(self.config["DOC_INSTALL_PREFIX"]+"/html/index.html"):
+                 self.webView.load(self.config["DOC_INSTALL_PREFIX"]+"/html/index.html#overview")    
+        except IOError:
+            QtGui.QMessageBox.information(self, "Documentation",
+                    "The documentation is not iniliazed, please check the 'Documentation' panel of the next window and click 'run doxygen'.")
+	    widget = ConfigurationWidget()
+            widget.exec_()
+            self.webView.load(self.config["DOC_INSTALL_PREFIX"]+"/html/index.html#overview")   
+ 
         #docTab.addTab(self.webView,"contextual")
         #tab.addTab(docTab,"documentation")
         outDock2.setWidget(self.webView)
@@ -171,7 +175,7 @@ class MainWindow(QtGui.QMainWindow):
         self.mainTreeWidget.clickTreeView()
 
     def reload(self):
-        model = TreeMapperModel(self.rootObject,"msTreeMapper")
+        model = TreeMapperModel(self.rootObject,"msTreeMapper",self.mainTreeWidget.expandPtrCheckBox.isChecked())
         self.mainTreeWidget.setModel(model)
         self.mainTreeWidget.reload()
     
@@ -319,10 +323,10 @@ class MainWindow(QtGui.QMainWindow):
 	
         os.symlink(filename, '../python/'+filename.split("/")[-1]) 
         
-    def launchPreferences(self):
+    def launchConfiguration(self):
         """ launch the preferencies panel
         """
-        widget = PreferencesWidget()
+        widget = ConfigurationWidget()
         widget.exec_()
         
     def newScript(self):
@@ -354,7 +358,7 @@ class MainWindow(QtGui.QMainWindow):
     def runDoxygen(self):
         """ New script from a template
         """          
-        call(["doxygen", "Doxyfile"])
+        call(["doxygen", "../doc/Doxyfile"])
  
  
     def insertVarInScript(self):
@@ -495,8 +499,8 @@ class MainWindow(QtGui.QMainWindow):
 	self.importFileInImpactAct =  QtGui.QAction(
                 "&Import file in impact", self,statusTip="import the file in impact workspace", triggered=self.importFileInImpact)
 	
-        self.preferencesAct = QtGui.QAction("&Preferences", self,
-                statusTip="Preferences panels", triggered=self.launchPreferences)
+        self.preferencesAct = QtGui.QAction("&Configuration", self,
+                statusTip="Configuration panels", triggered=self.launchConfiguration)
 	 
         self.quitAct = QtGui.QAction("&Quit", self, shortcut="Ctrl+Q",
                 statusTip="Quit the application", triggered=self.close)
@@ -569,10 +573,12 @@ class MainWindow(QtGui.QMainWindow):
         cls = str(cls)
         name = cls.split('.')[-1].split('\'')[0]
         name = self.getDoxygenName(str(name))
-        files = [ f for f in listdir(self.docDirectory) if isfile(join(self.docDirectory,f)) ]
+        docDirectory = config["DOC_INSTALL_PREFIX"]+"/html"
+        print docDirectory
+        files = [ f for f in listdir(docDirectory) if isfile(join(docDirectory,f)) ]
         for file in files:
             if str( str(name)+".html") in file:
-                self.webView.load(self.docDirectory+"/"+file+"#details")
+                self.webView.load(docDirectory+"/"+file+"#details")
                 return
     
         msLogger.exitFunction("void overNewMenuItem(self,name)")
