@@ -9,38 +9,37 @@
 
 #include dir
 
-FIND_PATH(PECOSQUESO_INCLUDE_DIRS uqEnvironment.h
+FIND_PATH(PECOSQUESO_INCLUDE_DIRS queso/queso.h
  PATHS
-  ${CMAKE_SOURCE_DIR}/../dependancies/build/queso/include
+   ${QUESO_INCLUDE_PATH}/
+   /usr/include/
           )
 
 if (NOT PECOSQUESO_INCLUDE_DIRS)
-  message (FATAL_ERROR " \n The include directory of the library QUESO containing the file uqEnvironment.h has not been found. \n"
+  message (FATAL_ERROR 
+" \nThe include directory of the library QUESO containing queso/queso.h has not been found.
+Please set the cmake option QUESO_INCLUDE_PATH to the correct path.\n"
             )
 endif (NOT PECOSQUESO_INCLUDE_DIRS)
 
-message(STATUS "pecos-QUESO include path: ${PECOSQUESO_INCLUDE_DIRS}")
+message(STATUS "QUESO include path: ${PECOSQUESO_INCLUDE_DIRS}")
 
 
-
-FOREACH(_canttlib grvy queso )
-
-unset(PECOSQUESO_LIB)
-
-find_library (QUESO_LIB_${_canttlib} ${_canttlib}
+find_library (QUESO_LIBRARIES libqueso.so
   PATHS
-  ${CMAKE_SOURCE_DIR}/../dependancies/build/queso/lib
+  ${QUESO_LIBRARIES_PATH}/
+  /usr/lib
 )
 
-if (NOT QUESO_LIB_${_canttlib} )
-  message (FATAL_ERROR QUESO_LIB_${_canttlib} "\n The libraries for QUESO ${_cantlib} has not been found. \n"
+if (NOT QUESO_LIBRARIES )
+  message (FATAL_ERROR 
+"\nThe library queso has not been found.
+Please set the cmake option QUESO_LIBRARIES_PATH to the correct path.\n"
             )
+endif (NOT QUESO_LIBRARIES )
 
-endif (NOT QUESO_LIB_${_canttlib} )
-SET (PECOSQUESO_LIBRARIES ${QUESO_LIBRARIES} ${QUESO_LIB_${_canttlib}} )
-ENDFOREACH(_canttlib)
+SET (PECOSQUESO_LIBRARIES ${QUESO_LIBRARIES})
 
-
-message(STATUS "QUESO library path(s): ${PECOSQUESO_LIBRARIES}")
+message(STATUS "QUESO library path: ${PECOSQUESO_LIBRARIES}")
 
 
