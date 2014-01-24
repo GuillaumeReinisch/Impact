@@ -219,7 +219,7 @@ namespace impact
         
         struct VarDatabase
         {friend class msTreeMapper;
-            std::string Name; std::string Id;
+            std::string Name; std::string Id; std::string Comments;
             VarDatabase(){};
             VarDatabase(std::string name, std::string type,std::string id){
                 Name=name;Type=type;Id=id;
@@ -264,6 +264,8 @@ namespace impact
             
             LOGGER_ENTER_FUNCTION_DBG("void msTreeMapper::initialize()",getFullId());
             declareAttribute(VariableAttributs.Id,"Id");
+	    declareAttribute(VariableAttributs.Comments, "Comments");
+	    
             LOGGER_WRITE(msLogger::DEBUG,"Begin declaration of child and attributs of '"+VariableAttributs.Name+"'");
             LOGGER_EXIT_FUNCTION2("void msTreeMapper::initialize()");
             //declareAttribute();
@@ -338,6 +340,8 @@ namespace impact
         
         std::string getId()   const;		//!< return the Id
         
+        std::string getComments()   const;		//!< return the comments
+        
         std::string getFullId()   const;		//!< return Affiliation+Id
         
         //! return a vector of the object's variable name on the path to the root element.
@@ -363,7 +367,9 @@ namespace impact
         }
         
         boost::shared_ptr<msTreeMapper> setId(std::string id);			    //!< set the Id
-        
+
+	boost::shared_ptr<msTreeMapper> setComments(std::string comment);		    //!< set the comments
+		
         void setAffiliation(boost::shared_ptr<msTreeMapper> parent){
             Parent.reset();
             Parent = boost::weak_ptr<msTreeMapper>(parent->mySharedPtr());
@@ -378,6 +384,8 @@ namespace impact
         //! return 1 if the object is derived from the class 'target'
         bool isDerivedFrom(std::string target) const;
         
+	void exceptIfNotDerivedFrom(std::string target,std::string method) const;
+			     
         //! return 1 if the object has a parent
         bool hasParent() const { boost::shared_ptr<msTreeMapper> ptr;
             if( (ptr=Parent.lock()) ) return 1;
@@ -548,7 +556,7 @@ namespace impact
     private:
         
         bool toBeSaved;
-        
+        	
         boost::weak_ptr<msTreeMapper>  Parent;
         
         std::map< std::string , boost::shared_ptr<msAttributeBase> >	Attributes;

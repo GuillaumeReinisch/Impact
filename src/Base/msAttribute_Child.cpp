@@ -238,7 +238,7 @@ namespace impact{
 #endif
 
     
-    void registerAttributesInPython() {
+    void registerAttributeTypesInPython() {
         
 #if USE_PYTHON > 0
         

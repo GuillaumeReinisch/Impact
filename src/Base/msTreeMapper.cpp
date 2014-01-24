@@ -59,10 +59,12 @@ namespace impact
                  "update the object" )
             .def( "_constructVar_" , &msTreeMapper::constructVar,
                  "should be called at the object construction. arg2: type name , arg3: variable name , arg4: id ")
-            .def( "_declareAttribute_" , (void (msTreeMapper::*)(boost::shared_ptr<msAttributeBase>,std::string) )
+            .def( "_declareAttribute_" ,
+		  (void (msTreeMapper::*)(boost::shared_ptr<msAttributeBase>,std::string) )
                  &msTreeMapper::declareAttribute,
                  "declare an attribute. arg2: attribute; arg3: name" )
-            .def( "_declareChild_" , (void (msTreeMapper::*)(boost::shared_ptr<msChildBase>, boost::shared_ptr<msTreeMapper> ,string ) )
+            .def( "_declareChild_" , 
+		  (void (msTreeMapper::*)(boost::shared_ptr<msChildBase>, boost::shared_ptr<msTreeMapper> ,string ) )
                  &msTreeMapper::declareChild,
                  "declare a child. arg2: child; arg3: initial value; arg4: name" )
             .def( "_declareChildren_" , (void (msTreeMapper::*)(boost::shared_ptr<msChildrenBase>,string ) )
@@ -70,13 +72,20 @@ namespace impact
                  "declare a children. arg2: children; arg3: name" )
             .def( "_updateChild_" ,&msTreeMapper::updateChild,
                  "update a child already declared. arg2: child declared; arg3: new value" )
-            .def( "_addElementToChildren_" , (void (msTreeMapper::*)(boost::shared_ptr<msChildrenBase>,boost::  shared_ptr<msTreeMapper>) )
+            .def( "_addElementToChildren_" ,
+		  (void (msTreeMapper::*)(boost::shared_ptr<msChildrenBase>,boost::  shared_ptr<msTreeMapper>) )
                  &msTreeMapper::addElementToChildren,
                  "add an element to a children. arg2: children; arg3: element" )
             .def( "getId" , 		&msTreeMapper::getId ,
                  "Return the id of the object" )
+	    .def( "getComments" , 		&msTreeMapper::getComments ,
+                 "Return the comments of the object" )
+	    .def( "getFullId" , 		&msTreeMapper::getFullId ,
+                 "Return the full id (from the root) of the object" )
             .def( "setId" , 		&msTreeMapper::setId ,
                  "Set the id of the object. Arg1: id (string)" )
+	    .def( "setComments" , 		&msTreeMapper::setComments ,
+                 "Set the comments of the object. Arg1: comments (string)" )
             .def( "getType" , 		&msTreeMapper::getType ,
                  "Return the full C++ type of the object")
             .def( "getVariableName" , 	(std::string (msTreeMapper::*)(boost::shared_ptr<msTreeMapper>) const )
@@ -130,19 +139,16 @@ namespace impact
                  "check the structure is correctly initialized")
             .def(self_ns::str(self_ns::self));
             
-            
             class_<msChildBase ,boost::shared_ptr<msChildBase> >( "msChildBase",
-                                                                 "Use to declare child of msTreeMapper structure" ,
-                                                                 no_init );
+                                                                  "Use to declare child of msTreeMapper structure" ,
+                                                                  no_init );
             
             class_<msChildrenBase ,boost::shared_ptr<msChildrenBase> >( "msChildrenBase",
-                                                                       "Use to declare children of msTreeMapper structure" ,
-                                                                       no_init );
+                                                                        "Use to declare children of msTreeMapper structure" ,
+                                                                        no_init );
             registerVector<msTreeMapper>("Vector_msTreeMapper","Vector of object deriving from msTreeMapper");
-            
-            registerAttributesInPython();
-            //msTreeMapper::finalizeDeclarationForPython<msTreeMapper>("msTreeMapper");
-            
+            registerAttributeTypesInPython();
+	    
             msTreeMapper::isTreeMapperRegistredInPython=1;
         }
 #endif
@@ -163,7 +169,7 @@ namespace impact
     //-------------------------------------------------------------------------------
     
     std::string msTreeMapper::getId() const { return VariableAttributs.Id; }
-    
+    std::string msTreeMapper::getComments() const { return VariableAttributs.Comments; }   
     //-------------------------------------------------------------------------------
     
     std::string msTreeMapper::getFullId() const {
@@ -242,6 +248,10 @@ namespace impact
         VariableAttributs.Id=id; return mySharedPtr();
     }
     
+   boost::shared_ptr<msTreeMapper> msTreeMapper::setComments(std::string comm)  {
+        
+        VariableAttributs.Comments=comm; return mySharedPtr();
+    }
     //-------------------------------------------------------------------------------
     
     std::string msTreeMapper::getType() const { return CppType; }
@@ -416,6 +426,17 @@ namespace impact
         return( std::find( strs.begin(), strs.end(), strs0.back() ) != strs.end() );
     }
     
+    void msTreeMapper::exceptIfNotDerivedFrom(std::string target,std::string method) const {
+	
+	if( !isDerivedFrom(target) ) {
+		     
+	    stringstream out;
+	    out<<"The objet "<<getFullId()<<" should be of type "<<target<<" but is of type "<<getType();
+	    msError e( out.str(),method,getFullId() );
+			
+	    BOOST_THROW_EXCEPTION(e);
+	}
+    }
     //-------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------
     
@@ -459,7 +480,7 @@ namespace impact
         
         if(Children.find(ptr->VariableAttributs.Name)!=Children.end()){
             
-            LOGGER_WRITE(msLogger::WARNING, "A child already exist under the same variable name, it is overriden");
+            //LOGGER_WRITE(msLogger::WARNING, "A child already exist under the same variable name, it is overriden");
             Children[ptr->VariableAttributs.Name]->set(ptr);
             LOGGER_EXIT_FUNCTION2("void msTreeMapper::addChild( boost::shared_ptr<msTreeMapper> ptr, std::string varName)");
             return;

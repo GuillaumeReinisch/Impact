@@ -42,7 +42,7 @@ namespace impact
     
     
     template<class T> inline
-    std::ostream& operator<<( std::ostream& out , const std::map<std::string , T >& obj) {
+    std::ostream& operator<<( stringstream& out , const std::map<std::string , T >& obj) {
         
         typedef typename std::map<std::string , T >::const_iterator iterator;
         iterator it = obj.begin();
@@ -51,7 +51,7 @@ namespace impact
     }
     
     template<class T> inline
-    std::ostream& operator<<( std::ostream& out , const std::map<string, vector<T> >& obj) {
+    std::ostream& operator<<( stringstream& out , const std::map<string, vector<T> >& obj) {
         
         typedef typename std::map<vector<int> , T >::const_iterator iterator;
         iterator it = obj.begin();
@@ -67,7 +67,7 @@ namespace impact
     }
     
     template<class T> inline
-    std::ostream& operator<<( std::ostream& out , const std::map<vector<int> , T >& obj) {
+    std::ostream& operator<<( stringstream& out , const std::map<vector<int> , T >& obj) {
         
         typedef typename std::map<vector<int> , T >::const_iterator iterator;
         iterator it = obj.begin();
@@ -83,7 +83,7 @@ namespace impact
     }
     
     template<class T> inline
-    std::ostream& operator<<( std::ostream& out , const std::vector<std::vector< T > >& obj) {
+    std::ostream& operator<<( stringstream& out , const std::vector<std::vector< T > >& obj) {
         
         typedef typename std::vector<std::vector< T > >::const_iterator iterator;
         iterator it = obj.begin();
@@ -99,7 +99,7 @@ namespace impact
     }
     
     template<class T> inline
-    std::ostream& operator<<( std::ostream& out , const std::vector<T>& obj) {
+    std::ostream& operator<<( stringstream& out , const std::vector<T>& obj) {
         
         typedef typename  std::vector<T>::const_iterator iterator;
         iterator it = obj.begin();
@@ -108,7 +108,7 @@ namespace impact
     }
     
     
-    void registerAttributesInPython();
+    void registerAttributeTypesInPython();
     
     //-------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------
@@ -181,7 +181,7 @@ namespace impact
         }
         
         std::string get() const{ std::stringstream out;
-            out<<*Variable;
+            //out<<*Variable;
             return out.str();
         };
         
@@ -323,13 +323,11 @@ namespace impact
         
     private:
         
-        virtual void push_back(boost::shared_ptr<msTreeMapper> elem){ cout<<"msChildrenBase"<<endl;
-        }
-        virtual void insert(size_t i,boost::shared_ptr<msTreeMapper> elem){ cout<<"msChildrenBase"<<endl;
-        }
+        virtual void push_back(boost::shared_ptr<msTreeMapper> elem){}
+        
+        virtual void insert(size_t i,boost::shared_ptr<msTreeMapper> elem){}
+        
         virtual void set(size_t i, boost::shared_ptr<msTreeMapper> elem ){}
-        
-        
         
     };
     
@@ -385,11 +383,11 @@ namespace impact
         
         
         iterator find(boost::shared_ptr<T> ptr) {
-            return Elements.find(ptr);
+            return std::find(Elements.begin(),Elements.end(),ptr);
         }
         
         const_iterator find(boost::shared_ptr<T> ptr) const {
-            return Elements.find(ptr);
+            return std::find(Elements.begin(),Elements.end(),ptr);
         }
         
         msChild<T> operator[] (int i) const {return Elements[i];}

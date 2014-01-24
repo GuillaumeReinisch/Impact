@@ -21,7 +21,7 @@
 #ifndef MSREGISTRATORS_H
 #define MSREGISTRATORS_H
 
-#include "config.h"
+#include "impact_config.h"
 
 #if defined(__ICC) || defined(__INTEL_COMPILER)
 #pragma warning disable 2536
@@ -80,43 +80,6 @@ namespace impact
 #if USE_PYTHON
     inline boost::python::object pass_through(boost::python::object const& o) { return o; }
     
-    /*
-    template< class T>
-    class msVector : public std::vector<T>
-    {
-    public:
-        
-        
-        msVector() : std::vector<T>() {}
-        
-        msVector ( typename std::vector<T>::iterator first, typename std::vector<T>::iterator last ) :
-        std::vector<T>(first,last){}
-        
-        static void registryInPython(std::string name, std::string description){
-            
-            using namespace boost::python;
-            
-            class_< msVector<T>, boost::shared_ptr<msVector<T> > >(
-                                                                   name.c_str(),description.c_str(),init<>())
-           // .def(vector_indexing_suite< msVector<T> >() )
-            .def("push_back",&msVector<T>::push_back)
-            .def("__iter__",boost::python::iterator< msVector<T> >() )
-            .def("set", &msVector<T>::set )
-            .def("get", &msVector<T>::set );
-            
-        }
-        void set(size_t i, T value ) { (*this)[i]=value;
-        }
-        void get( size_t i ) { return (*this)[i];
-        }
-        
-        bool operator==( msVector<T> rhs){return (*this).vectorT::operator==(rhs);
-        }
-    };*/
-    
-    //-------------------------------------------------------------------------------
-    //-------------------------------------------------------------------------------
-    
      
     //-------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------
@@ -130,10 +93,18 @@ namespace impact
                                                      description.c_str(),
                                                      init<>())
 	.def( vector_indexing_suite<std::vector<boost::shared_ptr<T> > >() )
-        .def("push_back",&std::vector<boost::shared_ptr<T> >::push_back)
         .def("__iter__",boost::python::iterator< std::vector<boost::shared_ptr<T> > >() );;
     }
-    
+  
+    template<class T> inline
+    void registerMapStringKey(std::string name){
+       
+        using namespace boost::python; 
+       
+	class_< std::map<std::string,boost::shared_ptr<T> > >(std::string("msMap_string_"+name).c_str(),
+							      std::string("a map string->"+name).c_str(), init<>())
+            .def(map_indexing_suite< std::map<std::string, boost::shared_ptr<T> > >() );
+    }  
     //-------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------
     

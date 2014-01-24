@@ -92,13 +92,12 @@ namespace impact
             .def("getMessages", &msLogElement::getMessages,
                  "return the messages");
             
-            class_< std::vector<boost::shared_ptr<msLogElement> > >(
-                                                                    "VectorOfLogElement",
-                                                                    "This object stores a vector of logger element",
-                                                                    init<>())
-            .def("push_back",&std::vector<boost::shared_ptr<msLogElement> >::push_back)
+	    class_< std::vector<boost::shared_ptr<msLogElement> > >("VectorOfLogElement",
+                                                     "This object stores a vector of logger element",
+                                                     init<>())
+	    .def( vector_indexing_suite<std::vector<boost::shared_ptr<msLogElement> > >() )
             .def("__iter__",boost::python::iterator< std::vector<boost::shared_ptr<msLogElement> > >() );
-            
+	    
             msLogElement::isLogElementRegisteredInPython=1;
         }
 #endif    

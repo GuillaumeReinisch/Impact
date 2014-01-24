@@ -57,7 +57,7 @@ namespace impact
             
             msTracker::isTrackerRegisteredInPython=1;
             
-            registerVector<msTracker>("VectorOfTracker","This object stores a vector of object deriving from msTracker");
+           // registerVector<msTracker>("VectorOfTracker","This object stores a vector of object deriving from msTracker");
             
         }
 #endif

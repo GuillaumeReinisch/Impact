@@ -100,12 +100,8 @@ namespace impact{
             .def("getParameters", &msParamsManager::getParameters,
                  "return the parameters in a vector")
             ;
-            class_< std::vector<boost::shared_ptr<msParam> > >(
-                                                               "VectorOfParameters",
-                                                               "This object stores a vector of object deriving from msParam",
-                                                               init<>())
-            .def("push_back",&std::vector<boost::shared_ptr<msParam> >::push_back)
-            .def("__iter__",boost::python::iterator< std::vector<boost::shared_ptr<msParam> > >() );
+            
+	    
             msParamsManager::isParamsManagerRegisteredInPython= 1 ;
         }
 #endif

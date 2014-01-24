@@ -115,16 +115,13 @@ namespace impact
             msVector< double >::registryInPython("msVector_double","a vector of double");*/
             
             class_< std::vector<std::string>, boost::shared_ptr< std::vector<std::string> > >("msVector_string","a vector of string",init<>())
-            .def(vector_indexing_suite<std::vector<std::string> >() )
-            .def("push_back",&std::vector<std::string>::push_back);
+            .def(vector_indexing_suite<std::vector<std::string> >() );
             
             class_<std::vector<double>, boost::shared_ptr<std::vector<double> > >("msVector_double","a vector of double",init<>())
-            .def(vector_indexing_suite<std::vector<double> >() )
-            .def("push_back",&std::vector<double>::push_back);
+            .def(vector_indexing_suite<std::vector<double> >() );
             
             class_<std::vector<int>, boost::shared_ptr<std::vector<int> > >("msVector_int","a vector of integers",init<>())
-            .def(vector_indexing_suite<std::vector<int> >() )
-            .def("push_back",&std::vector<int>::push_back);
+            .def(vector_indexing_suite<std::vector<int> >() );
             
 	    class_<std::map<std::string,double>, boost::shared_ptr< std::map<std::string,double> > >("msMap_string_double","a map string double")
             .def(map_indexing_suite< std::map<std::string,double> >() );
