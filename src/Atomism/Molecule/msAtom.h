@@ -34,6 +34,10 @@ namespace impact {
     namespace atomism {
         
         std::string getAtomName(int atomicNumb);
+	
+	class msAtom;
+	void getListAtomsFromName(string name,vector<boost::shared_ptr<msAtom> >& result);
+	
         using namespace std;
         
         /*! \class msAtom
@@ -368,7 +372,7 @@ namespace impact {
             static msRegister* createInstance() { return new msNatom; }
             void registryInPython();
             
-            msNatom() : msAtom(7,14.007,112.9957, 0.7525,0.71,-1,-1,"50 0 255") {constructVar("msNatom","Natom","nitrogen");};
+            msNatom() : msAtom(7,18.9984032,112.9957, 0.7525,0.71,-1,-1,"50 0 255") {constructVar("msNatom","Natom","nitrogen");};
         public:
             static boost::shared_ptr<msNatom>  New() {
                 
@@ -387,7 +391,135 @@ namespace impact {
         
         //-----------------------------------------------------------------------------
         //-----------------------------------------------------------------------------
+       
+        /*! \class msFatom
+         * \brief definition of the fluor atom
+         */
+        class msFatom : public msAtom
+        {
+        protected:
+            static bool isFatomRegisteredInPython;
+            static msRegistrar Registrar;
+            static msRegister* createInstance() { return new msFatom; }
+            void registryInPython();
+            
+            msFatom() : msAtom(9,14.007,18.87, 0.75,0.57,-1,-1,"178 255 255") {constructVar("msFatom","Fatom","fluor");};
+	    
+        public:
+            static boost::shared_ptr<msFatom>  New() {
+                
+                boost::shared_ptr<msFatom> T( new msFatom );LOGGER_ENTER_FUNCTION_DBG("msFatom::New()",T->getFullId());
+                T->initialize(); T->update();
+                LOGGER_EXIT_FUNCTION();
+                return T;}
+            
+            virtual boost::shared_ptr<msTreeMapper> clone() {
+                boost::shared_ptr<msFatom> clone = New();
+                clone->msTreeMapper::operator=(*this);
+                return clone;
+            }
+            string getName() const {return "F";}
+        };
         
+        //-----------------------------------------------------------------------------
+        //-----------------------------------------------------------------------------
+        
+        /*! \class msHEatom
+         * \brief definition of the helium atom
+         */
+        class msHEatom : public msAtom
+        {
+        protected:
+            static bool isHEatomRegisteredInPython;
+            static msRegistrar Registrar;
+            static msRegister* createInstance() { return new msHEatom; }
+            void registryInPython();
+            
+            msHEatom() : msAtom(2,4.002603254,0, 0.7,0.37,-1,-1,"216 255 255") {constructVar("msHEatom","HEatom","helium");};
+	    
+        public:
+            static boost::shared_ptr<msHEatom>  New() {
+                
+                boost::shared_ptr<msHEatom> T( new msHEatom );LOGGER_ENTER_FUNCTION_DBG("msHEatom::New()",T->getFullId());
+                T->initialize(); T->update();
+                LOGGER_EXIT_FUNCTION();
+                return T;}
+            
+            virtual boost::shared_ptr<msTreeMapper> clone() {
+                boost::shared_ptr<msHEatom> clone = New();
+                clone->msTreeMapper::operator=(*this);
+                return clone;
+            }
+            string getName() const {return "He";}
+        };
+        
+        //-----------------------------------------------------------------------------
+        //-----------------------------------------------------------------------------
+        
+        /*! \class msPatom
+         * \brief definition of the phosphore atom
+         */
+        class msPatom : public msAtom
+        {
+        protected:
+            static bool isPatomRegisteredInPython;
+            static msRegistrar Registrar;
+            static msRegister* createInstance() { return new msPatom; }
+            void registryInPython();
+            
+            msPatom() : msAtom(15,30.97376163,75.25, 1.,0.55,-1,-1,"255 177.5 255") {constructVar("msPatom","Patom","phosphore");};
+	    
+        public:
+            static boost::shared_ptr<msPatom>  New() {
+                
+                boost::shared_ptr<msPatom> T( new msPatom );LOGGER_ENTER_FUNCTION_DBG("msPatom::New()",T->getFullId());
+                T->initialize(); T->update();
+                LOGGER_EXIT_FUNCTION();
+                return T;}
+            
+            virtual boost::shared_ptr<msTreeMapper> clone() {
+                boost::shared_ptr<msPatom> clone = New();
+                clone->msTreeMapper::operator=(*this);
+                return clone;
+            }
+            string getName() const {return "P";}
+        };
+	
+        //-----------------------------------------------------------------------------
+        //-----------------------------------------------------------------------------
+        
+        /*! \class msNEatom
+         * \brief definition of the neon atom
+         */
+        class msNEatom : public msAtom
+        {
+        protected:
+            static bool isNEatomRegisteredInPython;
+            static msRegistrar Registrar;
+            static msRegister* createInstance() { return new msNEatom; }
+            void registryInPython();
+            
+            msNEatom() : msAtom(10,19.99244018,0, 0.77,0.35,-1,-1,"178 226. 244.") {constructVar("msNEatom","NEatom","neon");};
+	    
+        public:
+            static boost::shared_ptr<msNEatom>  New() {
+                
+                boost::shared_ptr<msNEatom> T( new msNEatom );LOGGER_ENTER_FUNCTION_DBG("msNEatom::New()",T->getFullId());
+                T->initialize(); T->update();
+                LOGGER_EXIT_FUNCTION();
+                return T;}
+            
+            virtual boost::shared_ptr<msTreeMapper> clone() {
+                boost::shared_ptr<msNEatom> clone = New();
+                clone->msTreeMapper::operator=(*this);
+                return clone;
+            }
+            string getName() const {return "Ne";}
+        };
+	
+        //-----------------------------------------------------------------------------
+        //-----------------------------------------------------------------------------
+               
         /*! \class msXatom
          * \brief definition of the ghost atom
          */

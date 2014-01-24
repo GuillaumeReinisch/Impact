@@ -44,12 +44,16 @@ namespace impact {
             switch(atomicNumb)
             {
                 case 1: return "H";break;
+                case 2: return "He";break;
                 case 5: return "B";break;
                 case 6: return "C";break;
                 case 8: return "O";break;
+                case 10: return "Ne";break;
                 case 14: return "Si";break;
+		case 15: return "P";break;
                 case 17: return "Cl";break;
                 case 7: return "N";break;
+                case 9: return "F";break;
             }
             return "X";
         }
@@ -60,13 +64,17 @@ namespace impact {
             boost::shared_ptr<msAtom> at;
             
             if( type=="H"  )  	at = boost::static_pointer_cast<msAtom>( msHatom::New() );
+	    if( type=="He"  )  	at = boost::static_pointer_cast<msAtom>( msHEatom::New() );
             if( type=="C"  )  	at = boost::static_pointer_cast<msAtom>( msCatom::New() );
             if( type=="B"  )  	at = boost::static_pointer_cast<msAtom>( msBatom::New() );
             if( type=="Cl" ) 	at = boost::static_pointer_cast<msAtom>( msCLatom::New() );
             if( type=="X"  )  	at = boost::static_pointer_cast<msAtom>( msXatom::New() );
             if( type=="O"  )  	at = boost::static_pointer_cast<msAtom>( msOatom::New() );
+	    if( type=="Ne"  )  	at = boost::static_pointer_cast<msAtom>( msNEatom::New() );
             if( type=="Si" ) 	at = boost::static_pointer_cast<msAtom>( msSIatom::New() );
-            if( type=="N"  )  	at = boost::static_pointer_cast<msAtom>( msNatom::New() );
+            if( type=="P" ) 	at = boost::static_pointer_cast<msAtom>( msPatom::New() );
+            if( type=="N"  )  	at = boost::static_pointer_cast<msAtom>( msNatom::New() );	    
+            if( type=="F"  )  	at = boost::static_pointer_cast<msAtom>( msFatom::New() );
             if( type=="Ar")  	at = msARatom::New();
             if( type=="AR")  	at = msARatom::New();
             
@@ -80,6 +88,47 @@ namespace impact {
         }
         
         
+        void getListAtomsFromName(string name,vector<boost::shared_ptr<msAtom> >& result){
+	  
+	     int i=0;
+             while (name[i]) {
+	       
+                 char c = name[i];
+                 if ( isupper(c) ) { //new atom
+		   
+		    string type = name.substr(i,1);
+		    i++;
+		    c = name[i];
+		    while (islower(c)) {
+		      
+		        type += name.substr(i,1);
+		        i++;
+		        c = name[i];
+		    } //end of name : c = Upper-> new atom or c=number ->get it
+		    int n=1;
+		    string count;
+		    
+		    if( isdigit(c) ) {
+		        
+		        count += c;
+			i++;
+		        c = name[i];
+		        while (isdigit(c)) {
+		      
+		            count += c;
+		            i++;
+		            c = name[i];
+		        }
+		        n = atoi(count.c_str());
+		    }
+		    for( size_t j=0;j<n;j++) result.push_back( NewAtom(type) ); 
+		 }
+                 else{ i++; }
+             }
+	     
+	}
+	
+	
         bool msAtom::isAtomRegisteredInPython=0;
         msRegistrar msAtom::Registrar("msAtom", msAtom::createInstance);
         
@@ -308,6 +357,106 @@ namespace impact {
                 .def( "New", &msNatom::New , "Create a new object.")
                 .staticmethod("New");
                 msNatom::isNatomRegisteredInPython=1;
+            }
+#endif
+            
+        }
+        
+        //---------------------------------------------------------------
+        //---------------------------------------------------------------
+        
+        bool msFatom::isFatomRegisteredInPython = 0;
+        msRegistrar msFatom::Registrar("msFatom", msFatom::createInstance);
+        
+        void msFatom::registryInPython(){
+            
+#if USE_PYTHON
+            msAtom::registryInPython();
+            if( ! msFatom::isFatomRegisteredInPython ){
+                
+                using namespace boost::python;
+                
+                class_<msFatom,bases<msAtom>,boost::shared_ptr<msFatom> >
+                ("msFatom",
+                 "fluor atom",no_init)
+                .def( "New", &msFatom::New , "Create a new object.")
+                .staticmethod("New");
+                msFatom::isFatomRegisteredInPython=1;
+            }
+#endif
+            
+        }
+        
+        //---------------------------------------------------------------
+        //---------------------------------------------------------------
+        
+        bool msPatom::isPatomRegisteredInPython = 0;
+        msRegistrar msPatom::Registrar("msPatom", msPatom::createInstance);
+        
+        void msPatom::registryInPython(){
+            
+#if USE_PYTHON
+            msAtom::registryInPython();
+            if( ! msPatom::isPatomRegisteredInPython ){
+                
+                using namespace boost::python;
+                
+                class_<msPatom,bases<msAtom>,boost::shared_ptr<msPatom> >
+                ("msPatom",
+                 "helium atom",no_init)
+                .def( "New", &msPatom::New , "Create a new object.")
+                .staticmethod("New");
+                msPatom::isPatomRegisteredInPython=1;
+            }
+#endif
+            
+        }
+                
+        //---------------------------------------------------------------
+        //---------------------------------------------------------------
+        
+        bool msHEatom::isHEatomRegisteredInPython = 0;
+        msRegistrar msHEatom::Registrar("msHEatom", msHEatom::createInstance);
+        
+        void msHEatom::registryInPython(){
+            
+#if USE_PYTHON
+            msAtom::registryInPython();
+            if( ! msHEatom::isHEatomRegisteredInPython ){
+                
+                using namespace boost::python;
+                
+                class_<msHEatom,bases<msAtom>,boost::shared_ptr<msHEatom> >
+                ("msHEatom",
+                 "helium atom",no_init)
+                .def( "New", &msHEatom::New , "Create a new object.")
+                .staticmethod("New");
+                msHEatom::isHEatomRegisteredInPython=1;
+            }
+#endif
+            
+        }
+                
+        //---------------------------------------------------------------
+        //---------------------------------------------------------------
+        
+        bool msNEatom::isNEatomRegisteredInPython = 0;
+        msRegistrar msNEatom::Registrar("msNEatom", msNEatom::createInstance);
+        
+        void msNEatom::registryInPython(){
+            
+#if USE_PYTHON
+            msAtom::registryInPython();
+            if( ! msNEatom::isNEatomRegisteredInPython ){
+                
+                using namespace boost::python;
+                
+                class_<msNEatom,bases<msAtom>,boost::shared_ptr<msNEatom> >
+                ("msNEatom",
+                 "helium atom",no_init)
+                .def( "New", &msNEatom::New , "Create a new object.")
+                .staticmethod("New");
+                msNEatom::isNEatomRegisteredInPython=1;
             }
 #endif
             
