@@ -31,6 +31,7 @@
 #include <msTreeMapper.h>
 #include <msParamsManager.h>
 #include <msUnitsManager.h>
+#include <boost/graph/graph_concepts.hpp>
 
 namespace impact{
     
@@ -211,7 +212,56 @@ namespace impact{
         static bool  isInterfaceRegisteredInPython;
         static msRegister* createInstance() { return new msPhysicalInterface; }
         //@}
-        
+    public:
+      
+        class msPhysicalVariable {
+	  
+	   friend class msPhysicalInterface;
+	   
+	public:
+	     msPhysicalVariable(string id,double* value,const msUnit& unit){ 
+	        
+	        Name=id; Value=value; Unit.set(unit.getStr()); 
+	        cout<<"msPhysicalVariable: "<<Name<<" "<<*Value<<" "<<Unit.getStr()<<endl;
+	    }
+	     
+	     string getName(){return Name;}
+	     double getValue(){return *Value;}
+	     msUnit getUnit(){return Unit;}
+	     
+	     static void registryInPython() { 
+	       
+#if USE_PYTHON
+             using namespace boost::python;
+             class_<msPhysicalVariable,boost::shared_ptr<msPhysicalVariable> >
+                  ("msPhysicalVariable",
+             "Defines a physical variable: union of value, id and unit ",
+             no_init)
+            .def( "getUnit", &msPhysicalVariable::getUnit ,
+                 "return the unit." )
+            .def( "getValue",&msPhysicalVariable::getValue ,
+                 "return the value." )
+            .def( "getName", &msPhysicalVariable::getName  ,
+                 "return the name" );
+	    
+	    registerVector<msPhysicalVariable>("Vector_msPhysicalVariable","Vector of object deriving from msPhysicalVariable");
+	    registerMapStringKey<msPhysicalVariable>("msPhysicalVariable");
+#endif 
+            }   
+             
+	private:
+	  
+	     void reset(msUnitsManager& New){ 
+	       
+	       (*Value) *= New.convert(Unit, 1 );
+               Unit.reset(New);
+	       cout<<"reset physical variable "<<Name<<" "<<*Value<<" "<<Unit.getStr()<<endl;
+	     }
+	     string Name;
+	     double* Value;
+	     msUnit Unit;
+	};
+	
     protected:
         
         void registryInPython();
@@ -235,8 +285,7 @@ namespace impact{
         
         void initialize() {
             
-	        msTreeMapper::initialize();
-	        msTreeMapper::declareAttribute(Comments, "Comments");
+	    msTreeMapper::initialize();
             msTreeMapper::declareChild<msUnitsManager>(   Units, msUnitsManager::New(), "Units");
             msTreeMapper::declareChild<msParamsManager>( Parameters, msParamsManager::New(), "Parameters");
         }
@@ -276,7 +325,12 @@ namespace impact{
         //! set the children physical objects to the units system msPhysicalInterface::getUnits()
         boost::shared_ptr<msTreeMapper> homogenizeUnits();
         
-        
+	/*! \brief return the physical variables 
+	 * 
+	 * This is for python as 
+	 */ 
+        vector<boost::shared_ptr<msPhysicalVariable> > getPhysicalVariables() const;
+	
         const msUnitsManager& getUnits_const() const { return *Units; }
         
         
@@ -290,8 +344,9 @@ namespace impact{
          * the derived msTreeMapper::initialize() method.
          * \param unit unit of the data at the time it is declared
          * \param ptr pointer to the value of the variable
+	 * \param id id 
          */
-        void declarePhysicalVariable(const msUnit& unit,double* ptr);
+        void declarePhysicalVariable(const msUnit& unit,double* ptr,string id="");
         
         void clearPhysicalVariables(){PtrOnPhysicalVariables.clear();}
         
@@ -313,13 +368,13 @@ namespace impact{
         
     private:
         
-        std::string Comments;
-        
         msChild<msUnitsManager> Units;		//!< Units used by the class
         
         msChild<msParamsManager> Parameters;	//!< Parameters used by the class
         
         map< double* , msUnit > PtrOnPhysicalVariables;
+	
+	map<string,boost::shared_ptr<msPhysicalVariable> > PhysicalVariables;
         
     };
     

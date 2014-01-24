@@ -74,6 +74,8 @@ namespace impact{
                  "set a parameter. arg2: key; arg3: value" )
             .def( "homogenizeUnits", &msPhysicalInterface::homogenizeUnits  ,
                  "set the units system of the physical objects children to the units system getUnits()." )
+	    .def( "getPhysicalVariables", &msPhysicalInterface::getPhysicalVariables  ,
+                 "return the physical variables." )
             .def(self_ns::str(self_ns::self));
             
             boost::python::scope().attr("pi") = csts::pi;
@@ -82,8 +84,11 @@ namespace impact{
             boost::python::scope().attr("h") = csts::h;
             boost::python::scope().attr("R") = csts::R;
             boost::python::scope().attr("Nav") = csts::Nav;
-            
+	    
+            msPhysicalInterface::msPhysicalVariable::registryInPython();
+	    
             msPhysicalInterface::isInterfaceRegisteredInPython=1;
+	    finalizeDeclarationForPython<msPhysicalInterface>("msPhysicalInterface");
         }
 #endif
     }
@@ -101,7 +106,6 @@ namespace impact{
             Parameters->addObjectUsingMe( boost::static_pointer_cast<msPhysicalInterface>( mySharedPtr() ) );
             Parameters->setAffiliation(mySharedPtr());
             updateParameters();
-	    cout<<Parameters->getType()<<endl;
         }
         catch(msError& e){
             
@@ -135,13 +139,16 @@ namespace impact{
     
     void msPhysicalInterface::setUnits(boost::shared_ptr<msUnitsManager> units){
         
+        LOGGER_ENTER_FUNCTION_DBG("void msPhysicalInterface::setUnits(boost::shared_ptr<msUnitsManager> units)", getFullId());
         msUnitsManager old;
         old.set( Units->getExpression() );
         
         msTreeMapper::update<msUnitsManager>( Units , units);
         units->addObjectUsingMe( boost::static_pointer_cast<msPhysicalInterface>( mySharedPtr() ) );
-        
+	LOGGER_WRITE(msLogger::DEBUG, "Number of objects using the units: " + output::getString<size_t>(getUnits()->LinkedObjects.size()));
         updateUnits(old,*units);
+	
+	LOGGER_EXIT_FUNCTION2("void msPhysicalInterface::setUnits(boost::shared_ptr<msUnitsManager> units)");        
     }
     
     //-------------------------------------------------------------------------------
@@ -151,14 +158,17 @@ namespace impact{
         
         LOGGER_ENTER_FUNCTION_DBG("void msPhysicalInterface::updateUnits(msUnitsManager& Old,msUnitsManager& New)", getFullId());
         LOGGER_WRITE(msLogger::DEBUG, "update the value of the physical variables declared")
-        
+        /*
         map< double* , msUnit >::iterator it = PtrOnPhysicalVariables.begin();
         
         for(;it!=PtrOnPhysicalVariables.end();++it){
             
             *((*it).first) *= New.convert( (*it).second, 1 );
             (*it).second.reset(New);
-        }
+        }*/
+        map< string, boost::shared_ptr<msPhysicalVariable> >::iterator it = PhysicalVariables.begin();
+        
+        for(;it!=PhysicalVariables.end();++it)  (*it).second->reset( New );
         
         LOGGER_EXIT_FUNCTION2("void msPhysicalInterface::updateUnits(msUnitsManager& Old,msUnitsManager& New)");
     }
@@ -166,11 +176,35 @@ namespace impact{
     //-------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------
     
-    void msPhysicalInterface::declarePhysicalVariable(const msUnit& unit,double* ptr) {
+    void msPhysicalInterface::declarePhysicalVariable(const msUnit& unit,double* ptr,string id) {
         
-        PtrOnPhysicalVariables[ptr] =  unit;
+        LOGGER_ENTER_FUNCTION_DBG("void msPhysicalInterface::declarePhysicalVariable(const msUnit& unit,double* ptr,string id)", getFullId());
+	 
+        if(id=="") id = "var_"+output::getString<size_t>(PhysicalVariables.size());
+      
+	cout<<getId()<<": declare physical variable "<<id<<" "<<*ptr<<" "<<unit.getStr()<<endl;
+	
+        PhysicalVariables[id] = boost::shared_ptr<msPhysicalVariable>(new msPhysicalVariable(id,ptr,unit));
+	LOGGER_EXIT_FUNCTION2("void msPhysicalInterface::declarePhysicalVariable(const msUnit& unit,double* ptr,string id)");
+       //PtrOnPhysicalVariables[ptr] =  unit;
     }
     
+    //-------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------
+        
+    vector<boost::shared_ptr<msPhysicalInterface::msPhysicalVariable> > msPhysicalInterface::getPhysicalVariables() const {
+      
+        vector<boost::shared_ptr<msPhysicalVariable> > vec;
+	
+	map< string, boost::shared_ptr<msPhysicalVariable> >::const_iterator it = PhysicalVariables.begin();
+        
+        for(;it!=PhysicalVariables.end();++it)  {
+	  
+	    vec.push_back((*it).second);
+	    cout<<(*it).second->getName()<<" "<<(*it).second->getValue()<<endl;
+	}
+        return vec;
+    }
     //-------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------
     
