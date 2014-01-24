@@ -18,15 +18,18 @@ class msAtomWidget(msWidget):
     def __init__(self, data, mainwindow):
         super(msAtomWidget, self).__init__(data,mainwindow)
         
-        doc = minidom.parse("elements_ODB.xml")
+        file = mainwindow.config["CMAKE_INSTALL_PREFIX"]+"/databases/BlueObeliskDatabase/elements_BOD.xml"
+        doc = minidom.parse(file)
+            
         root = doc.documentElement
+            
         self.vbox.addWidget(QtGui.QLabel(data.getName()))
             
         dict={}
 
         listElements = root.getElementsByTagName('atom')
         for element in listElements:
-            if element.getAttribute('id') == data.getName():
+            if element.getAttribute('id').lower() == data.getName().lower():
                 for current in element.getElementsByTagName('scalar'):
                     id = current.getAttribute('dictRef')
                     v  = current.childNodes[0].nodeValue
@@ -40,6 +43,6 @@ class msAtomWidget(msWidget):
             i = i+1
         self.vbox.addLayout(gridBox)
         
-        self.groupbox.setTitle("Atom (unit consistency not implemented yet below))")
-        self.setMinimumSize(550,300 )
-        self.setMaximumSize(550,300 )
+        self.groupbox.setTitle("Atom (units of the blue obelisk database used)")
+        self.setMinimumSize(550,400 )
+        self.setMaximumSize(550,400 )
