@@ -19,12 +19,13 @@
 
 
 #include "msReaction.h"
+#include <boost/graph/graph_concepts.hpp>
 
 namespace impact {
     
     namespace antioch {
         
-        
+      
         bool msReaction::isReactionRegisteredInPython = 0;
         msRegistrar msReaction::Registrar("msReaction", msReaction::createInstance);
         
@@ -48,112 +49,154 @@ namespace impact {
                  )
                 .def( "New", &msReaction::New ,
                      "Create a new object.")
-                .staticmethod("New");/*
-                .def("getCoefficients",&msReaction::getCoefficients,
-                     "return the coefficients value")
-                .def("getCoefficientsName",&msReaction::getCoefficientsName,
-                     "return the name of the coefficients")
-                .def("getCoefficient",&msReaction::getCoefficient,
-                     "return the value of a coefficient. arg2: name of the coefficient")
-                .def("setCoefficient",&msReaction::setCoefficient,
-                     "set the value of a coefficient. arg2: name of the coefficient");*/
+                .staticmethod("New")
+                .def("computeForwardRateCoefficient",&msReaction::computeForwardRateCoefficient,
+                     "return the forward rate coefficient")
+                .def("computeRateOfProgress",&msReaction::computeRateOfProgress,
+                     "return the rate of progress")
+		.def("getChemicalMixture",&msReaction::getChemicalMixture,
+		     "return the chemical mixture")
+		.def("setChemicalMixture",&msReaction::setChemicalMixture,
+		     "set the chemical mixture. arg2: chemical mixture")
+		.def("addReactant",&msReaction::addReactant,
+		     "add a reactant to the reacton. arg2: reactant; arg3: stoechiometry")
+		.def("addProduct",&msReaction::addProduct,
+		     "add a product to the reacton. arg2: product; arg3: stoechiometry")
+		.def("getForwardRates",&msReaction::getForwardRates,
+		     "return the forward rates.")
+		.def("addForwardRate",&msReaction::addForwardRate,
+		     "add a forward rate expression to the manager. arg2: rate")
+		.def("setReversibility",&msReaction::setReversibility,
+		     "set the reversibility of the reaction. arg2: reversibility")
+		.def("setReactantStoechiometry",&msReaction::setReactantStoechiometry,
+		     "set the the stoechiometry of a reactant. arg2: index of the reactant; arg3: coeff")
+		.def("setProductStoechiometry",&msReaction::setProductStoechiometry,
+		     "set the the stoechiometry of a product. arg2: index of the product; arg3: coeff")
+		.def("getReactants",&msReaction::getReactants,
+		     "return the reactants.")
+		.def("getProducts",&msReaction::getProducts,
+		     "return the products.")
+		.def("getStoechiometryReactants",&msReaction::getStoechiometryReactants,
+		     "return stoechiometry of the reactants.")
+		.def("getStoechiometryProducts",&msReaction::getStoechiometryProducts,
+		     "return stoechiometry of the products.")
+		.def("getReversibility",&msReaction::getReversibility,
+		     "return true if the reaction is reversible.")
+		.def("getUnitForwardRateCoefficient",&msReaction::getUnitForwardRateCoefficient,
+		     "return the unit of the forward rate coefficient");
                 
+		msTreeMapper::finalizeDeclarationForPython<msReaction>("msReaction");
                 msReaction::isReactionRegisteredInPython = 1;
-            }
+                }
 #endif
-        }
+	}
+	
+        //-----------------------------------------------------------------------------
+        //-----------------------------------------------------------------------------
+         	
+        bool msReaction::sanityCheck() {
+	   
+	    stringstream errors;
+	    
+	    if( Reactants.size() == 0 ) errors<<" - No reactants defined"<<endl;
+	    
+	    if( Products.size() == 0 )  errors<<" - No products defined"<<endl;	 
+	    
+	    if( find_if(StoechiometryReactants.begin(),StoechiometryReactants.end(),
+	        [](double const& item) { return item<=0;}) != StoechiometryReactants.end() 
+	      )
+	        errors<<" - A reactant stoechiometry coefficient is null or negative"<<endl;
+	    
+	    if( find_if(StoechiometryProducts.begin(),StoechiometryProducts.end(), 
+	        [](double const& item) { return item<=0;}) != StoechiometryProducts.end()  
+	      )
+	        errors<<" - A product stoechiometry coefficient is null or negative"<<endl;
+	    
+	    if( ForwardRates.size() == 0 ) errors<<" - No forward rates defined "<<endl;
+	      
+	    if( errors.str() != "") 
+	        BOOST_THROW_EXCEPTION(msError(errors.str(),"bool msReaction::sanityCheck()",getFullId()));
+	}
+
+        //-----------------------------------------------------------------------------
+        //-----------------------------------------------------------------------------
+         		    
+        template<>
+        bool msReactionDerived<Antioch::ElementaryReaction<double> >::isReactionDerivedRegisteredInPython = 0;
+	template<>
+        msRegistrar msReactionDerived<Antioch::ElementaryReaction<double> >::Registrar(
+	    "msElementaryReaction", 
+	     msReactionDerived<Antioch::ElementaryReaction<double> >::createInstance);
+	
+        template<>
+        string msReactionDerived<Antioch::ElementaryReaction<double> >::doc = "Elementary reaction";
+        template<>
+        string msReactionDerived<Antioch::ElementaryReaction<double> >::nameType = "msElementaryReaction";      
         
+        //-----------------------------------------------------------------------------
+        //-----------------------------------------------------------------------------
+	
+        template<>
+        bool msReactionDerived<Antioch::DuplicateReaction<double> >::isReactionDerivedRegisteredInPython = 0;
+	
+	template<>
+        msRegistrar msReactionDerived<Antioch::DuplicateReaction<double> >::Registrar(
+	    "msDuplicateReaction", 
+	     msReactionDerived<Antioch::DuplicateReaction<double> >::createInstance);
+	
+        template<>
+        string msReactionDerived<Antioch::DuplicateReaction<double> >::doc = "DuplicateReaction";
+        template<>
+        string msReactionDerived<Antioch::DuplicateReaction<double> >::nameType = "msDuplicateReaction";      
+              
         //-------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------
-        /*
-        boost::shared_ptr<msTreeMapper> msReaction::addCoefficient(std::string name, double& value, double coefConversion,msUnit::uTypeVar u){
-            
-            Coefficients[name] = value * coefConversion;
-            ptrOnCoefficientsInCalculator.push_back(&value);
-            msUnit unit;
-            unit.set( u, *(getUnits()) );
-            declarePhysicalVariable( unit , &(Coefficients[name]) );
-            return mySharedPtr();
-        }
-        */
+	
+	template<>
+        bool msReactionDerived<Antioch::ThreeBodyReaction<double> >::isReactionDerivedRegisteredInPython = 0;
+	
+	template<>
+        msRegistrar msReactionDerived<Antioch::ThreeBodyReaction<double> >::Registrar(
+	    "msThreeBodyReaction", 
+	     msReactionDerived<Antioch::ThreeBodyReaction<double> >::createInstance);
+	
+	template<>
+        string msReactionDerived<Antioch::ThreeBodyReaction<double> >::doc = "ThreeBodyReaction";
+        template<>
+        string msReactionDerived<Antioch::ThreeBodyReaction<double> >::nameType = "msThreeBodyReaction";   
+	
         //-------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------
-        /*
-        std::vector<double> msReaction::getCoefficients() const {
-            
-            std::vector<double> coefs;
-            
-            for(map<std::string,double>::const_iterator it=Coefficients.begin();
-                it!=Coefficients.end();
-                ++it)
-                coefs.push_back((*it).second);
-            
-            return coefs;
-        }
+	
+	template<>
+        bool msReactionDerived< Antioch::FalloffReaction<double,Antioch::LindemannFalloff<double> > >::isReactionDerivedRegisteredInPython = 0;
+	template<>
+        msRegistrar msReactionDerived<Antioch::FalloffReaction<double,Antioch::LindemannFalloff<double> > >::Registrar(
+	    "msLindemannFalloff", 
+	     msReactionDerived<Antioch::FalloffReaction<double,Antioch::LindemannFalloff<double> > >::createInstance);
+	
+	template<>
+        string msReactionDerived<Antioch::FalloffReaction<double,Antioch::LindemannFalloff<double> > >::doc = "LindemannFalloff";
+        template<>
+        string msReactionDerived<Antioch::FalloffReaction<double,Antioch::LindemannFalloff<double> > >::nameType = "msLindemannFalloff";  
+        //-------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------
+	
+	template<>
+        bool msReactionDerived<Antioch::FalloffReaction<double,Antioch::TroeFalloff<double> > >::isReactionDerivedRegisteredInPython = 0;
+	template<>
+        msRegistrar msReactionDerived<Antioch::FalloffReaction<double,Antioch::TroeFalloff<double> > >::Registrar(
+	    "msTroeFalloff", 
+	     msReactionDerived<Antioch::FalloffReaction<double,Antioch::TroeFalloff<double> > >::createInstance);
+	
+	template<>
+        string msReactionDerived<Antioch::FalloffReaction<double,Antioch::TroeFalloff<double> > >::doc = "TroeFalloff";
+        template<>
+        string msReactionDerived<Antioch::FalloffReaction<double,Antioch::TroeFalloff<double> > >::nameType = "msTroeFalloff";                 
+
+        //-------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------
+     
         
-        //-------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------
-        
-        std::vector<string> msReaction::getCoefficientsName() const {
-            
-            std::vector<string> names;
-            
-            for(map<std::string,double>::const_iterator it=Coefficients.begin();
-                it!=Coefficients.end();
-                ++it)
-                names.push_back((*it).first);
-            
-            return names;
-        }
-        //-------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------
-        
-        
-        double msReaction::getCoefficient(std::string id) const {
-            
-            if( Coefficients.find(id) == Coefficients.end()){
-                msError e("The coefficient of name "+id+" does not exist",
-                          "double msReaction::getCoefficient(std::string id) const ",
-                          getFullId());
-                BOOST_THROW_EXCEPTION(e);
-            }
-            map<std::string,double>::const_iterator it = Coefficients.find(id);
-            return (*it).second;
-        }
-        
-        //-------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------
-        
-        boost::shared_ptr<msTreeMapper> msReaction::setCoefficient(std::string id,double v) {
-            
-            if( Coefficients.find(id) == Coefficients.end()){
-                msError e("The coefficient of name "+id+" does not exist",
-                          "double msReaction::getCoefficient(std::string id) const ",
-                          getFullId());
-                BOOST_THROW_EXCEPTION(e);
-            }
-            Coefficients[id] = v;
-            return mySharedPtr();
-        }
-        
-        //-------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------
-        
-        std::ostream& msReaction::print(std::ostream& out) const {
-            
-            msPhysicalInterface::print(out);
-            output::printHeader(out,"Reaction");
-            
-            out<<"Coefficients defined:"<<endl;
-            int i=0;
-            for(map<std::string,double>::const_iterator it=Coefficients.begin();
-                it!=Coefficients.end();
-                ++it,++i)
-                out<<(*it).first<<": "<<(*it).second<<" (cantera: "
-                <<*(ptrOnCoefficientsInCalculator[i])<<");";
-            
-            return out<<endl;
-        }
-        */
     }
 }
