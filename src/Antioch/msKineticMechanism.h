@@ -21,23 +21,25 @@
 #ifndef PAKineticMechanism_H
 #define PAKineticMechanism_H
 
+#include <msThermoMixture.h>
+#include <msReaction.h>
 
 #include "antioch/kinetics_evaluator.h"
 #include "antioch/reaction_set.h"
-
-#include <msChemicalMixture.h>
-#include <msReaction.h>
-#include <../../VTK6.0.0/ThirdParty/libproj4/vtk_libproj4.h>
+#include "antioch/read_reaction_set_data_xml.h"
+#include "antioch/kinetics_type.h"
 
 namespace impact {
     
     namespace antioch {
         
         //using namespace atomism;
-        /** \brief An ideal gas phase
+        /** \brief A kinetic mechanism to describe transformation in chemical mixtures
          *
-         * A simple wrapper for the class IdealGasMix from Cantera.
-         *
+         * The msKineticMechanism class represents the transformation in chemical mixture (msChemicalMixture)
+	 * by a list of reactions that occur between the msChemicalMixture::Entities.
+         * It is based on a Antioch::KineticsEvaluator calculator to evaluate the kinetic terms.
+	 * 
          */
         class msKineticMechanism : public msPhysicalInterface
         {
@@ -60,14 +62,15 @@ namespace impact {
                 LOGGER_ENTER_FUNCTION_DBG("void msKineticMechanism::update()",getFullId());
                 msPhysicalInterface::update();
 		
-		ReactionSet = boost::shared_ptr<Antioch::ReactionSet<> >(*ChemicalMixture);
+		ReactionSet = boost::shared_ptr<Antioch::ReactionSet<double> >( 
+		              new Antioch::ReactionSet<double>( *(ChemicalMixture->getCalculator()) ) );
 		
 		msChildren<msReaction>::iterator it = Reactions.begin();
 		for(;it!=Reactions.end();++it) 
-		    ReactionSet->add_reaction( (*it)->getCalculator() );
+		    ReactionSet->add_reaction( (*it)->getCalculator().get() );
 				
-		Calculator = boost::shared_ptr<Antioch::KineticsEvaluator>(new Antioch::KineticsEvaluator(*ReactionSet,0) );
-		
+		Calculator = boost::shared_ptr<Antioch::KineticsEvaluator<double> >(
+			     new Antioch::KineticsEvaluator<double>(*ReactionSet,0) );
 				
                 LOGGER_EXIT_FUNCTION2("void msKineticMechanism::update()");
             }
@@ -83,6 +86,7 @@ namespace impact {
                 LOGGER_ENTER_FUNCTION_DBG("void msKineticMechanism::initialize()","");
                 
                 msPhysicalInterface::initialize();
+		msTreeMapper::declareChild<msChemicalMixture>(ChemicalMixture,msChemicalMixture::New(),"ChemicalMixture");
                 msTreeMapper::declareChildren<msReaction>(Reactions,"Reactions");
                 
                 LOGGER_EXIT_FUNCTION2("void msKineticMechanism::initialize()");
@@ -98,22 +102,37 @@ namespace impact {
                 return T;
             }
             
-            
-            bool isCalculatorReady() const {if( Calculator ) return 1; return 0;
-            }
-            
-            template<class T>
-            boost::shared_ptr<T> getCalculator(){
+            boost::shared_ptr<msTreeMapper> parseFromXmlCantera2(std::string file);
+	    
+	    
+            boost::shared_ptr<Antioch::KineticsEvaluator<double> > getCalculator(){
                 
-                return boost::static_pointer_cast<T>(Calculator);
+                return Calculator;
             }
-            
+ 
+            boost::shared_ptr<Antioch::ReactionSet<double> > getReactionSet(){
+                
+                return ReactionSet;
+            }
+            //! \brief return the chemical mixture
+            boost::shared_ptr<msChemicalMixture> getChemicalMixture() const {
+	      
+	        return ChemicalMixture.getSharedPtr();
+	    }
+	    
+            boost::shared_ptr<msTreeMapper> setChemicalMixture(boost::shared_ptr<msChemicalMixture> mix){
+                
+	        LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msTreeMapper> msKineticMechanism::setChemicalMixture(boost::shared_ptr<msChemicalMixture> mix)",getFullId());
+                msTreeMapper::update(ChemicalMixture, mix );
+		LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msTreeMapper> msKineticMechanism::setChemicalMixture(boost::shared_ptr<msChemicalMixture> mix)");
+                return mySharedPtr();
+            }
             
             boost::shared_ptr<msTreeMapper> addReaction(boost::shared_ptr<msReaction> reaction){
                 
-                LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msKineticMechanism> msKineticMechanism::addReaction(boost::shared_ptr<msReaction> reaction)","");
+                LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msKineticMechanism> msKineticMechanism::addReaction(boost::shared_ptr<msReaction> reaction)",getFullId());
                 msTreeMapper::addElementToChildren(Reactions, reaction );
-		update();
+		//update();
                 LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msKineticMechanism> msKineticMechanism::addReaction(boost::shared_ptr<msReaction> reaction)");
                 
                 return mySharedPtr();
@@ -135,38 +154,36 @@ namespace impact {
             std::vector<double> computeForwardRateCoefficient();
             
           //  std::vector<double> getRevRateConstants();
-            
+            std::vector<double> computeRateOfProgress();
             //@}
             
             /**
              * @name Reaction Rates Of Progress
              */
             //@{
-            
+            /*
             std::vector<double> getFwdRatesOfProgress();
             
             std::vector<double> getRevRatesOfProgress();
             
-            std::vector<double> getNetRatesOfProgress();
+            std::vector<double> getNetRatesOfProgress();*/
             //@}
             
             /**
              * @name species creation/destruction rates
              */
             //@{
-            
+            /*
             std::vector<double> getCreationRates();
             
             std::vector<double> getDestructionRates();
             
             std::vector<double> getNetProductionRates();
-            
+            */
             //@}
             
             std::ostream& print(std::ostream& out) const ;
             
-            //virtual void updateInCalculator(Cantera::Kinetics calculator);
-	    
             virtual bool sanityCheck();
 	    
 	    
@@ -192,8 +209,8 @@ namespace impact {
 	    msChild<msChemicalMixture>  ChemicalMixture;
             //@}
             
-	    boost::shared_ptr<Antioch::ReactionSet>        ReactionSet;
-            boost::shared_ptr<Antioch::KineticsEvaluator>  Calculator;
+	    boost::shared_ptr<Antioch::ReactionSet<double> >        ReactionSet;
+            boost::shared_ptr<Antioch::KineticsEvaluator<double> >  Calculator;
                         
         };
     }
