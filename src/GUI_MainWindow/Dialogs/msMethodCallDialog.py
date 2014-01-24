@@ -221,7 +221,7 @@ class msMethodCallDialog(QtGui.QDialog):
     def insertFilePath(self, textedit):
 
         filename, filtr = QtGui.QFileDialog.getOpenFileName(self,
-                                                    "Choose a file name", '.', "xml (*.xml)")
+                                                    "Choose a file name", '.')
         textedit.append(filename)
 
     def displayTreeToAddChild(self):
