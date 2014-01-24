@@ -127,7 +127,6 @@ namespace impact {
                 for(size_t i=0;i<DOS.size();++i) DOS[i]=0;
                 
                 for(int i=0; i<EigenValues.size(); i++ ){
-                    cout<<i<<" "<<EigenValues[i]/dE<<" "<<DOS.size()<<endl;
                     int ind=EigenValues[i]/dE;
                     if( (ind< DOS.size()) && (i<g.size()) ) DOS[ind]+=g[i]/dE;
                 }

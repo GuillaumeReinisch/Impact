@@ -576,7 +576,7 @@ namespace impact {
              }
              if( rndType==1 ) ran1=rand()/double(RAND_MAX);
              if( rndType==2 )*/
-            ran1=gsl_rng_uniform(rnd_gsl);
+            //ran1=gsl_rng_uniform(rnd_gsl);
             
             return ran1;
         }

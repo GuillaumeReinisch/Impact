@@ -32,7 +32,7 @@
 #define msOscillatorsAssembly_H
 
 #include <msOscillator.h>
-#include <gsl/gsl_rng.h>/*
+/*#include <gsl/gsl_rng.h>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 */
@@ -281,7 +281,7 @@ namespace impact {
             /*  int rndType;
              int idum; int iy;vector<int> iv;
              */
-            gsl_rng * rnd_gsl;
+            //gsl_rng * rnd_gsl;
             
             //@}
             

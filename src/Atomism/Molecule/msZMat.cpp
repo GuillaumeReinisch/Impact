@@ -559,9 +559,8 @@ namespace impact {
             bool ok=0;
             
             for(size_t ip=0;ip<InversedPlan.size();ip++) {
-                /*cout<<i<<" "<<j<<" "<<k<<endl;
-                 cout<<InversedPlan[ip].i<<" "<<InversedPlan[ip].j<<" "<<InversedPlan[ip].k<<endl;*/
-                if((i==InversedPlan[ip].i)&&(j==InversedPlan[ip].j)&&(k==InversedPlan[ip].k))
+                
+	        if((i==InversedPlan[ip].i)&&(j==InversedPlan[ip].j)&&(k==InversedPlan[ip].k))
                 {ok=1;}
                 if((i==InversedPlan[ip].i)&&(k==InversedPlan[ip].j)&&(j==InversedPlan[ip].k))
                 {ok=1;}

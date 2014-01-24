@@ -82,36 +82,45 @@ namespace impact {
             
         public:
             
-            void initialize(){ msMotion::initialize();
+            void initialize(){ 
+	      
+	        msMotion::initialize();
                 declareChild<msSystem>( System, msSystem::New() , "System" );
             }
             
             void update(){ msMotion::update();
             }
             
-            static boost::shared_ptr<msTranslation> New( boost::shared_ptr<msUnitsManager> units ) {
+            static boost::shared_ptr<msTranslation> New() {
                 
                 boost::shared_ptr<msTranslation> T( new msTranslation );
-                T->initialize(); T->setUnits(units);
+                T->initialize();
                 T->setParameters( msMotionParams::New() );
                 T->update();
                 return T;
             }
             
             virtual boost::shared_ptr<msTreeMapper> clone() {
-                boost::shared_ptr<msTranslation> clone = New( msUnitsManager::New() );
+	      
+                boost::shared_ptr<msTranslation> clone = New();
                 clone->msTreeMapper::operator=(*this);
                 return clone;
             }
             
             msTranslation() : msMotion() { constructVar("msTranslation","Translation","translation");};
             
-            boost::shared_ptr<msTreeMapper> setSystem( boost::shared_ptr<msSystem> sys ){   msTreeMapper::update(System,sys);
+	    
+            boost::shared_ptr<msTreeMapper> setSystem( boost::shared_ptr<msSystem> sys ){   
+	      
+	        msTreeMapper::update(System,sys);
                 if(!sys->hasParent())  sys->setAffiliation(mySharedPtr());
+		
                 return mySharedPtr();
             };
             
-            double Q(double T) { LOGGER_ENTER_FUNCTION("double msTranslation::Q(double T)",getFullId());
+            double Q(double T) { 
+	      
+	        LOGGER_ENTER_FUNCTION("double msTranslation::Q(double T)",getFullId());
                 if( System.getSharedPtr() == boost::shared_ptr<msSystem>() )
                     
                     BOOST_THROW_EXCEPTION(msError( "The system is not defined, please use the function 'setSystem'",
@@ -126,13 +135,14 @@ namespace impact {
                 return r * Mult / Sym;
             }
             
-            double dlogQ_dT_Vcst(double T) { return ( 3./(2.*T) );
+            double dlogQ_dT_Vcst(double T) { 
+	      
+	        return ( 3./(2.*T) );
             }
             
-            /*   double S(double T) {  return ( getUnits()->convert(msUnit::J_mol,csts::R) * ( log(Q(T)) + 1 + 3/2 ) );
-             }*/
-            
-            ostream& print(ostream& out) const { msMotion::print(out);
+            ostream& print(ostream& out) const { 
+	      
+	        msMotion::print(out);
                 output::printHeader(out,"Translation");
                 if( System.getSharedPtr() == boost::shared_ptr<msSystem>() ) out<<"You need to define the system"<<endl;
                 else out<<"\nTranslation of a body of mass "<<getUnits()->convert(System->getUnits()->getMass(), System->getMass() )<<" "<<getUnits()->getMassStr()<<endl;

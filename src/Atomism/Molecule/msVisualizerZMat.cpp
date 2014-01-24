@@ -123,7 +123,6 @@ namespace impact {
                               */
             renderWindowInteractor->Initialize();
             renderWindowInteractor->Start();
-            std::cout << "Window 1 closed..." << std::endl;
             
         }
         
@@ -228,9 +227,6 @@ namespace impact {
             TimerCount = 0;
             //renderWindowInteractor->Initialize();
             renderWindowInteractor->Start();
-            
-            std::cout << "Window 1 closed..." << std::endl;
-            
             LOGGER_EXIT_FUNCTION();
         }
         

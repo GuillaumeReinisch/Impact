@@ -82,11 +82,8 @@ namespace impact {
 	    }
 	    
             double convFactToSi =  SiUnits.convert( getUnits()->getMass(),1) * pow( SiUnits.convert(getUnits()->getLength(),1) , 2 );
-            cout<<"I2dSI="<<(*I2d) * convFactToSi<<endl;
             double B = getUnits()->convert( SiUnits.getEnergy() , pow(csts::hb,2) / ( 2 * (*I2d) * convFactToSi ) );
-            cout<<B<<" "<<msMotion::Emax<<" "<<msMotion::Emax / B<<endl;
             size_t n = sqrt( msMotion::Emax / B ) + 1;
-            cout<<n<<endl;
             EigenValues = vector_type::Zero(n);
             g.resize(n,1);
             
