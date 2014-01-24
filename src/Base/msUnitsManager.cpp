@@ -76,6 +76,7 @@ namespace impact{
             .value("vAngularMomentum",vAngularMomentum)
             .value("vKineticEnergy",  vKineticEnergy)
             .value("vDensity",        vDensity)
+            .value("vQuantityDensity",        vQuantityDensity)    
             .value("vConcentration",  vConcentration)
             .value("vInverseTime",vInverseTime)
             .value("vEnergyByQuantity",vEnergyByQuantity)
@@ -205,6 +206,10 @@ namespace impact{
                 break;
             case vDensity:
                 Mass=pair<	  uMass,int>( 	     	unitsystem.Mass ,   1 );
+                Length=pair<	  uLength,int>( 	unitsystem.Length , -3 );
+                break;
+            case vQuantityDensity:
+                Quantity=pair<	  uQuantity,int>(      	unitsystem.Quantity ,1 );
                 Length=pair<	  uLength,int>( 	unitsystem.Length , -3 );
                 break;
             case vConcentration:
@@ -456,6 +461,8 @@ namespace impact{
                  "return the unit of pressure in a string" )
             .def( "getInertiaStr" , 	&msUnitsManager::getInertiaStr,
                  "return the unit of moment of inertia in a string" )
+	    .def( "getObjectsUsingMe" , &msUnitsManager::getObjectsUsingMe,
+                 "return the list of objects (of type msPhysicalInterface) using the unit system.")
             .def( "listUnitsAvailable" , &msUnitsManager::listUnitsAvailable,
                  "return the list (strings) of units available for a particular variable type. arg2: variable type")
             .staticmethod("listUnitsAvailable")
@@ -651,6 +658,22 @@ namespace impact{
         }
         
         LOGGER_EXIT_FUNCTION2("void msUnitsManager::updateObjectsUsingMe( msUnitsManager& Old, msUnitsManager& New )");
+    }
+    
+    //-------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------
+    
+    std::vector<boost::shared_ptr<msPhysicalInterface> > msUnitsManager::getObjectsUsingMe() const {
+      
+        std::vector< boost::weak_ptr<msPhysicalInterface> >::const_iterator it;
+        std::vector< boost::shared_ptr<msPhysicalInterface> > vec;
+	
+        for(it=LinkedObjects.begin(); it!= LinkedObjects.end() ; ++it){
+            
+            if ( boost::shared_ptr<msPhysicalInterface> ptr = (*it).lock() )
+                vec.push_back(ptr);
+        }
+        return vec;
     }
     
     //-------------------------------------------------------------------------------------------------

@@ -197,11 +197,12 @@ namespace impact{
             vVolume,            //!< uLength^3
             vVelocity,          //!< uLength^1.uTime^-1
             vAngularVelocity,   //!< uAngle^1.uTime^-1
-	        vMomentOfInertia,   //!< uMass^1.uLength^2
+	    vMomentOfInertia,   //!< uMass^1.uLength^2
             vLinearMomentum,    //!< uMass^1.uLength^2.uTime^-2
             vAngularMomentum,   //!< uMass^1.uLength^2.uAngle^-2
             vKineticEnergy,     //!< uMass^1.uLength^2.uTime^-2
             vDensity,           //!< uMass^1.uLength^-3
+	    vQuantityDensity,   //!< uQuantity^1.uLength^-3
             vConcentration,     //!< uQuantity^1.uLength^-3
             vInverseTime,       //!< uTime^-1
             vEnergyByQuantity,  //!< uEnergy^1.uQuantity^-1
@@ -446,6 +447,7 @@ namespace impact{
             msUnit::MapTypeVar[msUnit::vAngularMomentum] =  "AngularMomentum";
             msUnit::MapTypeVar[msUnit::vKineticEnergy] =    "KineticEnergy";
             msUnit::MapTypeVar[msUnit::vDensity] =          "Density";
+            msUnit::MapTypeVar[msUnit::vQuantityDensity] =  "vQuantityDensity";
             msUnit::MapTypeVar[msUnit::vVolume] =           "Volume";
             msUnit::MapTypeVar[msUnit::vConcentration] =    "Concentration";
             msUnit::MapTypeVar[msUnit::vInverseTime] =      "InverseTime";
@@ -595,6 +597,9 @@ namespace impact{
         void setSI();
         
         string getExpression() { return Expr; }
+        
+        std::vector<boost::shared_ptr<msPhysicalInterface> > getObjectsUsingMe() const;
+        
         
         std::ostream& print(std::ostream& out) const;
         
