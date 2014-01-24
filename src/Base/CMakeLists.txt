@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(LIB_NAME base)
+set(LIB_NAME impact_base)
 
 #-------------------------------------------------------------------------------------------------
 #------------------ include directories of Base and set source files-----------------------------
@@ -31,17 +31,18 @@ SET( EIGEN3_INCLUDE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/eigen3/
        )
 message(STATUS "Eigen3 include directory: ${EIGEN3_INCLUDE_DIR} ")
 
+
 #-----------------------
 #-----------------------
 
 FILE(GLOB HEADER_FILES  
                               ${CMAKE_CURRENT_SOURCE_DIR}/*.h
-			            ${CMAKE_CURRENT_SOURCE_DIR}/muparser_v2_2_3/*.h
+			      ${CMAKE_CURRENT_SOURCE_DIR}/muparser_v2_2_3/*.h
      )
 
 FILE(GLOB  SRC_FILES
                               ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
-			            ${CMAKE_CURRENT_SOURCE_DIR}/muparser_v2_2_3/*.cpp
+			      ${CMAKE_CURRENT_SOURCE_DIR}/muparser_v2_2_3/*.cpp
        )
 
 FILE(GLOB  PYTHON_FILES
@@ -84,18 +85,18 @@ foreach(next_ITEM ${SRC_FILES})
    file(APPEND ${LAUNCHER_FILE} "#include<${next_ITEM}>\n" )
 endforeach(next_ITEM ${SRC_FILES})
 
-INSTALL(FILES  ${HEADER_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/include )
-INSTALL(FILES  ${PYTHON_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/python/widgets/ )
-INSTALL(TARGETS ${LIB_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/lib )
-INSTALL(TARGETS ${LIB_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/Impact/bin )
+INSTALL(FILES   ${HEADER_FILES} DESTINATION ${INCLUDE_INSTALL_PREFIX} )
+INSTALL(FILES   ${PYTHON_FILES} DESTINATION ${PYTHON_INSTALL_PREFIX}/widgets )
+INSTALL(TARGETS ${LIB_NAME}     DESTINATION ${LIB_INSTALL_PREFIX} )
+
 #-----------------------
 #-----------------------
 
-SET( IMPACT_BASE_INCLUDE_DIRS
+SET( BASE_INCLUDE_DIRS
                         ${INCLUDE_DIRS}/
     )
 
-SET( IMPACT_BASE_LIBRARIES 
+SET( BASE_LIBRARIES 
                         ${LIB_NAME}
                         ${DEPENDANCIES}
     )
