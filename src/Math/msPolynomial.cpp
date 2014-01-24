@@ -227,14 +227,14 @@ namespace impact {
                 if( Monomes.find( (*it).first )!=rhs.Monomes.end() ){
                     
                     Monomes[ (*it).first ] -= (*it).second;
-                    cout<<"monome ";
+                   /* cout<<"monome ";
                     impact::operator<<(cout,(*it).first)<<" exists; ";
-                    cout<<Monomes[ (*it).first ]<<endl;
+                    cout<<Monomes[ (*it).first ]<<endl;*/
                 }
                 else{
                     Monomes[ (*it).first ]  = -(*it).second;
-                    impact::operator<<(cout,(*it).first)<<" don't exist; ";
-                    cout<<Monomes[ (*it).first ]<<endl;
+                 /*   impact::operator<<(cout,(*it).first)<<" don't exist; ";
+                    cout<<Monomes[ (*it).first ]<<endl;*/
                 }
             }
             return *this;
@@ -281,7 +281,7 @@ namespace impact {
         ostream& msPolynomial::abstract(std::ostream& out) const{
             
             const_monomeIterator it = Monomes.begin();
-            
+            /*
             for( ;it!=Monomes.end();++it) {
                 
                 if( (*it).first.size() != getCoordinates()->noOfDim() ){
@@ -295,7 +295,7 @@ namespace impact {
                     if(i<(*it).first.size()-1) out<<",";
                 }
                 out<<"]";
-            }
+            }*/
             return out;
         }
 	}

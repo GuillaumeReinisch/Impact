@@ -123,7 +123,7 @@ namespace impact {
             output::printHeader(out,"msSamplerExplicit");
             
             out<<"Sampling point:"<<endl;
-            impact::operator<<(out,Samples)<<endl;
+            //impact::operator<<(out,Samples)<<endl;
             return out;
         }
         
