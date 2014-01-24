@@ -169,7 +169,7 @@ class TreeMapperModel(QtCore.QAbstractItemModel):
     tree view. 
     """
         
-    def __init__( self , data , filtertype ="none", parent=None ):
+    def __init__( self , data , filtertype ="none", expandPtr = 0, parent=None ):
         """ 
         ___init___( self, (msTreeMapper) data, (string) filtertype ) -> void
         
@@ -180,6 +180,7 @@ class TreeMapperModel(QtCore.QAbstractItemModel):
 
         self.rootItem = TreeItem(("Variable","type","id"))
         self.filter=filtertype
+        self.expandPtr = expandPtr
         textData=[]
         textData.append(data.getId())
         textData.append(data.getType().split(':')[-2])
@@ -212,7 +213,11 @@ class TreeMapperModel(QtCore.QAbstractItemModel):
             item=TreeItem(textData,parent)
             item.setRawdata(child)
             parent.appendChild(item)
-            self.addDataChildren(child,parent.child(parent.childCount()-1))
+            if( not(child.isAffiliatedTo(data)) and (self.expandPtr) ):
+	        self.addDataChildren(child,parent.child(parent.childCount()-1))
+            if( child.isAffiliatedTo(data)):
+                self.addDataChildren(child,parent.child(parent.childCount()-1))
+                
         return data
 
     def columnCount(self, parent):

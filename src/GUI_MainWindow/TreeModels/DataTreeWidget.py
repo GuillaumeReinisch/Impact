@@ -23,20 +23,24 @@ def get_class_that_defined_method(meth,class0):
 
 class DataTreeWidget(QtGui.QTreeView):
     
-    def __init__(self, widget ):
+    def __init__(self, widget, mainwindow, expandPtr=0):
         super(DataTreeWidget, self).__init__()
         self.widget = widget
+        self.expandPtr = expandPtr
         self.clicked.connect(self.clickTreeView)
         self.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
         self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.setDragEnabled(1)
         self.viewport().setAcceptDrops(1)
         self.setDropIndicatorShown(1)
-        self.docDirectory = "../doc/html/"
+        self.docDirectory = mainwindow.config["DOC_INSTALL_PREFIX"]+"/html"
+        if not self.docDirectory[-1]=="/":
+	    self.docDirectory = self.docDirectory+"/"
+        self.mainwindow = mainwindow
         
     def update(self,data):
         self.data = data
-        self.modelTree = TreeMapperModel( data ,"msTreeMapper")
+        self.modelTree = TreeMapperModel( data ,"msTreeMapper",self.expandPtr)
         self.setModel(  self.modelTree  )
     
     def reload(self):
@@ -136,12 +140,10 @@ class DataTreeWidget(QtGui.QTreeView):
 
     def _loadHtmlDocumentation(self,name):
         msLogger.enterFunction("void _loadHtmlDocumentation()","")
-        
         files = [ f for f in listdir(self.docDirectory) if isfile(join(self.docDirectory,f)) ]
         for file in files:
-            
             if str( str(name)+".html") in file:
-                self.widget.mainwindow.webView.load(self.docDirectory+file+"#details")
+                self.mainwindow.webView.load(self.docDirectory+file+"#details")
     
         msLogger.exitFunction("void _loadHtmlDocumentation()")
 
@@ -168,12 +170,19 @@ class DataWidget(QtGui.QWidget):
         super(DataWidget, self).__init__()
 
         self.mainwindow = mainWindow
-        
+        self.docDirectory = mainWindow.config["DOC_INSTALL_PREFIX"]+"/html"
+        if not self.docDirectory[-1]=="/":
+	    self.docDirectory = self.docDirectory+"/"
+	    
         mainvbox=QtGui.QVBoxLayout()
+        self.expandPtrCheckBox = QtGui.QCheckBox("expand pointer structure")
+        self.expandPtrCheckBox.clicked.connect(self.clickExpandCheckBox)
+        mainvbox.addWidget(self.expandPtrCheckBox)
         splitter =  QtGui.QSplitter()
         splitter.setOrientation(QtCore.Qt.Vertical)
         
-        self.dataTreeWidget = DataTreeWidget(self)
+        print "checked:",self.expandPtrCheckBox.isChecked()
+        self.dataTreeWidget = DataTreeWidget(self,mainWindow,self.expandPtrCheckBox.isChecked())
         splitter.addWidget(self.dataTreeWidget)
         
         self.attributsList = QtGui.QTreeView()
@@ -186,8 +195,10 @@ class DataWidget(QtGui.QWidget):
         mainvbox.addWidget(splitter)
         self.setLayout(mainvbox)
         
-        self.docDirectory = "../doc/html/"
-    
+    def clickExpandCheckBox(self):
+        self.dataTreeWidget.modelTree.expandPtr = self.expandPtrCheckBox.isChecked()
+        self.mainwindow.reload()
+        
     def setModel(self,model):
         self.dataTreeWidget.setModel(model)
 
