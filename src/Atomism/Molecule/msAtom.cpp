@@ -80,7 +80,7 @@ namespace impact {
             
             if( at == boost::shared_ptr<msAtom>())
                 
-                BOOST_THROW_EXCEPTION( msError("Atom of type "+type+" not known. Did you add the class in msAtom.h? Did you updated the NewAtom function in msAtom.cpp?"
+                IMPACT_THROW_EXCEPTION( msException("Atom of type "+type+" not known. Did you add the class in msAtom.h? Did you updated the NewAtom function in msAtom.cpp?"
                                                ,"boost::shared_ptr<msAtom> NewAtom(std::string type)"
                                                ," no id " ));
             

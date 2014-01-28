@@ -110,7 +110,7 @@ namespace impact {
                         addParameter( "BasisSize" , "201" , "Size of the basis set, MUST BE ODD" , msUnit() );
                         addParameter( "Tref"      , "500" , "Default temperature for DOS calculation" , msUnit("K") );
                     }
-                    catch(msError& e){
+                    catch(msException& e){
                         
                         e.addContext("void msQM1dParams::initialize()");
                         throw e;
@@ -134,7 +134,7 @@ namespace impact {
                     EffectiveKineticFunction = msVectorFit1d::New();
                     EigenVectorCoordinate    = msScalarVariable::New();
                 }
-                catch(msError& e){
+                catch(msException& e){
                     
                     e.addContext("void msQuantumMotion1d::initialize()");
                     throw e;
@@ -173,7 +173,7 @@ namespace impact {
                     T->setParameters( msQM1dParams::New() );
                     T->update();
                 }
-                catch(msError& e){
+                catch(msException& e){
                     
                     e.addContext("static boost::shared_ptr<msQuantumMotion1d> msQuantumMotion1d::New()");
                     throw e;

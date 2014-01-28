@@ -90,11 +90,11 @@ namespace impact {
              */
             //@{
             virtual double Energy( const vector<int>& inds ) {
-                BOOST_THROW_EXCEPTION( msError("This method needs to be implemented and called by the derived classes"
+                IMPACT_THROW_EXCEPTION( msException("This method needs to be implemented and called by the derived classes"
                                                ,"double msOscillator::Energy( const vector<int>& inds )",  getFullId()) );
             }
             virtual double ZPE() const {
-                BOOST_THROW_EXCEPTION( msError("This method needs to be implemented and called by the derived classes"
+                IMPACT_THROW_EXCEPTION( msException("This method needs to be implemented and called by the derived classes"
                                                ,"double msOscillator::ZPE()",  getFullId()) );
             }
             //@}
@@ -139,13 +139,13 @@ namespace impact {
             //@{
             //! return the maximum occupency number
             virtual int nvmax(double Eu , const vector<int>& nv , msUnitsManager& units ) {
-                BOOST_THROW_EXCEPTION( msError("This method needs to be implemented and called by the derived classes"
+                IMPACT_THROW_EXCEPTION( msException("This method needs to be implemented and called by the derived classes"
                                                ,"virtual int nvmax(double Eu , const vector<int>& nv ) const",  getFullId()) );
             };
             
             //! return 0 if the state is bounded, 1 if not
             virtual bool CheckDeriv( const vector<int>& inds ) {
-                BOOST_THROW_EXCEPTION( msError("This method needs to be implemented and called by the derived classes"
+                IMPACT_THROW_EXCEPTION( msException("This method needs to be implemented and called by the derived classes"
                                                ,"virtual bool CheckDeriv(vector<int>& inds=0)",  getFullId()) );
             };
             

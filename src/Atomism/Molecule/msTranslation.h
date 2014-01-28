@@ -123,7 +123,7 @@ namespace impact {
 	        LOGGER_ENTER_FUNCTION("double msTranslation::Q(double T)",getFullId());
                 if( System.getSharedPtr() == boost::shared_ptr<msSystem>() )
                     
-                    BOOST_THROW_EXCEPTION(msError( "The system is not defined, please use the function 'setSystem'",
+                    IMPACT_THROW_EXCEPTION(msException( "The system is not defined, please use the function 'setSystem'",
                                                   "void msTranslation::Q(double T)",getFullId()));
                 
                 double P=1.01325E+05;double R=8.3145;

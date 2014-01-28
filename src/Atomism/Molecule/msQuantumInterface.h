@@ -79,7 +79,7 @@ namespace impact {
             msQuantumInterface() {R=-1;Emin=0; }
             
             virtual void computeEigenValues(){
-                BOOST_THROW_EXCEPTION( msError("msQuantumInterface does not implement computeEigenValues"
+                IMPACT_THROW_EXCEPTION( msException("msQuantumInterface does not implement computeEigenValues"
                                                ,"virtual void computeEigenValues()","") );
             };
             
@@ -88,7 +88,7 @@ namespace impact {
                 
                 double q=0;
                 if( EigenValues.size()==0 )
-                    BOOST_THROW_EXCEPTION( msError("No eigenvalues have been computed yet, please call 'computeEigenValues'"
+                    IMPACT_THROW_EXCEPTION( msException("No eigenvalues have been computed yet, please call 'computeEigenValues'"
                                                    ,"double msQuantumInterface::Q(double T,double R)","") );
                 
                 for(int i=0;i<EigenValues.size();i++)
@@ -115,8 +115,8 @@ namespace impact {
                 
                 if( dE== 0 ){
                     
-                    msError e("The energy grain is null","void msQuantumInterface::fillDOS(msVectorFit1d& DOS)","");
-                    BOOST_THROW_EXCEPTION(e);
+                    msException e("The energy grain is null","void msQuantumInterface::fillDOS(msVectorFit1d& DOS)","");
+                    IMPACT_THROW_EXCEPTION(e);
                 }
                 
                 stringstream out;
@@ -141,7 +141,7 @@ namespace impact {
                 
                 if( n >= EigenValues.size() ){
                     
-                    BOOST_THROW_EXCEPTION( msError("Indice out of range. The number of eigenvalues computed is "+output::getString<double>(EigenValues.size())+
+                    IMPACT_THROW_EXCEPTION( msException("Indice out of range. The number of eigenvalues computed is "+output::getString<double>(EigenValues.size())+
                                                    ". Call 'computeEigenValues' and/or see the parameters of the motion to increase the number of eigenvalues computed"
                                                    ,"double msQuantumInterface eigenvalue(size_t n) const ","") );
                 }
@@ -152,7 +152,7 @@ namespace impact {
                 
                 if( n >= g.size() ){
                     
-                    BOOST_THROW_EXCEPTION( msError("Indice out of range. The number of eigenvalues computed is "+output::getString<double>(EigenValues.size())+
+                    IMPACT_THROW_EXCEPTION( msException("Indice out of range. The number of eigenvalues computed is "+output::getString<double>(EigenValues.size())+
                                                    ". Call 'computeEigenValues' and/or see the parameters of the motion to increase the number of eigenvalues computed"
                                                    ,"double msQuantumInterface degenerency(size_t n) const ","") );
                 }
@@ -164,7 +164,7 @@ namespace impact {
                 
                 proba->set(0, EigenValues.size(), 1, "" , "" );
                 
-                if( R==-1 )  BOOST_THROW_EXCEPTION( msError("The value of R has not been set by the derived class: derived class has to initialize R in proper units (same as those used to compute the eigenvalues)."
+                if( R==-1 )  IMPACT_THROW_EXCEPTION( msException("The value of R has not been set by the derived class: derived class has to initialize R in proper units (same as those used to compute the eigenvalues)."
                                                             ,"boost::shared_ptr<msVectorFit1d> msQuantumInterface::occupencyProbability(double T)","") );
                 double q = Q(T,R);
                 
@@ -195,7 +195,7 @@ namespace impact {
                 
                 if( n > EigenValues.size() ){
                     
-                    BOOST_THROW_EXCEPTION( msError("Indice out of range. The number of eigenvalues computed is "+output::getString<double>(EigenValues.size())+
+                    IMPACT_THROW_EXCEPTION( msException("Indice out of range. The number of eigenvalues computed is "+output::getString<double>(EigenValues.size())+
                                                    ". Call 'computeEigenValues' and/or see the parameters of the motion to increase the number of eigenvalues computed"
                                                    ,"virtual ostream& msQuantumInterface writeEV(size_t n,ostream& out) const ","") );
                 }

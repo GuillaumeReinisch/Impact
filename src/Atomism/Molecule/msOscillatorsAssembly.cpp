@@ -77,7 +77,7 @@ namespace impact {
                 }
                 Oscillators.push_back(oscill); nDoF++; updateParameters();
             }
-            catch(msError& e) {e.addContext("Can not add the oscillator to the assembly (boost::shared_ptr<msTreeMapper> msOscillatorsAssembly::addOscillator(boost::shared_ptr<msOscillator> oscill))");
+            catch(msException& e) {e.addContext("Can not add the oscillator to the assembly (boost::shared_ptr<msTreeMapper> msOscillatorsAssembly::addOscillator(boost::shared_ptr<msOscillator> oscill))");
             }
             return mySharedPtr();
         }
@@ -95,10 +95,10 @@ namespace impact {
                 getParameters()->queryIntValue("nEigenLimit", nEigenLimit);
                 getParameters()->queryIntValue("nMaxTrialsWL", nMaxTrialsWL);
             }
-            catch(msError& e)
+            catch(msException& e)
             {
                 e.addContext("can't get the parameters, parameter object has been corrupted (void msOscillatorsAssembly::updateParameters()).");
-                BOOST_THROW_EXCEPTION( e );
+                IMPACT_THROW_EXCEPTION( e );
             }
             int n = max(nDoF,1);
             DensOfStates->set(0,    getEmax(), dE, getUnits()->getEnergyStr(), getUnits()->getEnergyStr()+"^-1" );

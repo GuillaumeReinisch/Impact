@@ -94,7 +94,7 @@ namespace impact {
                 getParameters()->queryIntValue("BasisSize", BasisSize );
                 getParameters()->queryDoubleValue("Tref", Tref, *getUnits() );
             }
-            catch(msError& e)
+            catch(msException& e)
             {
                 e.addContext("can not get the parameters (void  msQuantumMotion1d::updateParameters())");
                 throw e;
@@ -124,9 +124,9 @@ namespace impact {
                     (*KineticFunction)[i] = getKineticOperator()->kineticFunction(* getUnits());
                 
             }
-            catch(msError& e) {
+            catch(msException& e) {
 	        e.addContext("boost::shared_ptr<msVectorFit1d> msQuantumMotion1d::computeKineticFunction())");
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             
             (*getGeneralizedCoordinates())[0]->setValue( x0 );
@@ -154,7 +154,7 @@ namespace impact {
                     (*EffectiveKineticFunction)[i] = effectiveKineticFunction( EffectiveKineticFunction->getVariable(0)->getValue(), *getUnits() );
                 
             }
-            catch(msError& e) {e.addContext("computation of the effective kinetic function failed (boost::shared_ptr<msVectorFit1d> msQuantumMotion1d::computeEffectiveKineticFunction())");
+            catch(msException& e) {e.addContext("computation of the effective kinetic function failed (boost::shared_ptr<msVectorFit1d> msQuantumMotion1d::computeEffectiveKineticFunction())");
                 LOGGER_EXIT_FUNCTION();
                 throw e;
             }
@@ -211,10 +211,10 @@ namespace impact {
                 LOGGER_EXIT_FUNCTION2("double msQuantumMotion1d::effectiveKineticFunction( double T, const msUnitsManager& unit )");
 		        return r;
 	    }
-	    catch(msError& e){
+	    catch(msException& e){
 	      
 	        e.addContext("double msQuantumMotion1d::effectiveKineticFunction( double T, const msUnitsManager& unit )"); 
-		BOOST_THROW_EXCEPTION(e);
+		IMPACT_THROW_EXCEPTION(e);
 	    }
             return -1;
         }
@@ -236,10 +236,10 @@ namespace impact {
                 
                 for( size_t j=0; j<states->size(); ++j) (*states)[j]= EigenStates(j,i) * EigenStates(j,i) / aera;
             }
-            catch(msError& e) {
+            catch(msException& e) {
 	      
 	        e.addContext("boost::shared_ptr<msVectorFit1d> msQuantumMotion1d::eigenvector(size_t i)");
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             
             return states;
@@ -322,7 +322,7 @@ namespace impact {
                 }
                 for(int I=0;I<NX;I++) for(int J=0;J<=I;J++) Hamiltonian(J,I)=Hamiltonian(I,J);
             }
-            catch(msError& e){e.addContext("computation of the hamiltonian matrix failed (void msQuantumMotion1d::solveSchrodinger())");}
+            catch(msException& e){e.addContext("computation of the hamiltonian matrix failed (void msQuantumMotion1d::solveSchrodinger())");}
             //-------------------------------- 
             //..Now compute eigenvalues:
             //--------------------------------     

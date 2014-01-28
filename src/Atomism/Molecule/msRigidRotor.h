@@ -149,17 +149,17 @@ namespace impact {
             };
             
             virtual double Qj(size_t J, double T) {
-                BOOST_THROW_EXCEPTION( msError("This method needs to be implemented"
+                IMPACT_THROW_EXCEPTION( msException("This method needs to be implemented"
                                                ,"virtual double Q(size_t J,double T)",  getFullId()) );
             };
             
             virtual void DOSj(size_t J, double E){
-                BOOST_THROW_EXCEPTION( msError("This method needs to be implemented"
+                IMPACT_THROW_EXCEPTION( msException("This method needs to be implemented"
                                                ,"virtual double DOS(size_t J,double E)",getFullId()) );
             };
             
             virtual void computeDOSj(size_t J){
-                BOOST_THROW_EXCEPTION( msError("This method needs to be implemented"
+                IMPACT_THROW_EXCEPTION( msException("This method needs to be implemented"
                                                ,"virtual double computeDOS(size_t J)",  getFullId()) );
             };
             

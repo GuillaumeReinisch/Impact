@@ -83,7 +83,7 @@ namespace impact {
             
             if( System == boost::shared_ptr<msSystem>() )
                 
-                BOOST_THROW_EXCEPTION(msError( "The system is not defined, please use the function 'setSystem'",
+                IMPACT_THROW_EXCEPTION(msException( "The system is not defined, please use the function 'setSystem'",
                                               "void msRigidRotor::getEigenInertia(double& I1, double& I2, double& I3) const",getFullId()));
             
             vector_type3d eval;   matrix_type3d evect;
@@ -104,7 +104,7 @@ namespace impact {
             try{
                 msMotion::updateParameters();
             }
-            catch(msError& e)
+            catch(msException& e)
             {
                 e.addContext("can not get the parameters (void  msQuantumMotion1d::updateParameters())");
                 throw e;
@@ -137,7 +137,7 @@ namespace impact {
          {
          if( System.getSharedPtr() == boost::shared_ptr<msSystem>() )
          
-         BOOST_THROW_EXCEPTION(msError( "The system is not defined, please use the function 'setSystem'",
+         IMPACT_THROW_EXCEPTION(msException( "The system is not defined, please use the function 'setSystem'",
          "void msRigidRotor::getEigenInertia(double& I1, double& I2, double& I3) const",getFullId()));
          
          vector_type3d eval;   matrix_type3d evect;

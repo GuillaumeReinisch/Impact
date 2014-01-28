@@ -128,10 +128,10 @@ namespace impact {
                     }
                     catch (...) {
                         
-                        msError e("Error while parsing the '"+string(it->c_str())+"' for the atom number "+output::getString<int>(indatom),
+                        msException e("Error while parsing the '"+string(it->c_str())+"' for the atom number "+output::getString<int>(indatom),
                                   "boost::shared_ptr<msTreeMapper> msZMat::set(std::string line)",
                                   getFullId() );
-                        BOOST_THROW_EXCEPTION(e);
+                        IMPACT_THROW_EXCEPTION(e);
                         
                     }
                     
@@ -186,7 +186,7 @@ namespace impact {
                             (*it)->setPosition( getPosition(ind) +
 						convLength * (1-2*ind) * (Eigen::Vector3d()<<l*cos(angle), l*sin(angle) , 0).finished() );
                         }
-                        catch( msError& e ) {
+                        catch( msException& e ) {
                             
                             e.addContext("Z-Matrix unable to update positions (void msZMat::updatePositions())");
                             throw e;
@@ -213,7 +213,7 @@ namespace impact {
                                 if(  fmod(angle+csts::pi,2*csts::pi) < eps )
                                     ((*it)->setPosition( getPosition(IndCoors[ind]) + convLength * v1 * Dof(ind) / v1.norm() ));
                             }
-                            catch( msError& e ) {
+                            catch( msException& e ) {
                                 
                                 e.addContext("Z-Matrix unable to update positions (void msZMat::updatePositions())");
                                 throw e;
@@ -239,7 +239,7 @@ namespace impact {
                             double ratio2=max(Dof(ind),v3.norm())/min(Dof(ind),v3.norm());
                             
                             if( (ratio1>1.0001) || (ratio2>1.0001) )
-                                BOOST_THROW_EXCEPTION( msError("Unconsistent recalculated internal Dof ("+output::getString<double>(ratio1)
+                                IMPACT_THROW_EXCEPTION( msException("Unconsistent recalculated internal Dof ("+output::getString<double>(ratio1)
                                                                +" "+output::getString<double>(ratio2)
                                                                ,"void msZMat::updatePositions()",getFullId()) );
                         }
@@ -247,7 +247,7 @@ namespace impact {
                         try{
                             (*it)->setPosition( getPosition(IndCoors[ind]) + convLength * v3  );
                         }
-                        catch( msError& e ) {
+                        catch( msException& e ) {
                             
                             e.addContext("Z-Matrix unable to update positions (void msZMat::updatePositions())");
                             throw e;
@@ -277,7 +277,7 @@ namespace impact {
                (rot(1,0)!=rot(1,0)) || (rot(1,1)!=rot(1,1)) || (rot(1,2)!=rot(1,2)) ||
                (rot(2,0)!=rot(2,0)) || (rot(2,1)!=rot(2,1)) || (rot(2,2)!=rot(2,2)) ){
                 
-                throw msError("Rotation Matrix contains a nan","void msZMat::updatePositions()",getFullId());
+                throw msException("Rotation Matrix contains a nan","void msZMat::updatePositions()",getFullId());
             }
             
             for( it = beginElements(); it != endElements(); ++it)  (*it)->applyTransformation(rot);
@@ -287,7 +287,7 @@ namespace impact {
             try{
                 translateOriginAtCenterOfMass(CenterOfGravity);
             }
-            catch( msError& e ) {
+            catch( msException& e ) {
                 
                 e.addContext("can not set the center of mass (void msZMat::updatePositions())");
                 throw e;
@@ -365,10 +365,10 @@ namespace impact {
             
             if( atom> noOfElements() ) {
                 
-                msError e("Indice out of bounds; number of atoms: "+output::getString<int>(noOfElements()) ,
+                msException e("Indice out of bounds; number of atoms: "+output::getString<int>(noOfElements()) ,
                           "msAtom* msZMat::getAtom(size_t atom) const",
                           getFullId() );
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             LOGGER_EXIT_FUNCTION2("msAtom* msZMat::getAtom(size_t atom) const");
             return (msAtom*)(getElement(atom).get());
@@ -421,11 +421,11 @@ namespace impact {
             
             if( !((names.size()==xs.size()) && (names.size()==ys.size()) && (names.size()==zs.size()) )) {
                 
-                msError e("unconsistant size of the vectors given",
+                msException e("unconsistant size of the vectors given",
                           "void msZMat::setFromCartesian(vector<std::string> names, vector<double> xs, vector<double> ys, vector<double> zs)",
                           getFullId());
                 
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             
             IndCoors.clear();
@@ -439,17 +439,17 @@ namespace impact {
                 try{
                     addElement( atom = NewAtom( names[at] ) );
                 }
-                catch(msError& e){
+                catch(msException& e){
                     
                     e.addContext("    boost::shared_ptr<msTreeMapper> msZMat::setFromCartesians(vector<std::string> names, vector<double> xs, vector<double> ys, vector<double> zs)");
-                    BOOST_THROW_EXCEPTION(e);
+                    IMPACT_THROW_EXCEPTION(e);
                 }
                 catch(std::exception& e0) {
-                    msError e("unexpected error while adding new atom"+string(e0.what()),
+                    msException e("unexpected error while adding new atom"+string(e0.what()),
                               "void msZMat::setFromCartesian(vector<std::string> names, vector<double> xs, vector<double> ys, vector<double> zs)",
                               getFullId());
                     
-                    BOOST_THROW_EXCEPTION(e);
+                    IMPACT_THROW_EXCEPTION(e);
                 }
                 LOGGER_WRITE(msLogger::DEBUG,"Set position of x="+output::getString<double>(xs[at])
                              + " y="+output::getString<double>(ys[at])
@@ -544,7 +544,7 @@ namespace impact {
         double msZMat::separation(size_t i,size_t j) {
             
             if( (i>=noOfElements()) || (j>=noOfElements()) )
-                BOOST_THROW_EXCEPTION( msError("atom's indice out of bound",
+                IMPACT_THROW_EXCEPTION( msException("atom's indice out of bound",
                                                "double msZMat::separation(size_t i,size_t j)",getFullId()) );
             
             Vector3d v0 = getPosition(i) - getPosition(j);

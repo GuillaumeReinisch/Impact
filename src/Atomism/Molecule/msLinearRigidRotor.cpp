@@ -75,10 +75,10 @@ namespace impact {
 	    
 	    if( *I2d == -1 ) {
 	      
-	       msError e("Can not compute eigenvalues: moment of inertia not initialized",
+	       msException e("Can not compute eigenvalues: moment of inertia not initialized",
 		         "void msLinearRigidRotor::computeEigenValues()",
 			 getFullId());
-	       BOOST_THROW_EXCEPTION(e);  
+	       IMPACT_THROW_EXCEPTION(e);  
 	    }
 	    
             double convFactToSi =  SiUnits.convert( getUnits()->getMass(),1) * pow( SiUnits.convert(getUnits()->getLength(),1) , 2 );
