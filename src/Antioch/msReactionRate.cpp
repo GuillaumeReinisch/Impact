@@ -105,11 +105,11 @@ namespace impact {
 	      if( name =="Ea" ) { getCastedCalculator<Antioch::ArrheniusRate<double> >()->set_Ea(getUnits()->convertTo(value,msUnit("J.kmol^-1")));
 	      }     
 	      else {
-		msError e("Coefficient "+name+" not recognized",
+		msException e("Coefficient "+name+" not recognized",
 			  " msReactionRateDerived<Antioch::ArrheniusRate<double> >::setCoefficient(string name,double value)",
 			  getFullId());
 		
-		BOOST_THROW_EXCEPTION(e);
+		IMPACT_THROW_EXCEPTION(e);
 	      }
 	      Coefficients[name] = value;
 	      return mySharedPtr();
@@ -162,11 +162,11 @@ namespace impact {
 	      if( name =="eta" ) { getCastedCalculator<Antioch::KooijRate<double> >()->set_eta(value);
 	      }	      
 	      else {
-		msError e("Coefficient "+name+" not recognized",
+		msException e("Coefficient "+name+" not recognized",
 			  " msReactionRateDerived<Antioch::KooijRate<double> >::setCoefficient(string name,double value)",
 			  getFullId());
 		
-		BOOST_THROW_EXCEPTION(e);
+		IMPACT_THROW_EXCEPTION(e);
 	      }
 	      Coefficients[name] = value;
 	      return mySharedPtr();
@@ -210,11 +210,11 @@ namespace impact {
 	      if( name =="D" ) { getCastedCalculator<Antioch::BerthelotRate<double> >()->set_D(getUnits()->convertTo(value,msUnit("K^-1")));
 	      }    
 	      else {
-		msError e("Coefficient "+name+" not recognized",
+		msException e("Coefficient "+name+" not recognized",
 			  " msReactionRateDerived<Antioch::BerthelotRate<double> >::setCoefficient(string name,double value)",
 			  getFullId());
 		
-		BOOST_THROW_EXCEPTION(e);
+		IMPACT_THROW_EXCEPTION(e);
 	      }
 	      Coefficients[name] = value;
 	      return mySharedPtr();
@@ -262,11 +262,11 @@ namespace impact {
 	      if( name =="Tref" ) { getCastedCalculator<Antioch::HercourtEssenRate<double> >()->set_Tref(getUnits()->convertTo(value,msUnit("K")));
 	      }  
 	      else {
-		msError e("Coefficient "+name+" not recognized",
+		msException e("Coefficient "+name+" not recognized",
 			  " msReactionRateDerived<Antioch::HercourtEssenRate<double> >::setCoefficient(string name,double value)",
 			  getFullId());
 		
-		BOOST_THROW_EXCEPTION(e);
+		IMPACT_THROW_EXCEPTION(e);
 	      }
 	      Coefficients[name] = value;
 	      return mySharedPtr();
@@ -320,11 +320,11 @@ namespace impact {
 	      if( name =="Tref" ) { getCastedCalculator<Antioch::BerthelotHercourtEssenRate<double> >()->set_Tref(getUnits()->convertTo(value,msUnit("K")));
 	      }  
 	      else {
-		msError e("Coefficient "+name+" not recognized",
+		msException e("Coefficient "+name+" not recognized",
 			  " msReactionRateDerived<Antioch::BerthelotHercourtEssenRate<double> >::setCoefficient(string name,double value)",
 			  getFullId());
 		
-		BOOST_THROW_EXCEPTION(e);
+		IMPACT_THROW_EXCEPTION(e);
 	      }
 	      Coefficients[name] = value;
 	      return mySharedPtr();
@@ -384,11 +384,11 @@ namespace impact {
 	      if( name =="Tref" ) { getCastedCalculator<Antioch::VantHoffRate<double> >()->set_Tref(getUnits()->convertTo(value,msUnit("K")));
 	      }  
 	      else {
-		msError e("Coefficient "+name+" not recognized",
+		msException e("Coefficient "+name+" not recognized",
 			  " msReactionRateDerived<Antioch::VantHoffRate<double> >::setCoefficient(string name,double value)",
 			  getFullId());
 		
-		BOOST_THROW_EXCEPTION(e);
+		IMPACT_THROW_EXCEPTION(e);
 	      }
 	      Coefficients[name] = value;
 	      return mySharedPtr();

@@ -109,8 +109,8 @@ namespace impact {
 		        stringstream out;
 			out<<names[i]<<": can not add a curve fit to the CeaMixture; coefs: "
 			<<motion->getAllCoeffsOfFit()<<endl<<" Antioch error:"<<e0.what();
-		        msError e(out.str(), "void msThermoMixture::update()",getFullId());
-			BOOST_THROW_EXCEPTION(e);
+		        msException e(out.str(), "void msThermoMixture::update()",getFullId());
+			IMPACT_THROW_EXCEPTION(e);
 		    }
 		}
 		
@@ -158,9 +158,9 @@ namespace impact {
 	        
 		try{ msChemicalMixture::addEntity(entity); 
 		}
-		catch(msError& e){
+		catch(msException& e){
 		     e.addContext("boost::shared_ptr<msTreeMapper> msThermoMixture::addEntity( boost::shared_ptr<msEntity> entity )");
-		     BOOST_THROW_EXCEPTION(e);
+		     IMPACT_THROW_EXCEPTION(e);
 		}
 		LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msTreeMapper> msThermoMixture::addEntity( boost::shared_ptr<msEntity> entity )");
 	      

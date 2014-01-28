@@ -139,7 +139,7 @@ namespace impact {
 	    
 	    boost::shared_ptr<msTreeMapper> setOrder(size_t value) {
 	      
-	        if(value<0) BOOST_THROW_EXCEPTION(msError("Order has to be superior or equal to 0",
+	        if(value<0) IMPACT_THROW_EXCEPTION(msException("Order has to be superior or equal to 0",
 						  "boost::shared_ptr<msTreeMapper> msReaction::setOrder(size_t value)",
 						  getFullId()));
 		Order = value;
@@ -169,8 +169,8 @@ namespace impact {
 	    
 	    void throwNotImplemented(string fctName) const {
 	      
-	        msError e("The class msReactionBase if virtual",fctName,getFullId());
-		BOOST_THROW_EXCEPTION(e);
+	        msException e("The class msReactionBase if virtual",fctName,getFullId());
+		IMPACT_THROW_EXCEPTION(e);
 	    }
 	    
         };

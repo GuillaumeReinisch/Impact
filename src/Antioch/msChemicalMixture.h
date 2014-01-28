@@ -79,41 +79,24 @@ namespace impact {
             
             void update() {
                 
-                LOGGER_ENTER_FUNCTION_DBG("void msChemicalMixture::update()",getFullId());
+                IMPACT_LOGIN();
                 msPhysicalInterface::update();
 		
-		vector<string> strs = getEntitiesNames();
+		vector<string> strs = getEntitiesNames();size_t i=0;
 		
-		try{
-		    Calculator = boost::shared_ptr<Antioch::ChemicalMixture<double> >( 
-		                 new Antioch::ChemicalMixture<double>(strs) );
-		}
-		catch(std::exception& e0) {
-		  
-		    msError e("Can not create the ChemicalMixture calculator: "+string(e0.what()),
-			      "void msChemicalMixture::update()",getFullId());
-		    BOOST_THROW_EXCEPTION(e);
-		}
-		msChildren<msEntity>::iterator it = Entities.begin();
-		for(size_t i=0;it!=Entities.end();++it,++i) {
-		  
-		    try{ Calculator->add_species(i, (*it)->getId(),
-					         (*it)->getUnits()->convertTo( (*it)->getMass(),msUnit("kg.mol^1") ), 
-				                 0, 
-					         min(size_t(3),(*it)->noOfElements()), 
-					         0);
-		    }
-		    catch(std::exception& e0){
-		  
-		        msError e("An exception calling Antioch::ChemicalMixture<double>::add_species oocured: "+
-			          string(e0.what()),
-			          "void msChemicalMixture::update()",
-			          getFullId());
-		        BOOST_THROW_EXCEPTION(e);
-		    }
-		}
+		IMPACT_TRY( [&] () { Calculator = boost::shared_ptr<Antioch::ChemicalMixture<double> >( 
+		                     new Antioch::ChemicalMixture<double>(strs) );  
+		});
 		
-                LOGGER_EXIT_FUNCTION2("void msChemicalMixture::update()");
+		for_each(Entities.begin(),Entities.end(), [&] (boost::shared_ptr<msEntity> e) {
+			
+		      IMPACT_TRY( [&] () { 
+			  Calculator->add_species(i, e->getId(), 
+			           e->getUnits()->convertTo( e->getMass(), msUnit("kg.mol^-1") ), 
+				   0, min(size_t(3),e->noOfElements()), 0); i++;
+		      });
+		});
+                IMPACT_LOGOUT();
             }
             
             
@@ -127,33 +110,31 @@ namespace impact {
             
             void initialize() {
                 
-                LOGGER_ENTER_FUNCTION_DBG("void msChemicalMixture::initialize()","");
+                IMPACT_LOGIN();
                 
                 msPhysicalInterface::initialize();
                 
-                msTreeMapper::declareChildren<msEntity>(Entities,"Entities");
-                msTreeMapper::declareAttribute(MoleFractions,"MoleFractions");
-		msTreeMapper::declareAttribute(Temperature,"Temperature");
-		msTreeMapper::declareAttribute(Density,"Density");
+                declareChildren<msEntity>(Entities,"Entities");
+                declareAttribute(MoleFractions,"MoleFractions");
+		declareAttribute(Temperature,"Temperature");
+		declareAttribute(Density,"Density");
 		
-                LOGGER_EXIT_FUNCTION2("void msChemicalMixture::initialize()");
+		declarePhysicalVariable( msUnit("kg.m^-3"), &Density, "Density");
+                IMPACT_LOGOUT();
             }
             
             static boost::shared_ptr<msChemicalMixture> New(){
                 
-                LOGGER_ENTER_FUNCTION_DBG("static boost::shared_ptr<msChemicalMixture> msChemicalMixture::New()","");
+                IMPACT_LOGIN_STATIC();
                 boost::shared_ptr<msChemicalMixture> T( new msChemicalMixture );
                 T->initialize();
                 T->update();
-                LOGGER_EXIT_FUNCTION2("static boost::shared_ptr<msChemicalMixture> msChemicalMixture::New()");
+                IMPACT_LOGOUT();
                 return T;
             }
             
             //! \brief return the density
-            double getDensity() const {
-	      
-	         return Density;
-	    }
+            double getDensity() const { return Density;}
 	    
 	    /*! \brief set the density
 	     * 
@@ -161,93 +142,75 @@ namespace impact {
 	     */ 
 	    virtual boost::shared_ptr<msTreeMapper> setDensity(double d) {
 	      
-	        if(d<=0){
-		   
-	             msError e("The density is null or negative","virtual boost::shared_ptr<msTreeMapper> msChemicalMixture::setDensity(double d)",getFullId());
-		     BOOST_THROW_EXCEPTION(e);
-		 }
+	         IMPACT_LOGIN();
+	         IMPACT_EXCEPT_IF( [&] () { return d<=0; },
+			 "The density is null or negative");
 	         Density = d;
+		 
+		 IMPACT_LOGOUT();
 		 return mySharedPtr();
 	    }
 	    
-            boost::shared_ptr<Antioch::ChemicalMixture<double> > getCalculator(){
-	      
-	         return Calculator;
-                
-             //   return boost::static_pointer_cast<T>(Calculator);
-            }
+            boost::shared_ptr<Antioch::ChemicalMixture<double> > getCalculator(){ return Calculator; }
             
-            size_t noOfEntities() const {
-                
-                if(Calculator->n_species() != Entities.size()) {
-                    
-                    stringstream out;
-                    out<<"Number of species in Cantera Calculator ("<<Calculator->n_species()<<")"
-                    <<"are different than the number of constituents declared to the interface ("<<Entities.size()<<").";
-                    msError e(out.str(),"size_t msChemicalMixture::noOfEntities() const",getFullId());
-                    BOOST_THROW_EXCEPTION(e);
-                }
-                return Calculator->n_species();
-            }
+            size_t noOfEntities() const { return Entities.size(); }
             
             virtual boost::shared_ptr<msTreeMapper> addEntity( boost::shared_ptr<msEntity> entity ) {
                 	       
-	        LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msTreeMapper> msChemicalMixture::addEntity( boost::shared_ptr<msEntity> entity )",
-					  getFullId());
+	        IMPACT_LOGIN();
 	        
 		addElementToChildren<msEntity>(Entities,entity);
-		if(! entity->hasParent() ) entity->setAffiliation(mySharedPtr());
 		
 		if(Entities.size()==1) MoleFractions.push_back(1);
 		else MoleFractions.push_back(0);
 		
-		LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msTreeMapper> msChemicalMixture::addEntity( boost::shared_ptr<msEntity> entity )");
+		IMPACT_LOGOUT();
                 return mySharedPtr();
             }
             
             size_t getIndex(string id) const {
 	        
+	        IMPACT_LOGIN();
+	       
 	        vector<std::string> names = getEntitiesNames();
 		vector<std::string>::iterator it =std::find(names.begin(), names.end(), id);
 		
-		if(it==names.end()) {
-		     std::string speciesList;
-		     for(size_t i=0;i<names.size();i++) speciesList += names[i]+" ";
-		     msError e("Can not find the specie of name "+id+"; "+speciesList,
-		       "size_t msChemicalMixture::getIndex(string id)",getFullId());
-		    BOOST_THROW_EXCEPTION(e); 
-		}
+		IMPACT_EXCEPT_IF( [&] () { return it==names.end(); },
+			  "Can not find the specie of id "+id);
+		
+		IMPACT_LOGOUT();
 		return it-names.begin();
 	    }
 	    
             boost::shared_ptr<msEntity> getEntityFromIndex( size_t i) {
                 
+	        IMPACT_LOGIN();
 	        boost::shared_ptr<msEntity> cons;
-	        try {
-	             cons = Entities[i].getSharedPtr();
-		}
-		catch(msError& e){
-		     
-		     e.addContext("boost::shared_ptr<msEntity> msChemicalMixture::getEntityFromIndex( size_t i)");
-		     BOOST_THROW_EXCEPTION(e);
-		}
+		IMPACT_TRY( [&] () { cons = Entities[i].getSharedPtr(); } );
+		
+		IMPACT_LOGOUT();
                 return cons;
             }
             
             boost::shared_ptr<msEntity> getEntityFromId( std::string id ) {
-                
-                return Entities.getElementFromId(id);
+	      
+                IMPACT_LOGIN();
+	        boost::shared_ptr<msEntity> cons;
+		IMPACT_TRY( [&] () { cons = Entities.getElementFromId(id); } );
+		
+		IMPACT_LOGOUT();
+                return cons;
             }
             
+
 	    //! \brief return the total mass                        
             double totalMass() const {
 	      
-	        double mtot = 0;
-		for(size_t i=0;i<noOfEntities();i++){
+	        double r = 0;
+	        for_each( Entities.begin(),Entities.end(), 
+		    [&] (const boost::shared_ptr<msEntity> e) {r += e->getMass();} );
 		  
-		    mtot += Entities[i]->getMass();
-		}
-		return mtot;
+	        return r;
 	    }
 	    
 	    //! \brief return the temperature
@@ -265,29 +228,18 @@ namespace impact {
 	        Temperature = T;
 	        return mySharedPtr();
 	    }
-	    
+	     
 	    /*! \brief set the mole fractions
 	     * 
 	     * \param mapf map specie's name -> molar fraction, set 0 for species not included, and renormalize at the end 
 	     */ 
 	    boost::shared_ptr<msTreeMapper> setMoleFractions(std::map<std::string,double> mapf) {
 	      
-	        MoleFractions.resize(noOfEntities(),0);
-		double tot=0;
-		try{
-		    for( std::map<std::string,double>::iterator it=mapf.begin();
-			 it!=mapf.end();++it){
-		      
-		        MoleFractions[getIndex((*it).first)] = (*it).second;
-			tot += (*it).second;
-		    }
-		    for(size_t i=0;i<noOfEntities();i++) MoleFractions[i] /= tot;
-		}
-		catch(msError& e){
-		  
-		    e.addContext("boost::shared_ptr<msTreeMapper> setMoleFractions(std::map<std::string,double>)");
-		    BOOST_THROW_EXCEPTION(e);
-		}
+	        IMPACT_LOGIN();
+		for_each( mapf.begin(),mapf.end(), 
+		    [&] (pair<std::string,double> it) { MoleFractions[getIndex(it.first)] = it.second; } );
+		
+		IMPACT_LOGOUT();
 	        return mySharedPtr();
 	    }    
 	    
@@ -295,29 +247,28 @@ namespace impact {
 	    //! \brief return the constituents name in a list
             std::vector<std::string> getEntitiesNames() const {
                 
-                std::vector<string> vec(Entities.size());
-		msChildren<msEntity>::const_iterator it = Entities.begin();
-		for(int i=0;it!=Entities.end();++it,i++) vec[i]=(*it)->getId();
-		
+                std::vector<string> vec;
+		for_each( Entities.begin(),Entities.end(), 
+		    [&] (const boost::shared_ptr<msEntity> e) { vec.push_back(e->getId());} );
+				
                 return vec;
             }
             
                         
             //! Get the species mole fractions.
-            std::vector<double> getMoleFractions() const {
-                
-                return MoleFractions;
-            }
+            std::vector<double> getMoleFractions() const { return MoleFractions; }
             
             //! Get the species mass fractions. 
             std::vector<double> getMassFractions() const {
                 
+	        IMPACT_LOGIN();
                 std::vector<double> vec;
 		double mtot = totalMass();
-		for(size_t i=0;i<noOfEntities();i++){
-		  
-		    vec.push_back( Entities[i]->getMass() / mtot);
-		}
+		
+		for_each( Entities.begin(),Entities.end(), 
+		    [&] (const boost::shared_ptr<msEntity> e) { vec.push_back(e->getMass() / mtot);} );
+			
+                IMPACT_LOGOUT();		
 		return vec;
             }
             
@@ -327,35 +278,28 @@ namespace impact {
              */
             double getMoleFractionByName(std::string name) const {
               
-                testCalculator("double msChemicalMixture::getMoleFractionByName(std::string name) const");
+                IMPACT_LOGIN();
                 double r =0;
-		
-		try{ 
-		    r = getMoleFractions()[getIndex(name)];
-		}
-		catch(msError& e) {
-		  
-		    e.addContext("double msChemicalMixture::getMoleFractionByName(std::string name) const");
-		    BOOST_THROW_EXCEPTION(e);
-		}
-		
-                return r;//map[name];
+		IMPACT_TRY( [&] () {r = getMoleFractions()[getIndex(name)]; });
+		IMPACT_LOGOUT();
+		return r;
             }
  
             /*! \brief Return the molar densities
              */
             vector<double> getMolarDensities() const {
               
-                testCalculator("vector<double> msChemicalMixture::getMolarDensities() const");
+                IMPACT_LOGIN();
 		
 		vector<double> molarDensity(noOfEntities());
 		double density = getUnits()->convertTo(getDensity(),msUnit("kg.m^-3"));
-		Calculator->molar_densities( density, getMassFractions(), molarDensity);
 		
-		for( size_t i=0;i<molarDensity.size();i++) {
-		  
-		    molarDensity[i] *= getUnits()->convert("mol.m^-3",1);
-		}
+		IMPACT_TRY( [&] () { Calculator->molar_densities( density, getMassFractions(), molarDensity); });
+		
+		for_each( molarDensity.begin(),molarDensity.end(), 
+		    [&] ( double& e) { e *= getUnits()->convert("mol.m^-3",1) ;} );
+		
+		IMPACT_LOGOUT();
                 return molarDensity;
             } 
             
@@ -365,18 +309,10 @@ namespace impact {
              */
             double getMassFractionByName(std::string name) const {
               
-                testCalculator("double msChemicalMixture::getMassFractionByName(std::string name) const");
+ 	        IMPACT_LOGIN();
                 double r =0;
-		
-		try{ 
-		    r = getMassFractions()[getIndex(name)];
-		}
-		catch(msError& e) {
-		  
-		    e.addContext("double msChemicalMixture::getMassFractionByName(std::string name) const");
-		    BOOST_THROW_EXCEPTION(e);
-		}
-		
+		IMPACT_TRY( [&] () { r = getMassFractions()[getIndex(name)]; });
+		IMPACT_LOGOUT();
                 return r;
             }
            
@@ -390,8 +326,8 @@ namespace impact {
             void testCalculator(std::string fct) const{
                 
                 if( Calculator ) return;
-                msError e("The calculator is not initialized, use the 'load' function",fct,getFullId());
-                BOOST_THROW_EXCEPTION(e);
+                msException e("The calculator is not initialized, use the 'load' function",fct,getFullId());
+                IMPACT_THROW_EXCEPTION(e);
             }
             
         private:
@@ -401,6 +337,8 @@ namespace impact {
             
             msChildren<msEntity>  	Entities;
             
+	    msChildren<msElement>       Elements;
+	    
             vector<double> MoleFractions;
 	    
 	    double Temperature;

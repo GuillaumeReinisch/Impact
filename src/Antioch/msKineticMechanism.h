@@ -59,20 +59,33 @@ namespace impact {
             
             void update() {
                 
-                LOGGER_ENTER_FUNCTION_DBG("void msKineticMechanism::update()",getFullId());
+                IMPACT_LOGIN();
                 msPhysicalInterface::update();
+		LOGGER_WRITE(msLogger::DEBUG,"create calculator");
 		
-		ReactionSet = boost::shared_ptr<Antioch::ReactionSet<double> >( 
-		              new Antioch::ReactionSet<double>( *(ChemicalMixture->getCalculator()) ) );
+		IMPACT_EXCEPT_IF( [&](){ return !ChemicalMixture->getCalculator();},
+				 "calculator of chemical mixture not set" );
 		
-		msChildren<msReaction>::iterator it = Reactions.begin();
-		for(;it!=Reactions.end();++it) 
-		    ReactionSet->add_reaction( (*it)->getCalculator().get() );
+		IMPACT_TRY( [&](){ ReactionSet = boost::shared_ptr<Antioch::ReactionSet<double> >( 
+		                   new Antioch::ReactionSet<double>( *(ChemicalMixture->getCalculator()) ) );
+		});
+		
+		LOGGER_WRITE(msLogger::DEBUG,"create reactions");
+		
+		for_each(Reactions.begin(),Reactions.end(),
+		        [&](boost::shared_ptr<msReaction> r) {
+			  
+			  IMPACT_EXCEPT_IF([&](){ return !r->getCalculator();}, "calculator of reaction not set" ); 
+			  IMPACT_TRY( [&](){ ReactionSet->add_reaction( r->getCalculator().get() ); 
+			  });
+		 });	  
+		
+		LOGGER_WRITE(msLogger::DEBUG,"create calculator");
+		IMPACT_TRY( [&](){ Calculator = boost::shared_ptr<Antioch::KineticsEvaluator<double> >(
+			     new Antioch::KineticsEvaluator<double>(*ReactionSet,0) ); 
+		}); 
 				
-		Calculator = boost::shared_ptr<Antioch::KineticsEvaluator<double> >(
-			     new Antioch::KineticsEvaluator<double>(*ReactionSet,0) );
-				
-                LOGGER_EXIT_FUNCTION2("void msKineticMechanism::update()");
+                IMPACT_LOGOUT();
             }
                        
         public:
@@ -83,22 +96,22 @@ namespace impact {
             }
             
             void initialize() {
-                LOGGER_ENTER_FUNCTION_DBG("void msKineticMechanism::initialize()","");
+                IMPACT_LOGIN();
                 
                 msPhysicalInterface::initialize();
 		msTreeMapper::declareChild<msChemicalMixture>(ChemicalMixture,msChemicalMixture::New(),"ChemicalMixture");
                 msTreeMapper::declareChildren<msReaction>(Reactions,"Reactions");
                 
-                LOGGER_EXIT_FUNCTION2("void msKineticMechanism::initialize()");
+                IMPACT_LOGOUT();
             }
             
             static boost::shared_ptr<msKineticMechanism> New(){
                 
-                LOGGER_ENTER_FUNCTION_DBG("static boost::shared_ptr<msKineticMechanism> msKineticMechanism::New()","");
+                IMPACT_LOGIN_STATIC();
                 boost::shared_ptr<msKineticMechanism> T( new msKineticMechanism );
                 T->initialize();
                 T->update();
-                LOGGER_EXIT_FUNCTION2("static boost::shared_ptr<msKineticMechanism> msKineticMechanism::New()");
+                IMPACT_LOGOUT();
                 return T;
             }
             
@@ -122,20 +135,19 @@ namespace impact {
 	    
             boost::shared_ptr<msTreeMapper> setChemicalMixture(boost::shared_ptr<msChemicalMixture> mix){
                 
-	        LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msTreeMapper> msKineticMechanism::setChemicalMixture(boost::shared_ptr<msChemicalMixture> mix)",getFullId());
-                msTreeMapper::update(ChemicalMixture, mix );
-		LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msTreeMapper> msKineticMechanism::setChemicalMixture(boost::shared_ptr<msChemicalMixture> mix)");
-                return mySharedPtr();
+	        IMPACT_LOGIN();
+		msTreeMapper::update(ChemicalMixture, mix );
+		IMPACT_LOGOUT();
+		return mySharedPtr();
             }
             
             boost::shared_ptr<msTreeMapper> addReaction(boost::shared_ptr<msReaction> reaction){
                 
-                LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msKineticMechanism> msKineticMechanism::addReaction(boost::shared_ptr<msReaction> reaction)",getFullId());
-                msTreeMapper::addElementToChildren(Reactions, reaction );
+                IMPACT_LOGIN();
+		msTreeMapper::addElementToChildren(Reactions, reaction );
 		//update();
-                LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msKineticMechanism> msKineticMechanism::addReaction(boost::shared_ptr<msReaction> reaction)");
-                
-                return mySharedPtr();
+                IMPACT_LOGOUT();
+		return mySharedPtr();
             }
             
             std::vector<std::string>  getReactionsNames() const;
@@ -196,8 +208,8 @@ namespace impact {
             void testCalculator(std::string fct) const{
                 
                 if( Calculator ) return;
-                msError e("The calculators are not initialized, use the 'load' function",fct,getFullId());
-                BOOST_THROW_EXCEPTION(e);
+                msException e("The calculators are not initialized, use the 'load' function",fct,getFullId());
+                IMPACT_THROW_EXCEPTION(e);
             }
         private:
             

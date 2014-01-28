@@ -91,7 +91,7 @@ namespace impact {
 	    if( Density == 0 ) errors<<" - The density is zero"<<std::endl;
 	    
 	    if( errors.str() != "") 
-	        BOOST_THROW_EXCEPTION(msError(errors.str(),"bool msReaction::sanityCheck()",getFullId()));
+	        IMPACT_THROW_EXCEPTION(msException(errors.str(),"bool msReaction::sanityCheck()",getFullId()));
 	  
 	}
 

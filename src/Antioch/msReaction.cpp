@@ -115,7 +115,7 @@ namespace impact {
 	    if( ForwardRates.size() == 0 ) errors<<" - No forward rates defined "<<endl;
 	      
 	    if( errors.str() != "") 
-	        BOOST_THROW_EXCEPTION(msError(errors.str(),"bool msReaction::sanityCheck()",getFullId()));
+	        IMPACT_THROW_EXCEPTION(msException(errors.str(),"bool msReaction::sanityCheck()",getFullId()));
 	}
 
         //-----------------------------------------------------------------------------

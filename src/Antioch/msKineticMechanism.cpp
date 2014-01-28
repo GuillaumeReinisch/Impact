@@ -296,10 +296,10 @@ namespace impact {
 	  
 	   if( Calculator->n_species() != ChemicalMixture->noOfEntities() ){
 	     
-	     msError e("Unconsistent number of species in Calculator and ChemicalMixture",
+	     msException e("Unconsistent number of species in Calculator and ChemicalMixture",
 		"",getFullId());
 	     
-	     BOOST_THROW_EXCEPTION(e);
+	     IMPACT_THROW_EXCEPTION(e);
 	   }
 	   
 	   vector<string> names = getReactionsNames();
@@ -308,17 +308,17 @@ namespace impact {
 	     
 	      if( (*it)->getId() != names[i] ){
 		 
-		   msError e ("The name of the reaction number "+output::getString<int>(i)
+		   msException e ("The name of the reaction number "+output::getString<int>(i)
 		             +" is not consistent between children Reactions and calculator ReactionSet",
 		             "bool msKineticMechanism::sanityCheck()",getFullId());
-		  BOOST_THROW_EXCEPTION(e);
+		  IMPACT_THROW_EXCEPTION(e);
 	      }
 	      if( getChemicalMixture() != (*it)->getChemicalMixture()){
 		 
-		   msError e ("The chemical mixture of the mechanism and of the reaction number "+output::getString<int>(i)
+		   msException e ("The chemical mixture of the mechanism and of the reaction number "+output::getString<int>(i)
 		             +" are not consistents.",
 		             "bool msKineticMechanism::sanityCheck()",getFullId());
-		  BOOST_THROW_EXCEPTION(e);
+		  IMPACT_THROW_EXCEPTION(e);
 	      }
 	  }
 		
@@ -330,14 +330,14 @@ namespace impact {
         
         boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename){
 	  
-	    LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename)",getFullId());
+	    IMPACT_LOGIN();
                 
 	    getUnits()->set("");
 	    if( getChemicalMixture()->noOfEntities() == 0 ) {
 	             
 	         stringstream out;
 	         out << "No entities are defined in the chemical mixture";
-		 BOOST_THROW_EXCEPTION(msError(out.str(),"boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename)",getFullId()));  
+		 IMPACT_THROW_EXCEPTION(msException(out.str(),"boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename)",getFullId()));  
 	    }
 	    
 	    ReactionSet = boost::shared_ptr<Antioch::ReactionSet<double> >( new Antioch::ReactionSet<double>(*(getChemicalMixture()->getCalculator())) );
@@ -353,7 +353,7 @@ namespace impact {
 	      
 	         stringstream out;
 	         out << "Problem while parsing the file "<<filename<<" : "<<e0.what();
-		 BOOST_THROW_EXCEPTION(msError(out.str(),"boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename)",getFullId()));  
+		 IMPACT_THROW_EXCEPTION(msException(out.str(),"boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename)",getFullId()));  
 	    }
 	    
 	    LOGGER_WRITE(msLogger::DEBUG,"Create the children structure");
@@ -387,7 +387,7 @@ namespace impact {
 	         else {
 		     stringstream out;
                      out << "The reaction type is not known.";
-		     BOOST_THROW_EXCEPTION(msError(out.str(),"boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename)",getFullId()));
+		     IMPACT_THROW_EXCEPTION(msException(out.str(),"boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename)",getFullId()));
                  }
                  
          	 addReaction(reaction);
@@ -407,18 +407,20 @@ namespace impact {
 		         reaction->addProduct(ChemicalMixture->getEntityFromId(reactionAntioch.product_name(r)),
 					       reactionAntioch.product_stoichiometric_coefficient(r));
 		 }
-		 catch(msError& e){
+		 catch(msException& e){
 		   
 		     e.addContext("boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename) : problem while setting reactants or products.");
-		     BOOST_THROW_EXCEPTION(e);
+		     IMPACT_THROW_EXCEPTION(e);
 		 }
+		 LOGGER_WRITE(msLogger::DEBUG,"Set efficiencies");
 		 
 		 for(size_t i=0;i<getChemicalMixture()->noOfEntities();i++)		  
 		     if(reactionAntioch.efficiency(i)!=1) reaction->setEfficiency(names[i],1);
-		 
+		
 		 double conversionEa = getUnits()->convert("J.mol^-1.K^-1",csts::R);
 		 double conversionCf = getUnits()->convert(reaction->getUnitForwardRateCoefficient(),1);
 		 
+		 LOGGER_WRITE(msLogger::DEBUG,"Create rate constants");
 		 for( size_t j=0 ; j<reactionAntioch.n_rate_constants(); j++) {
 		   
 		      stringstream out;
@@ -436,11 +438,11 @@ namespace impact {
 			  LOGGER_WRITE(msLogger::DEBUG,"Create ARRHENIUS rate constants");
 			  
 			  rate = msReactionRateDerived<Antioch::ArrheniusRate<double> >::New();
-			  rate->setId(reactionAntioch.equation());
+			  /*rate->setId(reactionAntioch.equation());
 			  const Antioch::ArrheniusRate<double>& rateAntiochCasted =
 			        *( static_cast<const Antioch::ArrheniusRate<double>*>(&rateAntioch) );
 		          rate->setCoefficient("Cf",rateAntiochCasted.Cf()*conversionCf);
-			  rate->setCoefficient("Ea",rateAntiochCasted.Ea()*conversionEa);
+			  rate->setCoefficient("Ea",rateAntiochCasted.Ea()*conversionEa);*/
 		      }
 		      else
 		      if (kineticsModel == Antioch::KineticsModel::KOOIJ ){
@@ -516,11 +518,11 @@ namespace impact {
 	              else {
 		          stringstream out;
                           out << "The kinetic type is not known.";
-		          BOOST_THROW_EXCEPTION(msError(out.str(),"boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename)",getFullId()));
+		          IMPACT_THROW_EXCEPTION(msException(out.str(),"boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename)",getFullId()));
                       }
                       rate->setUnits(getUnits());
 		      rate->setAffiliation(reaction);
-		      rate->setOrder(reaction->getReactantOrder());
+		      //rate->setOrder(reaction->getReactantOrder());
 		      reaction->addForwardRate(rate);
 		 }
 		 
@@ -532,7 +534,7 @@ namespace impact {
                  }
                  reaction->setId(id);
 	    } 
-	LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename)");
+	IMPACT_LOGOUT();
         return mySharedPtr();   
 	}
     }

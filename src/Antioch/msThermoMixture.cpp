@@ -95,10 +95,10 @@ namespace impact {
 	   
 	    if( ! theFile.is_open() ) {
 	     
-	        msError e("can not open the file "+path,
+	        msException e("can not open the file "+path,
 		  	  "boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCanteraMechanismXml(string path)",
 			  getFullId());
-	        BOOST_THROW_EXCEPTION(e);
+	        IMPACT_THROW_EXCEPTION(e);
 	    }
 	    
 	    LOGGER_WRITE(msLogger::DEBUG,"file '"+path+ "' open." );
@@ -112,19 +112,19 @@ namespace impact {
 	    
 	    if( RootNode == 0 ) {
 	      
-	        msError e("can not get the root node of the xml file",
+	        msException e("can not get the root node of the xml file",
 		          "boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCanteraMechanismXml(string path)",
 			  getFullId());
-		BOOST_THROW_EXCEPTION(e);
+		IMPACT_THROW_EXCEPTION(e);
 	    }
 	    rapidxml::xml_node<>* speciesNode = RootNode->first_node("speciesData");
 	    
 	    if( speciesNode == 0 ) {
 	      
-	        msError e("can not get the 'speciesData' node in the root node",
+	        msException e("can not get the 'speciesData' node in the root node",
 		          "boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCanteraMechanismXml(string path)",
 			  getFullId());
-		BOOST_THROW_EXCEPTION(e);
+		IMPACT_THROW_EXCEPTION(e);
 	    }
 	    
 	    for(rapidxml::xml_node<>* xmlSpecie = speciesNode->first_node();
@@ -135,10 +135,10 @@ namespace impact {
 	    
 	        if( attName == 0 ) {
 	      
-	            msError e("can not get the 'name' attribute of the specie",
+	            msException e("can not get the 'name' attribute of the specie",
 		              "boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCanteraMechanismXml(string path)",
 			       getFullId());
-		    BOOST_THROW_EXCEPTION(e);
+		    IMPACT_THROW_EXCEPTION(e);
 	        }
 	        string name = attName->value();
 		
@@ -152,10 +152,10 @@ namespace impact {
 		
 		if( atomArray == 0 ) {
 	      
-	            msError e("can not get the 'atomArray' node in the specie node",
+	            msException e("can not get the 'atomArray' node in the specie node",
 		              "boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCanteraMechanismXml(string path)",
 			      getFullId());
-		    BOOST_THROW_EXCEPTION(e);
+		    IMPACT_THROW_EXCEPTION(e);
 	        }
 	        
 	        string composition = atomArray->value();
@@ -173,10 +173,10 @@ namespace impact {
 		        n = boost::lexical_cast<int>(Elem_Coef[1]);
 		    }
 		    catch(...){
-		        msError e("can not convert the string '"+Elem_Coef[1]+"' in an integer for the compisition map",
+		        msException e("can not convert the string '"+Elem_Coef[1]+"' in an integer for the compisition map",
 		                  "boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCanteraMechanismXml(string path)",
 			           getFullId());
-		        BOOST_THROW_EXCEPTION(e);
+		        IMPACT_THROW_EXCEPTION(e);
 		    }
 		    for( size_t j =0; j<n; j++){
 		      
@@ -191,10 +191,10 @@ namespace impact {
 		
 		if( thermo == 0 ) {
 	      
-	            msError e("can not get the 'thermo' node in the specie node",
+	            msException e("can not get the 'thermo' node in the specie node",
 		              "boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCanteraMechanismXml(string path)",
 			      getFullId());
-		    BOOST_THROW_EXCEPTION(e);
+		    IMPACT_THROW_EXCEPTION(e);
 	        }
 	        
 		for(rapidxml::xml_node<>* xmlNasa = thermo->first_node();
@@ -205,10 +205,10 @@ namespace impact {
 		    
 		    if( floatArray == 0 ) {
 	      
-	                msError e("can not get the 'floatArray' node in the Nasa node",
+	                msException e("can not get the 'floatArray' node in the Nasa node",
 		                  "boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCanteraMechanismXml(string path)",
 			          getFullId());
-		        BOOST_THROW_EXCEPTION(e);
+		        IMPACT_THROW_EXCEPTION(e);
 	            }
 		    vector<double> coefs;
 		    fillVecFromString<double>(string(floatArray->value()),coefs,",");
@@ -256,10 +256,10 @@ namespace impact {
 		
 		try{ atomism::getListAtomsFromName(name,Atoms);
 		}
-		catch(msError& e) {
+		catch(msException& e) {
 		  
 		     e.addContext("boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCeaAscii(string path)" );
-		     BOOST_THROW_EXCEPTION(e);
+		     IMPACT_THROW_EXCEPTION(e);
 		}
 		for( size_t i=0; i<Atoms.size();++i) species->addElement(Atoms[i]);
 		
@@ -285,10 +285,10 @@ namespace impact {
             LOGGER_WRITE(msLogger::DEBUG,"create antioch calculator");	    
 	    try{ update();
 		}
-	    catch(msError& e) {
+	    catch(msException& e) {
 	      
 		 e.addContext("boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCeaAscii(string path)" );
-		 BOOST_THROW_EXCEPTION(e);
+		 IMPACT_THROW_EXCEPTION(e);
 		}
 	    LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCeaAscii(string path)");
 	    return mySharedPtr();

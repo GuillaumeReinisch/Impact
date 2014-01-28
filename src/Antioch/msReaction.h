@@ -78,9 +78,13 @@ namespace impact {
             
             void update() { 
 	      
-	        LOGGER_ENTER_FUNCTION_DBG("void msReaction::update()",getFullId());
+	        IMPACT_LOGIN();
 	        msPhysicalInterface::update();
 		
+		if( isCalculatorLocked ) {
+ 		  IMPACT_LOGOUT();
+		  return;
+		}
 		Calculator->set_reversibility(getReversibility());
 		
 		msChildren<msEntity>::iterator it = Reactants.begin();
@@ -90,9 +94,9 @@ namespace impact {
 			    		          getChemicalMixture()->getIndex( (*it)->getId()) , 
 					          getStoechiometryReactants()[i] );
 		}
-		catch(msError& e){
+		catch(msException& e){
 		    e.addContext("void msReaction::update() : set reactants");
-		    BOOST_THROW_EXCEPTION(e);
+		    IMPACT_THROW_EXCEPTION(e);
 		}
 		try{
 		    it = Products.begin();
@@ -101,29 +105,29 @@ namespace impact {
 					         getChemicalMixture()->getIndex( (*it)->getId()) , 
 					         getStoechiometryProducts()[i] );
 		}
-		catch(msError& e){
+		catch(msException& e){
 		    e.addContext("void msReaction::update() : set products");
-		    BOOST_THROW_EXCEPTION(e);
+		    IMPACT_THROW_EXCEPTION(e);
 		}
 		try{
 		    msChildren<msReactionRate>::iterator itRate = ForwardRates.begin();
 		    for(;itRate!=ForwardRates.end();++itRate) 
 			Calculator->add_forward_rate( (*itRate)->getCalculator().get());
 		}
-		catch(msError& e){
+		catch(msException& e){
 		    e.addContext("void msReaction::update() : set forward rate");
-		    BOOST_THROW_EXCEPTION(e);
+		    IMPACT_THROW_EXCEPTION(e);
 		}
 		try{
 		    map<string,double>::iterator it = Efficiencies.begin();
 		    for(;it!=Efficiencies.end();++it) 
 			Calculator->set_efficiency("",getChemicalMixture()->getIndex((*it).first),(*it).second);
 		}
-		catch(msError& e){
+		catch(msException& e){
 		    e.addContext("void msReaction::update() : set forward rate");
-		    BOOST_THROW_EXCEPTION(e);
+		    IMPACT_THROW_EXCEPTION(e);
 		}
-	        LOGGER_EXIT_FUNCTION2("void msReaction::update()");
+	        IMPACT_LOGOUT();
 	    }
             
         public:
@@ -131,11 +135,11 @@ namespace impact {
 	    msReaction(): msPhysicalInterface() {
                 
                 constructVar("msReaction","Reaction","reaction base");
-		isReversible=1;
+		isReversible=1;isCalculatorLocked=0;
             }
             void initialize() {
 	      
-                LOGGER_ENTER_FUNCTION_DBG("void msReaction::initialize()","");
+                IMPACT_LOGIN();
                 
                 msPhysicalInterface::initialize();
 		
@@ -150,7 +154,7 @@ namespace impact {
 		msTreeMapper::declareAttribute(Efficiencies,"Efficiencies");
 		msTreeMapper::declareAttribute(isReversible,"isReversible");
 		
-                LOGGER_EXIT_FUNCTION2("void msReaction::initialize()");
+                IMPACT_LOGOUT();
             }
 	    
 	    template<class T>
@@ -174,10 +178,10 @@ namespace impact {
 	     */ 
             boost::shared_ptr<msTreeMapper> setChemicalMixture(boost::shared_ptr<msChemicalMixture> mixture){
                 
-	        LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msTreeMapper> msReaction::setChemicalMixture()",getFullId());
+	        IMPACT_LOGIN();
 	        msTreeMapper::update(ChemicalMixture,mixture);
-		//update();
-		LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msTreeMapper> msReaction::setChemicalMixture()");
+		update();
+		IMPACT_LOGOUT();
 		return mySharedPtr();
             }    
  
@@ -188,11 +192,11 @@ namespace impact {
 	     */  
             boost::shared_ptr<msTreeMapper> addReactant(boost::shared_ptr<msEntity> reactant,size_t coef){
 	      
-                LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msTreeMapper> msReaction::addReactant(boost::shared_ptr<msEntity> reactant,size_t coef)",getFullId());
+                IMPACT_LOGIN();
 	        msTreeMapper::addElementToChildren(Reactants,reactant);
 		StoechiometryReactants.push_back(coef);
-	        //update();
-		LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msTreeMapper> msReaction::addReactant(boost::shared_ptr<msEntity> reactant,size_t coef)");
+	        update();
+		IMPACT_LOGOUT();
 		return mySharedPtr();
             }  
  
@@ -203,11 +207,11 @@ namespace impact {
 	     */  
             boost::shared_ptr<msTreeMapper> addProduct(boost::shared_ptr<msEntity> product,size_t coef){
                 
-	        LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msTreeMapper> msReaction::addProduct(boost::shared_ptr<msEntity> product,size_t coef)",getFullId()); 
-	        msTreeMapper::addElementToChildren(Products,product);
+	        IMPACT_LOGIN();
+		msTreeMapper::addElementToChildren(Products,product);
 	        StoechiometryProducts.push_back(coef);
-	        //update();
-		LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msTreeMapper> msReaction::addProduct(boost::shared_ptr<msEntity> product,size_t coef)");
+	        update();
+		IMPACT_LOGOUT();
 		return mySharedPtr();
             }
             
@@ -217,11 +221,10 @@ namespace impact {
 	     */  
             boost::shared_ptr<msTreeMapper> addForwardRate(boost::shared_ptr<msReactionRate> rate){
                 
-	        LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msTreeMapper> msReaction::addForwardRate(boost::shared_ptr<msReactionRate> rate)",getFullId()); 
-	        msTreeMapper::addElementToChildren(ForwardRates,rate);
-		if( !rate->hasParent() ) rate->setAffiliation(mySharedPtr());
-	        //update();
-		LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msTreeMapper> msReaction::addForwardRate(boost::shared_ptr<msReactionRate> rate)");
+	        IMPACT_LOGIN();
+		msTreeMapper::addElementToChildren(ForwardRates,rate);
+		update();
+		IMPACT_LOGOUT();
 		return mySharedPtr();
             }
             /** \brief set the reversibility
@@ -230,10 +233,10 @@ namespace impact {
 	     */
             boost::shared_ptr<msTreeMapper> setReversibility(bool isreversible){
                
-	       LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msTreeMapper> msReaction::setReversibility(bool isreversible)",getFullId());
+	       IMPACT_LOGIN();
 	       isReversible =  isreversible;
-	       //update();
-	       LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msTreeMapper> msReaction::setReversibility(bool isreversible)");
+	       update();
+	       IMPACT_LOGOUT();
 	       return mySharedPtr();
             }
 
@@ -244,20 +247,12 @@ namespace impact {
 	     */
             boost::shared_ptr<msTreeMapper> setReactantStoechiometry( boost::shared_ptr<msEntity> target, double coef ){
                
-	       LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msTreeMapper> msReaction::setReactantStoechiometry( boost::shared_ptr<msEntity> target, double coef )",getFullId());
-	       
-	       msChildren<msEntity>::iterator it =Reactants.find(target); 
-		
-	       if(it==Reactants.end()) {
-		  
-		     msError e("Can not find the specie "+target->getId()+" in the Reactants list",
-		               "boost::shared_ptr<msTreeMapper> msReaction::setReactantStoechiometry( boost::shared_ptr<msEntity> target, double coef )",
-			       getFullId());
-		    BOOST_THROW_EXCEPTION(e); 
-	       }
-		
-	       StoechiometryReactants[(it-Reactants.begin())]=coef;
-	       LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msTreeMapper> msReaction::setReactantStoechiometry( boost::shared_ptr<msEntity> target, double coef )");
+	       IMPACT_LOGIN();
+	       IMPACT_EXCEPT_IF( [&] () { return (Reactants.find(target)==Reactants.end()); },
+		       "Can not find the product of id "+target->getId()+" in the products list");
+	       StoechiometryReactants[Reactants.find(target)-Reactants.begin()]=coef;
+	       update();
+	       IMPACT_LOGOUT();
 	       return mySharedPtr();
             }
             
@@ -268,19 +263,13 @@ namespace impact {
 	     */
             boost::shared_ptr<msTreeMapper> setProductStoechiometry( boost::shared_ptr<msEntity> target, double coef ){
                
-	       LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msTreeMapper> setProductStoechiometry( boost::shared_ptr<msEntity> target, double coef )",getFullId());
-	       msChildren<msEntity>::iterator it =Products.find(target); 
-		
-	       if(it==Products.end()) {
-		  
-		     msError e("Can not find the specie "+target->getId()+" in the Products list",
-		               "boost::shared_ptr<msTreeMapper> msReaction::setReactantStoechiometry( boost::shared_ptr<msEntity> target, double coef )",
-			       getFullId());
-		    BOOST_THROW_EXCEPTION(e); 
-	       }
-		
-	       StoechiometryProducts[(it-Products.begin())]=coef;
-	       LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msTreeMapper> setProductStoechiometry( boost::shared_ptr<msEntity> target, double coef )");
+	       IMPACT_LOGIN();
+	       IMPACT_EXCEPT_IF( [&] () { return (Products.find(target)==Products.end()); },
+		       "Can not find the product of id "+target->getId()+" in the products list");
+	       
+	       StoechiometryProducts[ Products.find(target) - Products.begin() ]=coef;
+	       update();
+	       IMPACT_LOGOUT();
 	       return mySharedPtr();
             }
             
@@ -289,22 +278,29 @@ namespace impact {
 	    * \param name name of the specie
 	    * \param v efficiency
 	    */ 
-            boost::shared_ptr<msTreeMapper> setEfficiency(std::string name, double v){ Efficiencies[name]=v; }
+            boost::shared_ptr<msTreeMapper> setEfficiency(std::string name, double v){ 
+	      
+	      IMPACT_LOGIN();
+	      Efficiencies[name]=v;
+	      update();
+	      IMPACT_LOGOUT();
+	      return mySharedPtr();
+	    }
             
 	    //! \brief return the reactants 
-	    vector<boost::shared_ptr<msEntity> > getReactants()       const { return Reactants.getElements(); }
+	    vector<boost::shared_ptr<msEntity> > getReactants()	const { return Reactants.getElements(); }
 	    
 	    //! \brief return the products 
-	    vector<boost::shared_ptr<msEntity> > getProducts()        const { return Products.getElements();  }
+	    vector<boost::shared_ptr<msEntity> > getProducts()	const { return Products.getElements();  }
 	    
 	    //! \brief return the reactants' stochiometric coefficients 
-	    vector<double> getStoechiometryReactants() const { return StoechiometryReactants; }   
+	    vector<double> getStoechiometryReactants() 		const { return StoechiometryReactants; }   
 	    
 	    //! \brief return the products' stochiometric coefficients 	    
-	    vector<double> getStoechiometryProducts()  const { return StoechiometryProducts; }
+	    vector<double> getStoechiometryProducts()  		const { return StoechiometryProducts; }
 	    
 	    //! \brief return 1 if the reaction is reversible, 0 else
-	    bool getReversibility()                        const {return isReversible; }
+	    bool getReversibility()                        	const { return isReversible; }
 	    
 	    //! \brief return the order of the reaction w/ reactants
 	    double getReactantOrder() const { 
@@ -326,42 +322,33 @@ namespace impact {
 	     */ 
 	    boost::shared_ptr<msReactionRate> getForwardRate(size_t i) {
 	      
-	        boost::shared_ptr<msReactionRate> rate;
-	        try{
-	            rate= ForwardRates[i].getSharedPtr();
-		}
-		catch(msError& e){
-		    e.addContext("boost::shared_ptr<msRate> msReactionDerived::getForwardRate(size_t i)");
-		}
-		
+	        IMPACT_LOGIN();
+	        boost::shared_ptr<msReactionRate> rate = ForwardRates[i].getSharedPtr();
+		IMPACT_LOGOUT();
 	        return rate;
 	    };
 
 	    //! \brief return the unit of the forward rate coefficient    
 	    msUnit getUnitForwardRateCoefficient() const {
 	      
-	           if(getReactantOrder()<1){
-		 
-		       msError e("The order of the reaction is inferior to one",
-		                 "msUnit msReaction::getUnitForwardRateCoefficient()",getFullId());
-		       BOOST_THROW_EXCEPTION(e);
-	           }
-		   stringstream unit;
-		   unit<<"s^-1.";
-		   if(getReactantOrder()>0)
-	              unit<<getUnits()->getLengthStr()<<"^"<<3*(getReactantOrder()-1)
-		       <<"."<<getUnits()->getQuantityStr()<<"^-"<<(getReactantOrder()-1);
-		   msUnit u;
-		   u.set(unit.str());
-		   return u;	      
+	        IMPACT_LOGIN();
+		size_t o = getReactantOrder();
+	        IMPACT_EXCEPT_IF( [&] () { return (o!=1) && (o!=2); },
+			  "The order of the reaction should be one or two");
+
+	        if (o==1)  return getUnits()->getUnit(msUnit::vReactionRateFirstOrder);
+		if (o==2)  return getUnits()->getUnit(msUnit::vReactionRateSecondOrder);
+		
+		IMPACT_LOGOUT();
+		return msUnit();
 	    }
 	    
 	    std::ostream& print(std::ostream& out) const {
 	     
-	       msPhysicalInterface::print(out);
-               output::printHeader(out,"msReaction");
-	       Calculator->print(out);
-	       return out;
+	        msPhysicalInterface::print(out);
+                output::printHeader(out,"msReaction");
+	        Calculator->print(out);
+	        return out;
 	    };
 	   
 	    
@@ -373,13 +360,13 @@ namespace impact {
             //! \brief compute the forward rate coefficient for the mixture state
 	    virtual double  computeForwardRateCoefficient() { 
 	      
-	      throwNotImplemented("double  computeForwardRateCoefficient( const double& T)"); 
+	      IMPACT_THROW_EXCEPTION( msMethodNotDefined ("double  msReaction::computeForwardRateCoefficient( const double& T)"));
 	    };
 	    
             //! \brief compute the rate of progress for the mixture state
 	    virtual double  computeRateOfProgress() { 
 	      
-	      throwNotImplemented("double  computeForwardRateCoefficient( const double& T)"); 
+	      IMPACT_THROW_EXCEPTION( msMethodNotDefined ("double  msReaction::computeForwardRateCoefficient( const double& T)"));
 	    };
 	    
 	    //@}
@@ -391,6 +378,9 @@ namespace impact {
 	    void setCalculator(boost::shared_ptr< Antioch::Reaction<double> > calc){
 	        Calculator = calc;
 		}
+		
+	    bool isCalculatorLocked;
+	    
 	private:
 	    
 	    bool isReversible;
@@ -407,14 +397,8 @@ namespace impact {
 	   	    
 	    map<string,double> Efficiencies;
 	    
-	    boost::shared_ptr< Antioch::Reaction<double> >     Calculator; 
+	    boost::shared_ptr< Antioch::Reaction<double> >     Calculator; 	    
 	    
-	    void throwNotImplemented(string fctName) const {
-	      
-	        msError e("The class msReaction if virtual",fctName,getFullId());
-		BOOST_THROW_EXCEPTION(e);
-	    }
-		  
          };
       
 	
@@ -463,13 +447,15 @@ namespace impact {
             
             void update() {
                 
-                LOGGER_ENTER_FUNCTION_DBG("void msReactionDerived::update()",getFullId());
-		setCalculator( boost::shared_ptr<AntiochCalculatorType>(
-		               new AntiochCalculatorType(getChemicalMixture()->noOfEntities(),
-							 getId(),1) )  
-			      );
+                IMPACT_LOGIN();
+		if( ! isCalculatorLocked ) 
+ 		    setCalculator( boost::shared_ptr<AntiochCalculatorType>(
+		                   new AntiochCalculatorType(getChemicalMixture()->noOfEntities(),
+				   getId(),1) )  
+			          );
+		    
 		msReaction::update();
-                LOGGER_EXIT_FUNCTION2("void msReactionDerived::update()");
+                IMPACT_LOGOUT();
             }
             
         public:
@@ -483,64 +469,57 @@ namespace impact {
             
             static boost::shared_ptr<msReactionDerived> New(){
                 
-                LOGGER_ENTER_FUNCTION_DBG("static boost::shared_ptr<msReactionDerived> msReactionDerived::New()","");
+		//return IMPACT_NEW( [&]() {return new msReactionDerived();} );
+		
+                IMPACT_LOGIN_STATIC();
                 boost::shared_ptr<msReactionDerived> T( new msReactionDerived() );
                 T->initialize();
                 T->update();
-                LOGGER_EXIT_FUNCTION2("static boost::shared_ptr<msReactionDerived> msReactionDerived::New()");
+                IMPACT_LOGOUT();
                 return T;
             }
             
             void initialize() {
 	      
-                LOGGER_ENTER_FUNCTION_DBG("void msReactionDerived::initialize()","");
+                IMPACT_LOGIN();
                 msReaction::initialize();
-		LOGGER_EXIT_FUNCTION2("void msReactionDerived::initialize()");
+		IMPACT_LOGOUT();
             }
             
             
 	    double  computeForwardRateCoefficient() {
 	      
-	       double k=0;
+	        IMPACT_LOGIN();
+	        double k=0; 
+	        boost::shared_ptr<AntiochCalculatorType> calc = getCastedCalculator<AntiochCalculatorType>();
 	       
-	       try{
-	           k = getCastedCalculator<AntiochCalculatorType>()->compute_forward_rate_coefficient( 
-	               getChemicalMixture()->getMolarDensities() , 
-		       getChemicalMixture()->getTemperature() );
-	       }
-	       catch(msError& e){
-		 
-		   e.addContext("double msReactionDerived::computeForwardRateCoefficient()");
-		   BOOST_THROW_EXCEPTION(e);
-	       }
-	       k *= getUnits()->convert(getUnitForwardRateCoefficient().getStr(),1);
+	        IMPACT_TRY([&](){ k = calc->compute_forward_rate_coefficient( 
+	                             getChemicalMixture()->getMolarDensities() , 
+		                     getChemicalMixture()->getTemperature() );
+	        });
 	       
-	       return k;
+	        k *= getUnits()->convert(getUnitForwardRateCoefficient().getStr(),1);
+	        IMPACT_LOGOUT();
+	        return k;
 	    };
 
 	    double  computeRateOfProgress( const double& T) {
 	      
-	       if( isReversible && !ChemicalMixture->isDerivedFrom("msThermoMixture") ) {
-		 
-		   msError e("The computation of the reverse RoP from thermo data for reaction "+getId()+
-		             "is required, but mixture is not derived from msThermoMixture ",
-	                     "double msReactionDerived::computeRateOfProgress( const double& T) const ",
-			     getFullId() );
-		   BOOST_THROW_EXCEPTION(e); 
-	       }
-	       boost::shared_ptr<msThermoMixture> thermo = 
-	           ChemicalMixture->impact_static_cast<msThermoMixture>();
-	
-	       double P0_RT = 1e5/(csts::R*T);
-	       double k = getCastedCalculator<AntiochCalculatorType>()->compute_rate_of_progress(
-		          ChemicalMixture->getMolarDensities() ,
-			  T , P0_RT, thermo->getH_RT_minus_SR() );
-	
-	       stringstream unitCalc;
-	       unitCalc<<"kmol.s^-1";
-	       k *= getUnits()->convert(unitCalc.str(),1);
+	        IMPACT_LOGIN();
+	        IMPACT_EXCEPT_IF( [&]() { return isReversible && !ChemicalMixture->isDerivedFrom("msThermoMixture"); },
+			     "The mixture is not derived from msThermoMixture and reverse rates are required");
 	       
-	       return k;
+	        boost::shared_ptr<msThermoMixture> thermo = 
+	            ChemicalMixture->impact_static_cast<msThermoMixture>();
+	
+	        double P0_RT = 1e5/(csts::R*T);
+	        double k = getCastedCalculator<AntiochCalculatorType>()->compute_rate_of_progress(
+		           ChemicalMixture->getMolarDensities() ,
+		 	  T , P0_RT, thermo->getH_RT_minus_SR() );
+	       
+	        k *= getUnits()->convert(msUnit("kmol.s^-1"),1);
+	        IMPACT_LOGOUT();
+	        return k;
 	    };
 	 	    
 	    std::ostream& print(std::ostream& out) const {

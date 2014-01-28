@@ -133,10 +133,10 @@ namespace impact {
 	        if(i==1) return CoeffsFit_1000_6000;
 		if(i==2) return CoeffsFit_6000_20000;
 		
-		msError e("index out of bounds: 3 fits maximum","vector<double> msMotionCEA::getCoeffsOfFit(size_t i)",
+		msException e("index out of bounds: 3 fits maximum","vector<double> msMotionCEA::getCoeffsOfFit(size_t i)",
 			  getFullId());
 		          
-		BOOST_THROW_EXCEPTION(e);
+		IMPACT_THROW_EXCEPTION(e);
 		return vector<double>();
 	    };
 	    
@@ -158,11 +158,11 @@ namespace impact {
 	    
             double Q(double T){
 	      
-                msError e("The computation of Q for a msMotionCEA need to be implemented",
+                msException e("The computation of Q for a msMotionCEA need to be implemented",
 			  "vector<double> msMotionCEA::Q(double T)",
 			   getFullId());
 		          
-		BOOST_THROW_EXCEPTION(e);
+		IMPACT_THROW_EXCEPTION(e);
 		
                 return QfromDOS(T);
             };
@@ -170,22 +170,22 @@ namespace impact {
 	    
             void computeDOS() {
 	      
-	        msError e("The computation of the DOS for a msMotionCEA need to be implemented",
+	        msException e("The computation of the DOS for a msMotionCEA need to be implemented",
 			  "vector<double> msMotionCEA::computeDOS()",
 			   getFullId());
 		          
-		BOOST_THROW_EXCEPTION(e);
+		IMPACT_THROW_EXCEPTION(e);
             };;
             
             
             //! Density of states at energy E
             virtual double DOS( double E ){
                 
-	        msError e("The computation of the DOS for a msMotionCEA need to be implemented",
+	        msException e("The computation of the DOS for a msMotionCEA need to be implemented",
 			  "vector<double> msMotionCEA::DOS( double E)",
 			   getFullId());
 		          
-		BOOST_THROW_EXCEPTION(e);
+		IMPACT_THROW_EXCEPTION(e);
 		
             };
 
@@ -231,10 +231,10 @@ namespace impact {
 	        if( nFit==2 ) CoeffsFit_6000_20000 = fit;
 	        if( nFit>=3 ) {
 	      
-	            msError e("CEA fit support 3 fits maximum",
+	            msException e("CEA fit support 3 fits maximum",
 			      "add msMotionCEA:: addCoeffsFit(vector<double>& fit) ",
 		  	      getFullId());
-		    BOOST_THROW_EXCEPTION(e);
+		    IMPACT_THROW_EXCEPTION(e);
 	        }
 		nFit++;
 	  }
@@ -245,10 +245,10 @@ namespace impact {
 	    
 	      if( (T<200) || (T>20000) ) {
 	      
-	          msError e("CEA fit only for T>200 and T<20000 (T="+output::getString<double>(T)+")",
+	          msException e("CEA fit only for T>200 and T<20000 (T="+output::getString<double>(T)+")",
 			    "vector<double>& msMotionCEA:: getFit(double T) ",
 			    getFullId());
-		  BOOST_THROW_EXCEPTION(e);
+		  IMPACT_THROW_EXCEPTION(e);
 	      }
 	      if( T>=200  && T < 1000 )    return CoeffsFit_200_1000;
 	      if( T>=1000 && T < 6000 )    return CoeffsFit_1000_6000;
