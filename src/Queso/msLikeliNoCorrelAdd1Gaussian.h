@@ -101,10 +101,10 @@ namespace impact {
                 double sigma2 = pow( getErrorModelParameters()->getVariable(0)->getValue(),2);
                 if(sigma2==0){
                     
-                    msError e("The model error is equal to zero",
+                    msException e("The model error is equal to zero",
                               "virtual double msLikeliNoCorrelAdd1Gaussian::likelihood(double qoi, double measure, int i)",
                               getFullId());
-                    BOOST_THROW_EXCEPTION(e);
+                    IMPACT_THROW_EXCEPTION(e);
                 }
                 double error2 = pow(qoi-measure,2);
                 double pi = impact::csts::pi;

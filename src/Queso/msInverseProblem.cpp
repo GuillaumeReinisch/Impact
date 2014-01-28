@@ -122,10 +122,10 @@ namespace impact {
             try {
                 result = InverseProblem->likelihood(paramValues);
                 
-            } catch (msError& e) {
+            } catch (msException& e) {
                 
                 e.addContext("double likelihoodRoutine_(const GslVector& paramValues,const GslVector* paramDirection,const void*  Data,GslVector*  gradVector,GslMatrix*  hessianMatrix,GslVector* hessianEffect)");
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             
             return(result);

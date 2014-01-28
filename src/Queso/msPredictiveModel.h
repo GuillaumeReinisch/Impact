@@ -131,7 +131,7 @@ namespace impact {
                 
                 if(ParameterSpace->noOfDim()!=values.size()) {
                     
-                    BOOST_THROW_EXCEPTION(msError( "values.size() != ParameterSpace->noOfDim() ",
+                    IMPACT_THROW_EXCEPTION(msException( "values.size() != ParameterSpace->noOfDim() ",
                                                   " boost::shared_ptr<msTreeMapper> setModelParametersValues(vector<double>& values)",
                                                   getFullId()
                                                   )
@@ -157,7 +157,7 @@ namespace impact {
              */
             virtual boost::shared_ptr<msTreeMapper> updateParametersModification() {
                 
-                BOOST_THROW_EXCEPTION(msError( "This method is virtual, you need to overide it",
+                IMPACT_THROW_EXCEPTION(msException( "This method is virtual, you need to overide it",
                                               "boost::shared_ptr<vector<double> > msPredictiveModel::predict()",
                                               getFullId()
                                               )
@@ -175,7 +175,7 @@ namespace impact {
              */
             virtual boost::shared_ptr<msTreeMapper> predict() {
                 
-                BOOST_THROW_EXCEPTION(msError( "This method is virtual, you need to overide it",
+                IMPACT_THROW_EXCEPTION(msException( "This method is virtual, you need to overide it",
                                               "boost::shared_ptr<vector<double> > msPredictiveModel::predict()",
                                               getFullId()
                                               )
@@ -187,9 +187,9 @@ namespace impact {
             size_t noOfQois() {
 	      
                 if(Qois.size()==0){
-		  msError e("The number of Qois is 0, did you set the QOI in the 'update' method of your predictive model?",
+		  msException e("The number of Qois is 0, did you set the QOI in the 'update' method of your predictive model?",
 			    "size_t msPredictiveModel::noOfQois()",getFullId());
-		  BOOST_THROW_EXCEPTION(e);
+		  IMPACT_THROW_EXCEPTION(e);
 		}
                 return Qois.size();
             }
@@ -219,8 +219,8 @@ namespace impact {
                     
                     stringstream out;
                     out<<"The Qoi of id '"<<id<<"' has not been found.";
-                    msError e(out.str(),"double msPredictiveModel::getQoi(string id)",getFullId());
-                    BOOST_THROW_EXCEPTION(e);
+                    msException e(out.str(),"double msPredictiveModel::getQoi(string id)",getFullId());
+                    IMPACT_THROW_EXCEPTION(e);
                 }
                 return (*it).second;
             }
@@ -234,8 +234,8 @@ namespace impact {
                     
                     stringstream out;
                     out<<"The Qoi index is out of range.";
-                    msError e(out.str(),"double msPredictiveModel::getQoi(string id)",getFullId());
-                    BOOST_THROW_EXCEPTION(e);
+                    msException e(out.str(),"double msPredictiveModel::getQoi(string id)",getFullId());
+                    IMPACT_THROW_EXCEPTION(e);
                 }
                 map<string,double>::const_iterator it = Qois.begin();
                 std::advance(it,i);

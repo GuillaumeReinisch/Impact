@@ -124,7 +124,7 @@ namespace impact {
              */
             virtual double likelihood(double prediction, double measure, int i) {
                 
-                BOOST_THROW_EXCEPTION(msError( "This method is virtual, you need to overide it",
+                IMPACT_THROW_EXCEPTION(msException( "This method is virtual, you need to overide it",
                                               "double msLikeliNoCorrel::evaluate()",
                                               getFullId()
                                               )

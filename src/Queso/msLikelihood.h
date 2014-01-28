@@ -163,7 +163,7 @@ namespace impact {
 	      
 	        if(ErrorModelParameters->noOfDim()!=values.size()) {
                     
-                    BOOST_THROW_EXCEPTION(msError( "values.size() != ErrorModelParameters->noOfDim() ",
+                    IMPACT_THROW_EXCEPTION(msException( "values.size() != ErrorModelParameters->noOfDim() ",
                                                   " boost::shared_ptr<msTreeMapper> msLikelihood::setErrorModelParametersValues(vector<double>& values)",
                                                   getFullId()
                                                   )
@@ -222,7 +222,7 @@ namespace impact {
              */
             virtual double evaluate() {
                 
-                BOOST_THROW_EXCEPTION(msError( "This method is virtual, you need to overide it",
+                IMPACT_THROW_EXCEPTION(msException( "This method is virtual, you need to overide it",
                                               "double msLikelihood::evaluate()",
                                               getFullId()
                                               )
@@ -259,9 +259,9 @@ namespace impact {
                     out<<"The model's scenario and the measure's coordinates have to point to"
                     <<" the same object. This is not the case, please reorganize your data.";
                     
-                    msError e(out.str(),
+                    msException e(out.str(),
                               " boost::shared_ptr<msTreeMapper> msLikelihood::setMeasures(boost::shared_ptr<msMultiDiracs> measures)",getFullId());
-                    BOOST_THROW_EXCEPTION(e);
+                    IMPACT_THROW_EXCEPTION(e);
                 }
                 if( getCoordinates() != PredictiveModel->getParameterSpace()){
                     
@@ -269,9 +269,9 @@ namespace impact {
                     out<<"The model's parameter space and the coordinates of the likelihood have to point to"
                     <<" the same object. This is not the case, please reorganize your data.";
                     
-                    msError e(out.str(),
+                    msException e(out.str(),
                               " boost::shared_ptr<msTreeMapper> msLikelihood::setMeasures(boost::shared_ptr<msMultiDiracs> measures)",getFullId());
-                    BOOST_THROW_EXCEPTION(e);
+                    IMPACT_THROW_EXCEPTION(e);
                 }
             }
             

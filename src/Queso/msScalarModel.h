@@ -91,9 +91,9 @@ namespace impact {
                         out<<"can not cast the variable into a msModelParameter, "
                         <<"parameter of the model have to be of type msModelParameter, "
                         <<"type of the variable: "<< getParameterSpace()->getVariable(i)->getType();
-                        msError e(out.str(),
+                        msException e(out.str(),
                                   "void msScalarModel::update()",getFullId());
-                        BOOST_THROW_EXCEPTION(e);
+                        IMPACT_THROW_EXCEPTION(e);
                     }
                     
                     ptr->addRefOnValue( Predictor->getConstant((*it).first) ) ;
