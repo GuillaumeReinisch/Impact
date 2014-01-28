@@ -139,10 +139,10 @@ namespace impact {
 	        map<string,size_t>::const_iterator it = IndexFromId.find(id);
 		
 		if( it == IndexFromId.end() ) {
-		     msError e("the Dirac of id "+id+"can not be found",
+		     msException e("the Dirac of id "+id+"can not be found",
 		             "double msMultiDiracs::getValueById( string id) const ",
 			     getFullId());
-		   BOOST_THROW_EXCEPTION(e);
+		   IMPACT_THROW_EXCEPTION(e);
 		}
 				  
                 return Diracs[(*it).second]->evaluate();

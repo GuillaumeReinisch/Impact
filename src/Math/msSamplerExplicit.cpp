@@ -91,7 +91,7 @@ namespace impact {
 	  }
           
           if(coor->noOfDim() != Samples[CurrentIndex].size() )
-               BOOST_THROW_EXCEPTION(msError("coordinates (size="+output::getString<int>(coor->noOfDim())+") and data points loaded "+
+               IMPACT_THROW_EXCEPTION(msException("coordinates (size="+output::getString<int>(coor->noOfDim())+") and data points loaded "+
                                              "(size="+output::getString<int>( Samples[CurrentIndex].size())+") are not coherent ("+
                                              "CurrentIndex="+output::getString<int>( CurrentIndex )+")",
                                              "bool getNextPoint(boost::shared_ptr<msGeneralizedCoordinates> coor)",

@@ -66,7 +66,7 @@ namespace impact
         double msLinearScalarFunction::evaluate(){
             
             if(Indice>=getCoordinates()->noOfDim())
-                BOOST_THROW_EXCEPTION(msError("Indice of the coordinate out of bounds the coordinates container ",
+                IMPACT_THROW_EXCEPTION(msException("Indice of the coordinate out of bounds the coordinates container ",
                                               "double msLinearScalarFunction::evaluate()",getFullId())
                                       );
             return( a * (*getCoordinates())[Indice]->getValue() + b );

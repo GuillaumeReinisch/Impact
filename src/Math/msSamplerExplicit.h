@@ -132,10 +132,10 @@ namespace impact {
                     
                     return Samples[0].size();
                 }
-                msError e("no sample has been defined yet",
+                msException e("no sample has been defined yet",
                           "size_t msSamplerExplicit::noOfDim() const",
                           getFullId());
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             /*! \brief iterate the current sample
              *
@@ -171,7 +171,7 @@ namespace impact {
             boost::shared_ptr<msTreeMapper> setSample(size_t i){
                 
                 if(i>=Samples.size())
-                    BOOST_THROW_EXCEPTION(msError("indice out of range",
+                    IMPACT_THROW_EXCEPTION(msException("indice out of range",
                                                   "boost::shared_ptr<msTreeMapper> setSample(boost::shared_ptr<msGeneralizedCoordinates> coor,size_t i)",
                                                   getFullId())
                                           );
@@ -191,17 +191,17 @@ namespace impact {
                 
                 if ( noOfSamples() == 0 ) {
                     
-                    msError e("no sample has been defined yet",
+                    msException e("no sample has been defined yet",
                           "boost::shared_ptr<msTreeMapper> msSamplerExplicit::setCoordinatesRange(boost::shared_ptr<msGeneralizedCoordinates> coor)",
                           getFullId());
-                    BOOST_THROW_EXCEPTION(e);
+                    IMPACT_THROW_EXCEPTION(e);
                 }
                 if( noOfDim() != getCoordinates()->noOfDim() ) {
                     
-                    msError e("dimension of the coordinates and the samples different",
+                    msException e("dimension of the coordinates and the samples different",
                               "boost::shared_ptr<msTreeMapper> msSamplerExplicit::setCoordinatesRange(boost::shared_ptr<msGeneralizedCoordinates> coor)",
                               getFullId());
-                    BOOST_THROW_EXCEPTION(e);
+                    IMPACT_THROW_EXCEPTION(e);
                 }
                 
                 for(size_t i=0;i<getCoordinates()->noOfDim();i++) {
@@ -234,7 +234,7 @@ namespace impact {
             boost::shared_ptr<msTreeMapper> addSample(vector<double> sample) {
                 
                 if( (Samples.size()>0) && (Samples[Samples.size()-1].size()!=sample.size()))
-                    BOOST_THROW_EXCEPTION(msError("sample size not consistent with previous sample",
+                    IMPACT_THROW_EXCEPTION(msException("sample size not consistent with previous sample",
                                                   "boost::shared_ptr<msTreeMapper> msSamplerExplicit::addSample(vector<double> sample)",
                                                   getFullId())
                                           );

@@ -108,7 +108,7 @@ namespace impact {
                 
                 double a=(*it).second;
                 if( (*it).first.size() != getCoordinates()->noOfDim() )
-                    BOOST_THROW_EXCEPTION(msError("number of variables in the polynome different to the number of coordinates",
+                    IMPACT_THROW_EXCEPTION(msException("number of variables in the polynome different to the number of coordinates",
                                                   "double msPolynomial::evaluate() const",getFullId())
                                           );
                 for( size_t i=0; i<(*it).first.size();++i){

@@ -131,10 +131,10 @@ namespace impact {
             boost::shared_ptr<msTreeMapper> setSteps(vector<double> mins, vector<double> maxs,vector<double> values) {
                 if( (mins.size()!=maxs.size())|| (values.size()!=maxs.size())){
                     
-                    msError e("container does not have the same size.",
+                    msException e("container does not have the same size.",
                               "boost::shared_ptr<msTreeMapper> msStepFunction::define(vector<double> mins, vector<double> maxs,vector<double> values)",
                               getFullId());
-                    BOOST_THROW_EXCEPTION(e);
+                    IMPACT_THROW_EXCEPTION(e);
                 }
                 Values=values;Mins=mins;Maxs=maxs;
                 return mySharedPtr();
@@ -144,10 +144,10 @@ namespace impact {
                 
                 double r = 0;
                 if( ! getCoordinates() )
-                    BOOST_THROW_EXCEPTION(msError("Coordinates are not set, use the method setCoordinates.","double msStepFunction::evaluate()",getFullId()));
+                    IMPACT_THROW_EXCEPTION(msException("Coordinates are not set, use the method setCoordinates.","double msStepFunction::evaluate()",getFullId()));
                 
                 if(IndexCoordinate>=getCoordinates()->noOfDim())
-                    BOOST_THROW_EXCEPTION(msError("Index of the coordinate out of bounds the coordinates container ","double msStepFunction::evaluate()",getFullId()));
+                    IMPACT_THROW_EXCEPTION(msException("Index of the coordinate out of bounds the coordinates container ","double msStepFunction::evaluate()",getFullId()));
                 
                 double x = (*(getCoordinates()))[IndexCoordinate]->getValue(*(getCoordinates()->getUnits()));
                 

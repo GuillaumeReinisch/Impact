@@ -249,7 +249,7 @@ namespace impact {
             vector<double> coefs;
             try{ BasisSet->projection(*ScalarField,*Sampler,coefs);
             }
-            catch(msError& e)
+            catch(msException& e)
             {
                 e.addContext("Can not realize the projection of the field on the polynomial basis (void msRepromodel::fit())"); 
             }

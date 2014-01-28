@@ -71,7 +71,7 @@ namespace impact {
             
             ifstream input(filename.c_str());
             if(!input.is_open())
-                BOOST_THROW_EXCEPTION(msError("can not open file of name "+filename+". The file exists?","boost::shared_ptr<msTreeMapper> msDiracs::load(string filename)",getFullId()) );
+                IMPACT_THROW_EXCEPTION(msException("can not open file of name "+filename+". The file exists?","boost::shared_ptr<msTreeMapper> msDiracs::load(string filename)",getFullId()) );
             
             char line[500];  bool eof=0;
             input.getline(line,500);

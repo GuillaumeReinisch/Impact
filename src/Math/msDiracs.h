@@ -156,10 +156,10 @@ namespace impact {
             
                 if(! Sampler.getSharedPtr() ) {
                     
-                    msError e("You have to set the sampler before adding dirac function",
+                    msException e("You have to set the sampler before adding dirac function",
                               "boost::shared_ptr<msTreeMapper> msDirac::setValues(vector<double> values)",
                               getFullId());
-                    BOOST_THROW_EXCEPTION(e);
+                    IMPACT_THROW_EXCEPTION(e);
                 }
                 
                 if(values.size()!=Sampler->noOfSamples()){
@@ -169,10 +169,10 @@ namespace impact {
                     <<") does not match the number of sample defined in the sampler"
                     <<" ("<<Sampler->noOfSamples()<<").";
                     
-                    msError e(out.str(),
+                    msException e(out.str(),
                               "boost::shared_ptr<msTreeMapper> msDirac::setValues(vector<double> values)",
                               getFullId());
-                    BOOST_THROW_EXCEPTION(e);
+                    IMPACT_THROW_EXCEPTION(e);
                 }
                 Values=values;
                 
