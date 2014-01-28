@@ -86,10 +86,10 @@ namespace impact {
                     VibDensOfStates = msVectorFit1d::New();
                     VibSumOfStates  = msVectorFit1d::New();
                 }
-                catch(msError& e){
+                catch(msException& e){
                     
                     e.addContext("void msMotionsContainer::initialize()");
-                    BOOST_THROW_EXCEPTION(e);
+                    IMPACT_THROW_EXCEPTION(e);
                 }
             }
             
@@ -102,7 +102,7 @@ namespace impact {
                 try{ boost::shared_ptr<msTreeMapper> ptr = getChild("Rotor");
                     declareChild<msRigidRotor>(Rotor,boost::static_pointer_cast<msRigidRotor>(ptr),"Rotor");
                 }
-                catch(msError& e){;}
+                catch(msException& e){;}
             }
             
             
@@ -164,9 +164,9 @@ namespace impact {
             
             void throwUnitsException(string method){
                 
-                msError e("The motions container and the included motion have to share the same units system",
+                msException e("The motions container and the included motion have to share the same units system",
                           method,getFullId());
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             
         };

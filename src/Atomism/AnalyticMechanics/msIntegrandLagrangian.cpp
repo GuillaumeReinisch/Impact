@@ -138,7 +138,7 @@ namespace impact {
         void msDOSIntegrand::registryInPython()
         {
 #if USE_PYTHON
-            msScalarFunction::registryInPython();
+	    msScalarFunction::registryInPython();
             
             if( ! msDOSIntegrand::isDOSIntegrandRegisteredInPython )
             {

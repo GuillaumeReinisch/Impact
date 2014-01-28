@@ -133,7 +133,7 @@ namespace impact {
                 if( (x!=x) || (y!=y) || (z!=z) ){
                     
                     Position<<0,0,0;
-                    throw msError("Nan providen to msElement" , "bool msElement::setPosition(double x,double y,double z)" , getFullId());
+                    throw msException("Nan providen to msElement" , "bool msElement::setPosition(double x,double y,double z)" , getFullId());
                 }
                 Position<<x,y,z; return 1;
             }
@@ -147,7 +147,7 @@ namespace impact {
             
             //! \brief Translate the element
             void applyTranslation(const Vector3d& v) { if( (v[0]!=v[0]) || (v[1]!=v[1]) || (v[2]!=v[2]) )
-                throw msError("Nan providen to msElement" , "void msElement::applyTranslation(const Vector3d& v)" , getFullId());
+                throw msException("Nan providen to msElement" , "void msElement::applyTranslation(const Vector3d& v)" , getFullId());
                 Position+=v; 
             }
             

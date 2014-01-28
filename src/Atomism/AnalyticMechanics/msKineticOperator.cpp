@@ -60,7 +60,7 @@ namespace impact {
                                   getFullId());
             
             if( i >= entity->noOfDof() )
-                BOOST_THROW_EXCEPTION( msError("the indice of the Dof is out of range",
+                IMPACT_THROW_EXCEPTION( msException("the indice of the Dof is out of range",
                                                "void msDynamicDof::set(boost::shared_ptr<msScalarFunction> function,boost::shared_ptr<msEntity> entity, size_t i)",
                                                getFullId()
                                                ));
@@ -219,22 +219,22 @@ namespace impact {
                                       getFullId());
             
             if( !checkTest(msKineticOperator::system )     )
-                BOOST_THROW_EXCEPTION( msError("Problem with the system definition",
+                IMPACT_THROW_EXCEPTION( msException("Problem with the system definition",
                                                "void msKineticOperator::addDynamicDof(msEntity& entity , size_t indice , boost::shared_ptr<msScalarFunction> fct)",
                                                getFullId()
                                                ));
             if( !checkTest( msKineticOperator::coordinates ) )
-                BOOST_THROW_EXCEPTION( msError("Problem with the coordinates definition",
+                IMPACT_THROW_EXCEPTION( msException("Problem with the coordinates definition",
                                                "void msKineticOperator::addDynamicDof(msEntity& entity , size_t indice , boost::shared_ptr<msScalarFunction> fct)",
                                                getFullId()
                                                ));
             if( entity == boost::shared_ptr<msEntity>())
-                BOOST_THROW_EXCEPTION( msError("the entity is void",
+                IMPACT_THROW_EXCEPTION( msException("the entity is void",
                                                "void msKineticOperator::addDynamicDof(msEntity& entity , size_t indice , boost::shared_ptr<msScalarFunction> fct)",
                                                getFullId()
                                                ));
             if( indice >= entity->noOfDof() )
-                BOOST_THROW_EXCEPTION( msError("the indice of the Dof is out of range",
+                IMPACT_THROW_EXCEPTION( msException("the indice of the Dof is out of range",
                                                "void msKineticOperator::addDynamicDof(msEntity& entity , size_t indice , boost::shared_ptr<msScalarFunction> fct)",
                                                getFullId()
                                                ));
@@ -349,11 +349,11 @@ namespace impact {
             int N = GeneralizedCoordinates->noOfActive();
             
             if (N==0 ){
-                msError e("Empty coordinates are associated to the kinetic operator",
+                msException e("Empty coordinates are associated to the kinetic operator",
                           "const msKineticOperator::msKineticMatrix& msKineticOperator::computeKMat(const msUnitsManager& units)",
                           getFullId()
                           );
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
 
             KMatrix->resize(N,N);
@@ -365,14 +365,14 @@ namespace impact {
             }
             try{ JacobianOfDispl->initialize( this );
             }
-            catch( msError& e ) {
+            catch( msException& e ) {
                 e.addContext("Initialization of the Jacobian of displacement failed (const msKineticOperator::msKineticMatrix& msKineticOperator::computeKMat(const msUnitsManager& units))");
                 throw e;
             }
             
             try{ JacobianOfDispl->compute(tmpUnits,System->isIsolated());
             }
-            catch( msError& e ) {
+            catch( msException& e ) {
                 e.addContext("Computation of the Jacobian of displacement failed (const msKineticOperator::msKineticMatrix& msKineticOperator::computeKMat(const msUnitsManager& units))");
                 throw e;
             }
@@ -422,15 +422,15 @@ namespace impact {
                 stringstream out;
                 out<<"The number of active degree of freedom is "<<GeneralizedCoordinates->noOfActive()
                 <<" and you provided one index out of range (i="<<i<<", j="<<j<<").";
-                msError e(out.str(),"double msKineticOperator::getKMatrixElement(size_t i,size_t j)",getFullId() );
-                BOOST_THROW_EXCEPTION(e);
+                msException e(out.str(),"double msKineticOperator::getKMatrixElement(size_t i,size_t j)",getFullId() );
+                IMPACT_THROW_EXCEPTION(e);
             }
             if( KMatrix->size() != GeneralizedCoordinates->noOfActive() ) {
                 
                 stringstream out;
                 out<<"Unconsistent size of the last KMatrix computed with number of active Dof, try recompute the KMatrix";
-                msError e(out.str(),"double msKineticOperator::getKMatrixElement(size_t i,size_t j)",getFullId() );
-                BOOST_THROW_EXCEPTION(e);
+                msException e(out.str(),"double msKineticOperator::getKMatrixElement(size_t i,size_t j)",getFullId() );
+                IMPACT_THROW_EXCEPTION(e);
             }
             return (*KMatrix)(i,j);
         }
@@ -442,7 +442,7 @@ namespace impact {
             
             try{ computeKMat(units);
             }
-            catch( msError & e ) {
+            catch( msException & e ) {
                 e.addContext("computation of KMatrix failed (double msKineticOperator::kineticFunction(const msUnitsManager& units) )");
                 throw;
             }
@@ -569,7 +569,7 @@ namespace impact {
                 
                 if( (! (*qi).isHomogeneousWith("Angstrom")) && (!(*qi).isHomogeneousWith("Degree")) )
                     
-                    BOOST_THROW_EXCEPTION( msError("Variable are neither of type angle or length"
+                    IMPACT_THROW_EXCEPTION( msException("Variable are neither of type angle or length"
                                                    ,"void msJacobianOfDispl::initialize( msKineticOperator* kinetic )",KineticOperator->GeneralizedCoordinates->getFullId()) );
             
             
@@ -613,7 +613,7 @@ namespace impact {
                     
                     try{ System->computeCartCoordinates(Coors1);
                     }
-                    catch( msError& e ) {
+                    catch( msException& e ) {
                         
                         e.addContext( "Computation of cartesian coordinates failed (void msJacobianOfDispl::compute( const msUnitsManager& units, bool isolated ))" );
                         throw e;
@@ -626,7 +626,7 @@ namespace impact {
                             LOGGER_WRITE(msLogger::DEBUG,"Annihil Jtot");
                             work = System->annihil_dJ(Coors0,Coors1,0);
                         }
-                        catch(msError& e){ e.addContext("can not annihil overall motions (void msJacobianOfDispl::compute( const msUnitsManager& units, bool isolated ))");
+                        catch(msException& e){ e.addContext("can not annihil overall motions (void msJacobianOfDispl::compute( const msUnitsManager& units, bool isolated ))");
                             throw e;
                         }
                     }

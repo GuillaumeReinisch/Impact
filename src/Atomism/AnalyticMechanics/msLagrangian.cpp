@@ -78,7 +78,7 @@ namespace impact {
                 GeneralizedVelocities = msGeneralizedCoordinates::New();
                 GeneralizedVelocities->setUnits(getUnits());
             }
-            catch(msError& e){
+            catch(msException& e){
                 
                 e.addContext("void msLagrangian::initialize()");
                 throw e;
@@ -98,7 +98,7 @@ namespace impact {
                 Sampler->setCoordinates(GeneralizedCoordinates.getSharedPtr());
                 initializeGeneralizedVelocities();
             }
-            catch(msError& e){
+            catch(msException& e){
                 
                 e.addContext("void msLagrangian::update()");
                 throw e;
@@ -126,7 +126,7 @@ namespace impact {
             
             if(    (Epot->getCoordinates().get() != KineticOperator->getCoordinates().get()) ) {
                 
-                BOOST_THROW_EXCEPTION( msError("The coordinates of the PES and kinetic operators have to point on the same object"
+                IMPACT_THROW_EXCEPTION( msException("The coordinates of the PES and kinetic operators have to point on the same object"
                                                ,"boost::shared_ptr<msTreeMapper>  msLagrangian::setEqOfMotion( boost::shared_ptr<msKineticOperator> kin , boost::shared_ptr<msScalarFunction> epot )"
                                                ,getFullId() ));
             }
@@ -191,7 +191,7 @@ namespace impact {
             
             try{ DOS =  Sampler->sample( *DOSfct , SiUnits ).Integral;
             }
-            catch( msError& e ) {
+            catch( msException& e ) {
                 e.addContext("double msLagrangian::DOS(double E) ");
                 throw;
             }
@@ -219,7 +219,7 @@ namespace impact {
             LOGGER_WRITE(msLogger::INFO,"Start sampling");
             try{ Q =  Sampler->sample( *Qfct , SiUnits ).Integral;
             }
-            catch( msError& e ) {
+            catch( msException& e ) {
                 e.addContext("double msLagrangian::Q(double T)");
                 throw;
             }
@@ -246,10 +246,10 @@ namespace impact {
             try{
                 average = Sampler->sample(*observe).Integral / ( observe->sumQ * GeneralizedCoordinates->getVolumeDq() ) ;
             }
-            catch( msError& e ) {
+            catch( msException& e ) {
                 
                 e.addContext("double msLagrangian::averageByBoltzmann( msObservable& observable , double T )");
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             LOGGER_EXIT_FUNCTION2("double msLagrangian::averageByBoltzmann( msObservable& observable , double T )");
             return average * Mult / Sym;
@@ -309,9 +309,9 @@ namespace impact {
                 
                 KineticOperator->computeKMat( SiUnits );
             }
-            catch(msError& e) {
+            catch(msException& e) {
                 e.addContext("double msLagrangian::T(vector_type q_, vector_type qp_)");
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             vector_type tmp = KineticOperator->getKMatrix()*qp_;
             
@@ -375,24 +375,24 @@ namespace impact {
             
             if( GeneralizedCoordinates != Epot->getCoordinates() ) {
                 
-                msError e("The PES's coordinates and the Lagrangian's coordinates must point to the same object",
+                msException e("The PES's coordinates and the Lagrangian's coordinates must point to the same object",
                           "virtual bool msLagrangian::sanityCheck()",
                           getFullId());
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             if( GeneralizedCoordinates != KineticOperator->getCoordinates() ) {
                 
-                msError e("The kinetic operator's coordinates and the Lagrangian's coordinates must point to the same object",
+                msException e("The kinetic operator's coordinates and the Lagrangian's coordinates must point to the same object",
                           "virtual bool msLagrangian::sanityCheck()",
                           getFullId());
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             if( ! Epot->getYUnit().isConsistent(msUnit::vEnergy)) {
                 
-                msError e("The unit of the potentiale energy is not consistent with energy",
+                msException e("The unit of the potentiale energy is not consistent with energy",
                           "double msLagrangian::U()",
                           getFullId());
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             };
             
             return 1;

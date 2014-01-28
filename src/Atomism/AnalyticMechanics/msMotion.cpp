@@ -112,7 +112,7 @@ namespace impact {
                 out<<"dE="<<dE<<", Emax="<<Emax<<", dT="<<dT<<", De_dos="<<dE_dos<<", Tmin="<<Tmin<<", Tmax="<<Tmax<<", DeltaT="<<DeltaT;
                 LOGGER_WRITE(msLogger::DEBUG, "parameters values: "+ out.str());
             }
-            catch( msError& e)
+            catch( msException& e)
             {
                 e.addContext("void msMotion::updateParameters()");
                 throw e;

@@ -156,10 +156,10 @@ namespace impact {
                     DensOfStates = msVectorFit1d::New();
                     SumOfStates  = msVectorFit1d::New();
                 }
-                catch(msError& e){
+                catch(msException& e){
                     
                     e.addContext("void msMotion::initialize()");
-                    BOOST_THROW_EXCEPTION(e);
+                    IMPACT_THROW_EXCEPTION(e);
                 }
             }
             
@@ -212,7 +212,7 @@ namespace impact {
             
             //! Density of states at energy E
             virtual double DOS( double E ){
-                BOOST_THROW_EXCEPTION( msError("msMotion does not implement DOS"
+                IMPACT_THROW_EXCEPTION( msException("msMotion does not implement DOS"
                                                ,"virtual double DOS(double E)",getFullId()) );
             };
             
@@ -376,7 +376,7 @@ namespace impact {
 		            DensOfStates->set(0, Emax, dE, getUnits()->getEnergyStr(), getUnits()->getEnergyStr()+"^-1" );
                     SumOfStates->set(0,Emax,dE, getUnits()->getEnergyStr(), "" );
                 }
-                catch( msError& e) {
+                catch( msException& e) {
                     
                 }
                 return 1;

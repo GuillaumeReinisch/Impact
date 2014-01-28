@@ -113,12 +113,10 @@ namespace impact {
             try{
                 for(;it!=Entities.end();++it)  (*it)->computeCartCoordinates();
             }
-            catch( boost::exception & e ) {
+            catch( msException& e ) {
                 
-                if( std::string const * mi=boost::get_error_info<msErrorInfo>(e) )
-                    LOGGER_WRITE(msLogger::ERROR, *mi );
-                e << msErrorInfo("System not able to compute cartesian coordinates");
-                throw;
+	        e.addContext("void msSystem::computeCartCoordinates()");
+                IMPACT_THROW_EXCEPTION(e);
             }
             
             if( msLogger::isDebug() ){
@@ -129,7 +127,7 @@ namespace impact {
 		  
                     if( (*elem).getPosition() != (*elem).getPosition() )
 		      
-                        throw msError("Nan in an element's coordinate located", "void msSystem::computeCartCoordinates()",getFullId());
+                        throw msException("Nan in an element's coordinate located", "void msSystem::computeCartCoordinates()",getFullId());
             }
             LOGGER_EXIT_FUNCTION();
         }
@@ -171,7 +169,7 @@ namespace impact {
         double msSystem::separation(size_t i,size_t j) {
             
             if( (i>=noOfElements()) || (j>=noOfElements()) )
-                BOOST_THROW_EXCEPTION( msError("atom's indice out of bound",
+                IMPACT_THROW_EXCEPTION( msException("atom's indice out of bound",
                                                "double msSystem::separation(size_t i,size_t j)", getFullId()) );
             
             return ( (getPosition(i)-getPosition(j)).norm() );
@@ -183,7 +181,7 @@ namespace impact {
         double msSystem::angle(size_t i,size_t j,size_t k){
             
             if( (i>=noOfElements()) || (j>=noOfElements()) || (k>=noOfElements()) )
-                BOOST_THROW_EXCEPTION( msError("atom's indice out of bound",
+                IMPACT_THROW_EXCEPTION( msException("atom's indice out of bound",
                                                "double msSystem::angle(size_t i,size_t j,size_t k)", getFullId()) );
             Vector3d a0 = getPosition(j) - getPosition(i);
             Vector3d a1 = getPosition(j) - getPosition(k);
@@ -196,7 +194,7 @@ namespace impact {
         double msSystem::dihedral(size_t i,size_t j,size_t k,size_t l){
             
             if( (i>=noOfElements()) || (j>=noOfElements()) )
-                BOOST_THROW_EXCEPTION( msError("atom's indice out of bound",
+                IMPACT_THROW_EXCEPTION( msException("atom's indice out of bound",
                                                "double msSystem::separation(size_t i,size_t j)", getFullId()) );
             
             Vector3d v0 = getPosition(i);
@@ -327,7 +325,7 @@ namespace impact {
         boost::shared_ptr<msEntity> msSystem::getEntity(size_t i) const
         {
             if( i>= Entities.size() ) {
-                BOOST_THROW_EXCEPTION( msError("indice out of bounds"
+                IMPACT_THROW_EXCEPTION( msException("indice out of bounds"
                                                ,"boost::shared_ptr<msEntity> msSystem::getEntity(size_t i) const ",getFullId()) );
             }
             return Entities[i].getSharedPtr();
@@ -338,7 +336,7 @@ namespace impact {
         boost::shared_ptr<msEntity> msSystem::getEntity(std::string id) const
         {
             if( EntitiesMap.find(id) == EntitiesMap.end() ){
-                BOOST_THROW_EXCEPTION( msError("entity of the given id does not exist"
+                IMPACT_THROW_EXCEPTION( msException("entity of the given id does not exist"
                                                ,"boost::shared_ptr<msEntity> msSystem::getEntity(std::string id) const",getFullId()) );
                 return boost::shared_ptr<msEntity>();
             }
@@ -377,7 +375,7 @@ namespace impact {
                     <<" coor1="<<Coor1[i][0]<<" "<<Coor1[i][1]<<Coor1[i][2]<<"          "
                     <<" displ="<<(Coor1[i]-Coor0[i])[0]<<" "<<(Coor1[i]-Coor0[i])[1]<<(Coor1[i]-Coor0[i])[2]<<endl;
                 }
-                BOOST_THROW_EXCEPTION( msError(s.str()
+                IMPACT_THROW_EXCEPTION( msException(s.str()
                                                ,"msKineticWork msSystem::kineticWork(const msVector3dContainer& Coor0, const msVector3dContainer& Coor1) const"
                                                ,getFullId() ) );
             }
@@ -426,7 +424,7 @@ namespace impact {
             if( (coors1.size() != noOfElements())
                ||(coors1.size() != noOfElements()) ) {
                 
-                BOOST_THROW_EXCEPTION( msError("size of the coor vector not compatible with the number of elements"
+                IMPACT_THROW_EXCEPTION( msException("size of the coor vector not compatible with the number of elements"
                                                ,"Vector3d msSystem::getDeltaCenterOfMass(const msVector3dContainer& coors1, const msVector3dContainer& coors0 ) const"
                                                ,getFullId() ) );
             }
@@ -495,7 +493,7 @@ namespace impact {
             msKineticWork work=kineticWork(Coors0,Coors1);
             if( work.dP.norm() >1e-10) {
                 
-                BOOST_THROW_EXCEPTION(msError("the total linear momentum has not be annihiled",
+                IMPACT_THROW_EXCEPTION(msException("the total linear momentum has not be annihiled",
                                               "void msSystem::annihil_dP(const msVector3dContainer& Coors0, msVector3dContainer& Coors1, Vector3d* trans)",
                                               getFullId()));
             }

@@ -104,7 +104,7 @@ namespace impact {
             LOGGER_ENTER_FUNCTION_DBG("void msEntity::addDof(double value) "+output::getString<double>(value),getFullId());
             
             if( Dofs.size() == Dofs.capacity() - 1)
-                BOOST_THROW_EXCEPTION(msError("The number of Dof added exceed the capacity reserved",
+                IMPACT_THROW_EXCEPTION(msException("The number of Dof added exceed the capacity reserved",
                                               "void msEntity::addDof( double value, const msUnit& unit)",getFullId())
                                       );
             Dofs.push_back(value);
@@ -134,7 +134,7 @@ namespace impact {
             if( indice >=Elements.size() ) {
                 stringstream out;
                 out<<"Indice out of bounds ("<<indice<<">"<<Elements.size()<<")";
-                BOOST_THROW_EXCEPTION( msError(out.str(),
+                IMPACT_THROW_EXCEPTION( msException(out.str(),
                                                "Vector3d msEntity::getPosition(size_t indice) const",
                                                getFullId())
                                       );
@@ -168,7 +168,7 @@ namespace impact {
         {
             if( coors.size()!=Elements.size() ) {
                 
-                BOOST_THROW_EXCEPTION( msError("Size of 'coors not' consistant",
+                IMPACT_THROW_EXCEPTION( msException("Size of 'coors not' consistant",
                                                "void msEntity::setPositions(const vector<Vector3d>& coors)",
                                                getFullId())
                                       );
@@ -222,7 +222,7 @@ namespace impact {
         void msEntity::translateOriginAtCenterOfMass(const Vector3d& pt)
         {
             /*if( (pt[0]!=pt[0]) || (pt[1]!=pt[1]) || (pt[2]!=pt[2]) )
-             throw msError() << msErrorInfo("Nan providen")<<boost::errinfo_api_function("msEntity::setCenterOfMass");*/
+             throw msException() << msExceptionInfo("Nan providen")<<boost::errinfo_api_function("msEntity::setCenterOfMass");*/
             
             msChildren<msElement>::iterator it=Elements.begin();
             Vector3d cdg(0,0,0); double mtot=0;

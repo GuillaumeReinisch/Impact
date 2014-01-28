@@ -177,7 +177,7 @@ namespace impact {
          reserveDofs(100);
          
          if( lengthOfStrings.size() != masses.size() )
-         BOOST_THROW_EXCEPTION( msError("Unconsistent size between strings and masses: should be the same",
+         IMPACT_THROW_EXCEPTION( msException("Unconsistent size between strings and masses: should be the same",
          "void myPendulum::setStringsAndMasses",
          getFullId())
          );
@@ -189,7 +189,7 @@ namespace impact {
          addDof( lengthOfStrings[i] , msUnit( getUnits()->getLengthStr() )) ); // add the length
          addDof( 0 		 , msUnit( getUnits()->getAngleStr()  )) ); // add the angle, init at 0
          if( i>=49 )
-         BOOST_THROW_EXCEPTION( msError("number of masses limited at maximum 50",
+         IMPACT_THROW_EXCEPTION( msException("number of masses limited at maximum 50",
          "void myPendulum::setStringsAndMasses",
          getFullId())
          );

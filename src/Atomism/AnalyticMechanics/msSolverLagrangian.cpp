@@ -241,9 +241,9 @@ namespace impact {
             
             try { calc_qpp(q, qp, qpp);
             }
-            catch (msError& e) {
+            catch (msException& e) {
                 e.addContext("void msSolverLagrangian::step(double dt)");
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             
             for( int i=0; i<Ndof; i++) {
@@ -260,9 +260,9 @@ namespace impact {
             }
             try { calc_qpp(qtmp, qptmp, qpp);
             }
-            catch (msError& e) {
+            catch (msException& e) {
                 e.addContext("void msSolverLagrangian::step(double dt) : calculation of K1");
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             
             for(int i=0; i<Ndof; i++) {
@@ -279,9 +279,9 @@ namespace impact {
             
             try { calc_qpp(qtmp, qptmp, qpp);
             }
-            catch (msError& e) {
+            catch (msException& e) {
                 e.addContext("void msSolverLagrangian::step(double dt) : calculation of K2");
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             for (int i=0; i<Ndof; i++) {
                 
@@ -297,9 +297,9 @@ namespace impact {
             
             try { calc_qpp(qtmp, qptmp, qpp);
             }
-            catch (msError& e) {
+            catch (msException& e) {
                 e.addContext("void msSolverLagrangian::step(double dt) : : calculation of K3");
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             
             for( int i=0; i<Ndof; i++) {
@@ -402,10 +402,10 @@ namespace impact {
                     
                     if(A(i,j)==0){
                         
-                        msError e("The matrix element A[i][j] is zero",
+                        msException e("The matrix element A[i][j] is zero",
                                   "bool msSolverLagrangian::calc_qpp(vector_type& q_, vector_type& qp_, vector_type& qpp_)",
                                   getFullId() );
-                        BOOST_THROW_EXCEPTION(e);
+                        IMPACT_THROW_EXCEPTION(e);
                     }
                     // calculate B
                     rhs[i] -= diffqp(j,i,q_,qp_) * qp_[j];
@@ -415,10 +415,10 @@ namespace impact {
             try{
                 solve(A,rhs,qpp_);
             }
-            catch(msError& e){
+            catch(msException& e){
                 
                 e.addContext("bool msSolverLagrangian::calc_qpp(vector_type& q_, vector_type& qp_, vector_type& qpp_)");
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
         }
         
