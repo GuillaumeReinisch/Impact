@@ -156,7 +156,7 @@ namespace impact
         boost::shared_ptr<msScalarVariable> getVariable(size_t i){
             
 	     	if( i >= Coordinates->noOfDim() )
-                BOOST_THROW_EXCEPTION( msError("Coordinates of the function not initialized (did you call msScalarFunction::initialize()?)"
+                IMPACT_THROW_EXCEPTION( msException("Coordinates of the function not initialized (did you call msScalarFunction::initialize()?)"
                                                ,"boost::shared_ptr<msScalarVariable> getVariable",getFullId()) );
             return (*Coordinates)[i];
         }
@@ -164,7 +164,7 @@ namespace impact
         boost::shared_ptr<msGeneralizedCoordinates> getCoordinates() const {
             
             if(Coordinates == boost::shared_ptr<msGeneralizedCoordinates>()){
-                BOOST_THROW_EXCEPTION( msError("Coordinates of the function not initialized (did you call msScalarFunction::initialize()?)"
+                IMPACT_THROW_EXCEPTION( msException("Coordinates of the function not initialized (did you call msScalarFunction::initialize()?)"
                                                ,"const boost::shared_ptr<msGeneralizedCoordinates> msScalarFunction::getCoordinates() const",getFullId()) );
             }
             return Coordinates.getSharedPtr();
@@ -174,7 +174,7 @@ namespace impact
         void setYUnit(string expr) {
             
             if( Unit.getSharedPtr() == boost::shared_ptr<msUnit>() )
-                BOOST_THROW_EXCEPTION( msError("The Unit attribut has not been initialized (did you call msScalarFunction::initialize() before using it?)"
+                IMPACT_THROW_EXCEPTION( msException("The Unit attribut has not been initialized (did you call msScalarFunction::initialize() before using it?)"
                                                ,"void msScalarFunction::setYUnit(string expr)",getFullId()) );
             
             Unit->set(expr);
@@ -207,7 +207,7 @@ namespace impact
         double& getConstant(string name) {
             
             if(existConstant(name)) return Constants[name];
-            BOOST_THROW_EXCEPTION(msError("Constants "+name+" does not exist",
+            IMPACT_THROW_EXCEPTION(msException("Constants "+name+" does not exist",
                                           "msScalarFunction::getConstant",
                                           getFullId()));
         }
@@ -251,7 +251,7 @@ namespace impact
         
         //! The virtual function to overide in derived classes: return the scalar field at the current coordinates
         virtual double evaluate()  {
-            BOOST_THROW_EXCEPTION(msError( "This method is virtual, you need to overide it",
+            IMPACT_THROW_EXCEPTION(msException( "This method is virtual, you need to overide it",
                                           "double msScalarFunction::evaluate()",
                                           getFullId()
                                           )

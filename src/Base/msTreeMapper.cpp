@@ -25,34 +25,28 @@ namespace impact
 {
     
     bool impact::msTreeMapper::isTreeMapperRegistredInPython = 0;
-    
-    boost::python::class_<msTreeMapper, boost::python::bases<msRegister>, boost::shared_ptr<msTreeMapper> >* impact::msTreeMapper::PythonClass = 0;
-    
+      
     msRegistrar msTreeMapper::Registrar("msTreeMapper", msTreeMapper::create);
     
-    std::ostream& operator<<(std::ostream& out,const msTreeMapper& obj)
-    {
-        return( obj.print(out) );
-    }
+    std::ostream& operator<<(std::ostream& out,const msTreeMapper& obj) { return( obj.print(out) ); }
     
     //-------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------
     
     void msTreeMapper::registryInPython() {
 #if USE_PYTHON > 0
-        
         msRegister::registryInPython();
-        
         if( !msTreeMapper::isTreeMapperRegistredInPython ) {
             
             using namespace boost::python;
             
-            PythonClass= new class_<msTreeMapper, bases<msRegister>, boost::shared_ptr<msTreeMapper> >(
-                                                                                                       "msTreeMapper",
-                                                                                                       "class handling registration in the tree database manager and in python" ,
-                                                                                                       init<>() );
-            PythonClass->def( "New", &msTreeMapper::New , "Create a new object.")
-            .staticmethod("New")
+	    cout<<"void msTreeMapper::registryInPython() 2"<<endl;
+            class_<msTreeMapper, bases<msRegister>, boost::shared_ptr<msTreeMapper> >(
+                "msTreeMapper",
+                "class handling registration in the tree database manager and in python" ,
+                init<>() )
+	    .def( "New", &msTreeMapper::New , "Create a new object.")
+	    .staticmethod("New")
             .def( "_initialize_" , 		&msTreeMapper::initialize ,
                  "initialize the object" )
             .def( "_update_" , 		(void (msTreeMapper::*)() ) &msTreeMapper::update ,
@@ -138,18 +132,15 @@ namespace impact
             .def("sanityCheck",&msTreeMapper::sanityCheck,
                  "check the structure is correctly initialized")
             .def(self_ns::str(self_ns::self));
-            
             class_<msChildBase ,boost::shared_ptr<msChildBase> >( "msChildBase",
                                                                   "Use to declare child of msTreeMapper structure" ,
                                                                   no_init );
-            
             class_<msChildrenBase ,boost::shared_ptr<msChildrenBase> >( "msChildrenBase",
                                                                         "Use to declare children of msTreeMapper structure" ,
                                                                         no_init );
             registerVector<msTreeMapper>("Vector_msTreeMapper","Vector of object deriving from msTreeMapper");
             registerAttributeTypesInPython();
-	    
-            msTreeMapper::isTreeMapperRegistredInPython=1;
+	    msTreeMapper::isTreeMapperRegistredInPython=1;
         }
 #endif
     }
@@ -266,7 +257,7 @@ namespace impact
         
         if( !value->isDerivedFrom("msTreeMapper") )
             
-            BOOST_THROW_EXCEPTION( msError("The child you want to register is not derived from msTreeMapper, only msTreeMapper derived object can be declared as child",
+            IMPACT_THROW_EXCEPTION( msException("The child you want to register is not derived from msTreeMapper, only msTreeMapper derived object can be declared as child",
                                            "void msTreeMapper::declareChild(msChild<T>& refchild, boost::shared_ptr<T> value, std::string name)",
                                            getFullId()
                                            ));
@@ -303,7 +294,7 @@ namespace impact
         LOGGER_WRITE(msLogger::DEBUG,"Id of the updated child:"+lhschild->getBasePtr()->getFullId());
         
         if( lhschild->getSharedBasePtr() == boost::shared_ptr<msTreeMapper>() )
-            BOOST_THROW_EXCEPTION( msError("the original (lhschild) child is not initialized, did you declare it?",
+            IMPACT_THROW_EXCEPTION( msException("the original (lhschild) child is not initialized, did you declare it?",
                                            "void msTreeMapper::update(msChild<T>& lhschild,boost::shared_ptr<T> rhschild)",
                                            getFullId()
                                            ));
@@ -315,7 +306,7 @@ namespace impact
             if( it->second->getBasePtr() == lhschild->getBasePtr() )  varname = it->first;
         
         if( varname=="")
-            BOOST_THROW_EXCEPTION( msError("ref. to lhschild no found",
+            IMPACT_THROW_EXCEPTION( msException("ref. to lhschild no found",
                                            "void msTreeMapper::update(msChild<T>& lhschild,boost::shared_ptr<T> rhschild)",
                                            getFullId()
                                            ));
@@ -356,7 +347,7 @@ namespace impact
         LOGGER_WRITE(msLogger::DEBUG,"elem's id: "+elem->getId()+"; vector name: "+varname);
         
         if( varname=="")
-            BOOST_THROW_EXCEPTION( msError("reference to the children not found, did you declare it in the constructor ?"
+            IMPACT_THROW_EXCEPTION( msException("reference to the children not found, did you declare it in the constructor ?"
                                            ,"msTreeMapper::addElementToChildren(msChildren<T>& vector,boost::shared_ptr<T> elem)"
                                            ,getFullId() ) );
         
@@ -432,9 +423,9 @@ namespace impact
 		     
 	    stringstream out;
 	    out<<"The objet "<<getFullId()<<" should be of type "<<target<<" but is of type "<<getType();
-	    msError e( out.str(),method,getFullId() );
+	    msException e( out.str(),method,getFullId() );
 			
-	    BOOST_THROW_EXCEPTION(e);
+	    IMPACT_THROW_EXCEPTION(e);
 	}
     }
     //-------------------------------------------------------------------------------
@@ -494,7 +485,7 @@ namespace impact
             Children[ptr->VariableAttributs.Name] = new msChild<msTreeMapper>(ptr);
         }
         catch(...){
-            BOOST_THROW_EXCEPTION( msError("Can not create the child"
+            IMPACT_THROW_EXCEPTION( msException("Can not create the child"
                                            ,"void msTreeMapper::addChild( boost::shared_ptr<msTreeMapper> ptr, std::string varName) "
                                            ,getFullId() ) );
         }
@@ -511,7 +502,7 @@ namespace impact
                               ,getFullId());
         
         if(Children.find(varName)==Children.end())
-            BOOST_THROW_EXCEPTION( msError("can not find the child to replace with variable name "+varName
+            IMPACT_THROW_EXCEPTION( msException("can not find the child to replace with variable name "+varName
                                            ,"void msTreeMapper::replaceChild( boost::shared_ptr<msTreeMapper> ptr, std::string varName) "
                                            ,getFullId() ) );
         
@@ -578,7 +569,7 @@ namespace impact
         boost::shared_ptr<msTreeMapper> ptr = mySharedPtr();
         try{ ptr = clone();
         }
-        catch(msError& e)
+        catch(msException& e)
         {
             e.addContext("The deep copy has failed (boost::shared_ptr<msTreeMapper> msTreeMapper::deepCopy(boost::shared_ptr<msTreeMapper> original))");
             throw e;
@@ -594,7 +585,7 @@ namespace impact
         boost::shared_ptr<msTreeMapper> scan;
         
         if( !rhs.isDerivedFrom( getType() ) )
-            BOOST_THROW_EXCEPTION(msError("The copy operator work only for 'rhs' derived from this type",
+            IMPACT_THROW_EXCEPTION(msException("The copy operator work only for 'rhs' derived from this type",
                                           "msTreeMapper& msTreeMapper::operator=(const msTreeMapper& rhs)",getFullId()) );
         VariableAttributs = rhs.VariableAttributs;
         
@@ -604,12 +595,12 @@ namespace impact
             
             if( rhs.Attributes.find(itatt->first) == rhs.Attributes.end() )
                 
-                BOOST_THROW_EXCEPTION(msError("Can not find the corresponding attribut ("+itatt->first+") in rhs attributes list",
+                IMPACT_THROW_EXCEPTION(msException("Can not find the corresponding attribut ("+itatt->first+") in rhs attributes list",
                                               "msTreeMapper& msTreeMapper::operator=(const msTreeMapper& rhs)",getFullId()) );
             
             try{ Attributes[itatt->first]->set(rhs.Attributes.find(itatt->first)->second->get() );
             }
-            catch(msError& e)
+            catch(msException& e)
             {
                 e.addContext("The attribute "+itatt->first+" has not been duplicated from rhs."+itatt->first+" (="+rhs.Attributes.find(itatt->first)->second->get()
                              +") (msTreeMapper& msTreeMapper::operator=(const msTreeMapper& rhs))");
@@ -654,12 +645,12 @@ namespace impact
                               ,getFullId());
         
         if (Attributes.find(id) == Attributes.end()) {
-            BOOST_THROW_EXCEPTION( msError("Attribut of id='"+id+"' has not been declared"
+            IMPACT_THROW_EXCEPTION( msException("Attribut of id='"+id+"' has not been declared"
                                            ,"boost::shared_ptr<msTreeMapper> msTreeMapper::setAttributes(const std::string& id,const std::string& value)",  getFullId()) );
             
         }
         try{Attributes[id]->set(value);}
-        catch(msError& e){
+        catch(msException& e){
             
             e.addContext("Can not parse the string to the correct type (boost::shared_ptr<msTreeMapper> msTreeMapper::setAttribute(const std::string& id,const std::string& value))");
         }
@@ -698,7 +689,7 @@ namespace impact
             
             if( ! getVariableName((*it).second->getSharedBasePtr()).compare( id ) ) return (*it).second->getSharedBasePtr();
         
-        BOOST_THROW_EXCEPTION( msError("Child of id='"+id+"' can not be found in the first layer of the tree"
+        IMPACT_THROW_EXCEPTION( msException("Child of id='"+id+"' can not be found in the first layer of the tree"
                                        ,"boost::shared_ptr<msTreeMapper> msTreeMapper::getChild(std::string id)",  getFullId()) );
     }
     

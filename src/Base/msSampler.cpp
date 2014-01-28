@@ -153,10 +153,10 @@ namespace impact
    
 	if( getCoordinates() != field->getCoordinates() ) {
 	
-	    msError e("You can  add  fields with different generalized coordinates",
+	    msException e("You can  add  fields with different generalized coordinates",
 	       "boost::shared_ptr<msTreeMapper> msSampler::addField(boost::shared_ptr<msScalarFunction> field)",
 	       getFullId());
-	    BOOST_THROW_EXCEPTION(e);
+	    IMPACT_THROW_EXCEPTION(e);
         }
 	
         if(!field->hasParent()) field->setAffiliation(mySharedPtr());
@@ -172,7 +172,7 @@ namespace impact
         
         setCoordinates( fct.getCoordinates() );
         if( Coordinates == boost::shared_ptr<msGeneralizedCoordinates>() )
-            BOOST_THROW_EXCEPTION( msError("the scalar function providen do not have initialized coordinates"
+            IMPACT_THROW_EXCEPTION( msException("the scalar function providen do not have initialized coordinates"
                                            ,"msSamplingData msSampler::sample( msScalarFunction& fct , const msUnitsManager& units)",getFullId()) );
         
         msSampler::msSamplingData s=sample(fct);
@@ -265,7 +265,7 @@ namespace impact
                                   getFullId());
         
         if(fct1.getCoordinates() !=fct2.getCoordinates())
-        BOOST_THROW_EXCEPTION(msError("The two scalar functions must share the same coordinates",
+        IMPACT_THROW_EXCEPTION(msException("The two scalar functions must share the same coordinates",
                                       "double msSampler::scalarProduct(msScalarFunction& fct1 ,msScalarFunction& fct2)",getFullId())
                               );
         setCoordinates(fct1.getCoordinates());

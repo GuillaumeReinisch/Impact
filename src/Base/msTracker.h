@@ -107,11 +107,11 @@ namespace impact{
          */
         virtual boost::shared_ptr<msTreeMapper> addValues(double timeIndicator) {
             
-            msError e("This method need to be overiden by derived class",
+            msException e("This method need to be overiden by derived class",
                       "boost::shared_ptr<msTreeMapper> msTracker::addValues(double timeIndicator)",
                       getFullId());
             
-            BOOST_THROW_EXCEPTION(e);
+            IMPACT_THROW_EXCEPTION(e);
             
             return mySharedPtr();
         }
@@ -160,9 +160,9 @@ namespace impact{
             
             if(Properties.size()>1) {
                 
-                msError e("This method should be called only if one property is defined, and not more.",
+                msException e("This method should be called only if one property is defined, and not more.",
                           "boost::shared_ptr<msTreeMapper> msTracker::addValue(double timeIndicator,double value)",getFullId());
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             updateTimeVariable(timeIndicator);
             Properties[0]->push_back(value);
@@ -174,9 +174,9 @@ namespace impact{
             
             if(Properties.size()>values.size()) {
                 
-                msError e("The argument 'value' does not contains enough elements.",
+                msException e("The argument 'value' does not contains enough elements.",
                           "boost::shared_ptr<msTreeMapper> msTracker::addValues(double timeIndicator,vector<double> value)",getFullId());
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             updateTimeVariable(timeIndicator);
             msChildren<msVectorFit1d>::iterator it = Properties.begin();

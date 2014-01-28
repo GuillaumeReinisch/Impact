@@ -38,6 +38,7 @@
 #define LOGGER_WRITE_ALONE(PRIORITY, MESSAGE, FCT) msLogger::write(PRIORITY, MESSAGE,FCT);
 #define LOGGER_WRITE(PRIORITY,MESSAGE) msLogger::write(PRIORITY,MESSAGE);
 #define LOGGER_ENTER_FUNCTION(FCT, OBJID) msLogger::enterFunction(FCT, OBJID);
+#define LOGGER_ENTER_FUNCTION(FCT, OBJID) msLogger::enterFunction(FCT, OBJID);
 #define LOGGER_ENTER_FUNCTION_DBG(FCT, OBJID) msLogger::enterFunctionDbg(FCT, OBJID);
 
 #define LOGGER_HEADER4COLUMNS(p,a,au,b,bu,c,cu,d,du)  msLogger::header4Columns(p,a,au,b,bu,c,cu,d,du);
@@ -47,8 +48,13 @@
 #define LOGGER_HEADER2COLUMNS(p,a,au,b,bu)  msLogger::header2Columns(p,a,au,b,bu);
 #define LOGGER_WRITE2COLUMNS(p,a,b)  msLogger::write2Columns(p,a,b);
 
-#define LOGGER_EXIT_FUNCTION() msLogger::exitFunction();
+#define LOGGER_EXIT_FUNCTION()     msLogger::exitFunction();
 #define LOGGER_EXIT_FUNCTION2(FCT) msLogger::exitFunction(FCT);
+
+
+#define IMPACT_LOGIN()         msLogger::enterFunctionDbg( __PRETTY_FUNCTION__  , myConstSharedPtr()->getFullId() );
+#define IMPACT_LOGIN_STATIC()  msLogger::enterFunctionDbg( __PRETTY_FUNCTION__  , "static" );
+#define IMPACT_LOGOUT()        msLogger::exitFunction(__PRETTY_FUNCTION__);
 //#else
 /*
  #define LOGGER_START(MIN_PRIORITY, FILE)
@@ -67,6 +73,8 @@ namespace impact
     {
         struct msLogMessage{ std::string MessagePriority; std::string Message; };
         
+	friend class msException;
+	
         /** @Name From msRegister
          *
          */
@@ -122,6 +130,8 @@ namespace impact
     
     class msLogger : public msRegister ,  boost::noncopyable
     {
+      friend class msException;
+      
     public:
         // log priorities
         enum Priority
@@ -196,10 +206,13 @@ namespace impact
         
         static int NoOfFunctionOpen;
         
+	static std::string LastFunction;
+		
     private:
         
         // msLogger adheres to the singleton design pattern, hence the private
         // constructor, copy constructor and assignment operator.
+	
         msLogger& operator = (const msLogger& logger) {return *this;}
         msLogger();
         msLogger(const msLogger& logger) {}
@@ -213,7 +226,6 @@ namespace impact
         
         static msLogElement* CurrentElement;
         
-        static std::string LastFunction;
         static std::string LastObject;
         
         static int InfoLevel;

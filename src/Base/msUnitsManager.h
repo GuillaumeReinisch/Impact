@@ -206,7 +206,9 @@ namespace impact{
             vConcentration,     //!< uQuantity^1.uLength^-3
             vInverseTime,       //!< uTime^-1
             vEnergyByQuantity,  //!< uEnergy^1.uQuantity^-1
-            vEntropyByQuantity  //!< uEnergy^1.uQuantity^-1.uTemperature^-1
+            vEntropyByQuantity,   //!< uEnergy^1.uQuantity^-1.uTemperature^-1
+            vReactionRateFirstOrder, //!< uTime^-1
+	    vReactionRateSecondOrder //!< uLength^3.uQuantity^-1.uTime^-1
         };
         
         static map< msUnit::uTypeVar , std::string > MapTypeVar;
@@ -453,7 +455,8 @@ namespace impact{
             msUnit::MapTypeVar[msUnit::vInverseTime] =      "InverseTime";
             msUnit::MapTypeVar[msUnit::vEnergyByQuantity] = "EnergyByQuantity";
             msUnit::MapTypeVar[msUnit::vEntropyByQuantity]= "EntropyByQuantity";
-            
+            msUnit::MapTypeVar[msUnit::vReactionRateFirstOrder]= "ReactionRateFirstOrder";
+            msUnit::MapTypeVar[msUnit::vReactionRateSecondOrder]= "vReactionRateSecondOrder";
             //----------------------------------------------------------------------------------
             
             MapStrLength["Angstrom"]    =pair<msUnit::uLength,double>(         msUnit::Angstrom ,

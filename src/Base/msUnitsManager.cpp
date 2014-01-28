@@ -81,6 +81,8 @@ namespace impact{
             .value("vInverseTime",vInverseTime)
             .value("vEnergyByQuantity",vEnergyByQuantity)
             .value("vEntropyByQuantity",vEntropyByQuantity)
+            .value("vReactionRateFirstOrder",vReactionRateFirstOrder)
+            .value("vReactionRateSecondOrder",vReactionRateSecondOrder)
             .export_values();
             msUnit::isUnitRegisteredInPython = 1 ;
         }
@@ -108,7 +110,7 @@ namespace impact{
             {try { boost::lexical_cast <int> (strs[1] );
             }
                 catch(...)
-                {   BOOST_THROW_EXCEPTION(msError( "Can not get the power of the unit '"+strs[0]+"' (token='"+strs0[i]
+                {   IMPACT_THROW_EXCEPTION(msException( "Can not get the power of the unit '"+strs[0]+"' (token='"+strs0[i]
                                                 +"', exposant:'"+strs[1]+"')",
                                                 "void msUnit::set(string line)","object has no id") );
                 }
@@ -138,7 +140,7 @@ namespace impact{
                                         if( msUnitsManager::MapStrAngle.find( strs[0] ) != msUnitsManager::MapStrAngle.end() )
                                             Angle=pair<uAngle,int>( msUnitsManager::MapStrAngle[ strs[0]].first , v );
                                         else if(strs[0]!="")
-                                            BOOST_THROW_EXCEPTION( msError("symbol "+strs[0]+" not known"
+                                            IMPACT_THROW_EXCEPTION( msException("symbol "+strs[0]+" not known"
                                                                            ,"msUnit::msUnit(string line)",getFullId()) );
         }
     }
@@ -228,8 +230,16 @@ namespace impact{
                 Quantity = pair< uQuantity,int>( unitsystem.Quantity, -1 );
                 Temperature=pair< uTemperature,int>( 	unitsystem.Temperature , -1 );
                 break;
+	    case vReactionRateFirstOrder:
+                Time=pair<	  uTime,int>( 	     	unitsystem.Time ,   -1 );
+                break;
+            case vReactionRateSecondOrder:
+	        Length=pair<	  uLength,int>( 	unitsystem.Length , 3 );
+	        Quantity = pair< uQuantity,int>( unitsystem.Quantity, 1 );
+                Time=pair<	  uTime,int>( 	     	unitsystem.Time ,   -1 );
+                break;
             default:
-                BOOST_THROW_EXCEPTION(msError("The variable type passed to the function is not defined, you should defined it.",
+                IMPACT_THROW_EXCEPTION(msException("The variable type passed to the function is not defined, you should defined it.",
                                               "void msUnit::set(uTypeVar typeVar, const msUnitsManager& unitsystem)",
                                               getFullId())
                                       );
@@ -294,8 +304,8 @@ namespace impact{
     std::string msUnit::getStringVariableType(msUnit::uTypeVar typevar) {
         
         if( msUnit::MapTypeVar.find(typevar)==msUnit::MapTypeVar.end())
-            BOOST_THROW_EXCEPTION(
-                                  msError("The 'typevar' is not included in the msUnit::MapTypeVar to get the string label, you need to complet the msUnit::MapTypeVar list","string msUnit::getStringVariableType(msUnit::uTypeVar typevar)"
+            IMPACT_THROW_EXCEPTION(
+                                  msException("The 'typevar' is not included in the msUnit::MapTypeVar to get the string label, you need to complet the msUnit::MapTypeVar list","string msUnit::getStringVariableType(msUnit::uTypeVar typevar)"
                                           ,"")
                                   );
         
@@ -593,7 +603,7 @@ namespace impact{
                                             Angle=MapStrAngle[ strs[i] ].first;
                                         else
                                             if(strs[i]!="")
-                                                BOOST_THROW_EXCEPTION( msError("symbol "+strs[i]+" not known (from line: "+line+")"
+                                                IMPACT_THROW_EXCEPTION( msException("symbol "+strs[i]+" not known (from line: "+line+")"
                                                                                ,"void msUnitsManager::initExpr(string line)",getFullId())
                                                                       );
         }
@@ -791,14 +801,14 @@ namespace impact{
          try {
          umangr.set(s);
          }
-         catch (msError& e){
+         catch (msException& e){
          
          e.addContext("std::vector<std::string> msUnitsManager::listUnitsAvailable(msUnit::uTypeVar v)");
          throw e;
          }
          
          try{u.set(v,umangr);}
-         catch(msError& e){
+         catch(msException& e){
          e.addContext("indice enum: "+output::getString<int>(v));
          throw e;
          }
@@ -852,8 +862,8 @@ namespace impact{
      out<<it->first<<", ";
      out<<". You can complete the variable type list by adding in the enum type msUnit::TypeVar"
      <<" and the map msUnit::MapTypeVar";
-     BOOST_THROW_EXCEPTION(
-     msError(out.str(),"string msUnitsManager::getStr(std::string typevar) const"
+     IMPACT_THROW_EXCEPTION(
+     msException(out.str(),"string msUnitsManager::getStr(std::string typevar) const"
      ,getFullId())
      );
      }
@@ -1042,7 +1052,7 @@ namespace impact{
         msUnit unit;
         try{ unit.set(unitstr);
         }
-        catch(msError& e){
+        catch(msException& e){
             
             e.addContext("can not convert the string into unit (double msUnitsManager::convert(std::string unitstr , double v) const)");
             throw e;

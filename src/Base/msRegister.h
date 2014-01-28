@@ -45,37 +45,15 @@
 #include <boost/python/suite/indexing/indexing_suite.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/python/suite/indexing/map_indexing_suite.hpp>
+#include <exception>
 #endif
 
 #include <msUtilities.h>
+#include <msExceptions.h>
 
 namespace impact
 {
     
-    typedef boost::error_info<struct tag_my_info,std::string> msErrorInfo;
-    
-    struct msError: public boost::exception, public std::exception
-    {
-        msError(std::string info, std::string function, std::string id)
-        {
-            Info=info;Id=id;Function=function;
-        }
-        
-        
-        mutable std::string message;
-        
-        std::string Info;
-        std::string Function;
-        std::string Id;
-        
-        void addContext(std::string str){ Contexts.push_back(str); }
-        
-        char const* what() const throw();
-        
-        std::vector<std::string> Contexts;
-        ~msError() throw () { }
-        
-    };
     
 #if USE_PYTHON
     inline boost::python::object pass_through(boost::python::object const& o) { return o; }
@@ -131,7 +109,7 @@ namespace impact
             .def("__iter__", pass_through)
             ;
         }
-    };    //void translate( msError const& e); 
+    };    //void translate( msException const& e); 
 #endif
     
     
@@ -213,9 +191,7 @@ namespace impact
 	 
 	  if (msRegister::registry().find(classname) == msRegister::registry().end() ) {
 	    
-	      msError e("Can not find the class of name "+classname+". Is the class registrated? check by calling the method 'getClassesRegistrated'.",
-		"msRegister::New","");
-	      BOOST_THROW_EXCEPTION(e); 
+	     std::cout<<"Can not find the class of name "+classname+". Is the class registrated? check by calling the method 'getClassesRegistrated'."<<std::endl;
 	  }
 	  return static_cast<T*>( msRegister::registry()[classname]() );
 	};

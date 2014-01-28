@@ -72,14 +72,14 @@ namespace impact
             
             stringstream out;
             out<<"min="<<min<<", max="<<max<<", d="<<d;
-            BOOST_THROW_EXCEPTION( msError("the delta step is <0. "+out.str(),
+            IMPACT_THROW_EXCEPTION( msException("the delta step is <0. "+out.str(),
                                            "void msVectorFit1d::set(double min,double max,double d, string xUnit, string Yunit)",getFullId())
                                   );
         }
         if( max<min ){
             stringstream out;
             out<<"min="<<min<<", max="<<max<<", d="<<d;
-            BOOST_THROW_EXCEPTION( msError("the minimum > maximum. "+out.str(),
+            IMPACT_THROW_EXCEPTION( msException("the minimum > maximum. "+out.str(),
                                        "void msVectorFit1d::set(double min,double max,double d, string xUnit, string Yunit)",getFullId())
                               );
         }
@@ -115,7 +115,7 @@ namespace impact
     boost::shared_ptr<msTreeMapper> msVectorFit1d::setValues(vector<double>& y_) {
         
         if( size()==0 )
-        BOOST_THROW_EXCEPTION( msError("You need to call a 'set' function before calling setValues"
+        IMPACT_THROW_EXCEPTION( msException("You need to call a 'set' function before calling setValues"
                                        ,"boost::shared_ptr<msTreeMapper> msVectorFit1d::setValues(vector<double>& y_)",getFullId()) );
         
         for( size_t i=0; i<size();i++)  (*this)[i]=y_[i];
@@ -141,7 +141,7 @@ namespace impact
         size_t indice =  ( (*getCoordinates())[0]->getValue() - (*getCoordinates())[0]->getMin() ) / (*getCoordinates())[0]->getDq();
         
         if( indice> size())
-        BOOST_THROW_EXCEPTION( msError("the current value of the coordinate is out of bound for the vector, try to reset the vector or check the coordinate's value."
+        IMPACT_THROW_EXCEPTION( msException("the current value of the coordinate is out of bound for the vector, try to reset the vector or check the coordinate's value."
                                        ,"boost::shared_ptr<msTreeMapper> msVectorFit1d::setValue(double y)",getFullId()) );
         (*this)[indice]=y;
         return mySharedPtr();
@@ -169,7 +169,7 @@ namespace impact
         double x   = min;
         if( (*getCoordinates())[0]->isOutOfBounds() )
         
-        BOOST_THROW_EXCEPTION( msError(" Coordinates out of range:  msVectorFit1d can not be used for extrapolation."
+        IMPACT_THROW_EXCEPTION( msException(" Coordinates out of range:  msVectorFit1d can not be used for extrapolation."
                                        ,"double msVectorFit1d::evaluate()",getFullId()) );
         
         for(size_t i=0;i<(*this).size();i++) {
@@ -199,7 +199,7 @@ namespace impact
     double msVectorFit1d::Interpol(double t,double x0,double v0,double x1,double v1,double x2,double v2) {
         
         if( (x0==x1) || (x0==x2) || (x1==x2) )
-        BOOST_THROW_EXCEPTION( msError("Two x-axis points are superposed: can not interpolate",
+        IMPACT_THROW_EXCEPTION( msException("Two x-axis points are superposed: can not interpolate",
                                        "double msVectorFit1d::Interpol(double t,double x0,double v0,double x1,double v1,double x2,double v2)",
                                        getFullId()
                                        )

@@ -249,26 +249,26 @@ namespace impact
             
             if( it == Parameters.end() ) {
                 
-                msError e("The parameter queried ("+name+") does not exist",
+                msException e("The parameter queried ("+name+") does not exist",
                           "template<class T> T msParamsManager::getValue(string name,boost::shared_ptr<msUnitsManager> units) const",
                           getFullId());
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
                
             try{ value  = boost::lexical_cast <T> ( (*it)->getValue() );
                  value *= units->convert( *((*it)->Unit) , 1 );
                  }
-            catch(msError& e) {
+            catch(msException& e) {
                    
                 e.addContext("template<class T> T msParamsManager::getValue(string name,boost::shared_ptr<msUnitsManager> units) const");
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
                }
             catch(boost::bad_lexical_cast &e0) {
                     
-                msError e("Can not convert the parameter queried (string value: "+name+")",
+                msException e("Can not convert the parameter queried (string value: "+name+")",
                           "template<class T> T msParamsManager::getValue(string name,boost::shared_ptr<msUnitsManager> units) const",
                           getFullId());
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             
             return value;

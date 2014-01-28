@@ -22,12 +22,7 @@
 
 namespace impact
 {
-    char const*  msError::what() const throw() {
-        
-        message = "\nThrow in function "+Function+".\nThrow by the object "+Id+":\n\t "+output::printRed(Info)+".\n Contexts:\n";
-        for(size_t i=0; i<Contexts.size();i++)  message+="-"+Contexts[i]+";\n";
-        return  message.c_str();
-    }
+
     
 #if USE_PYTHON > 0
     
@@ -103,17 +98,23 @@ namespace impact
 #endif
     
     //-------------------------------------------------------------------------------
-    
+    void translate(msException const& e) {
+    // Use the Python 'C' API to set up an exception object
+    PyErr_SetString(PyExc_RuntimeError, e.what());
+    }
+
+
     void msRegister::registryInPython()
     {
 #if USE_PYTHON > 0
+        
         if( !msRegister::isRegisterRegistredInPython ) {
             
             using namespace boost::python;
             
-           /* msVector< std::string >::registryInPython("msVector_string","a vector of string");
-            msVector< double >::registryInPython("msVector_double","a vector of double");*/
-            
+	    msException::registryInPython();
+	    register_exception_translator<msException>(&translate);
+	               
             class_< std::vector<std::string>, boost::shared_ptr< std::vector<std::string> > >("msVector_string","a vector of string",init<>())
             .def(vector_indexing_suite<std::vector<std::string> >() );
             

@@ -223,9 +223,9 @@ namespace impact
             try {
                 msTreeMapper::replaceElementOfChildren(Variables,i,v);
             }
-            catch (msError& e) {
+            catch (msException& e) {
                 e.addContext("boost::shared_ptr<msTreeMapper> msGeneralizedCoordinates::setVariable(size_t i,boost::shared_ptr<msScalarVariable> v)");
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             
             return mySharedPtr();

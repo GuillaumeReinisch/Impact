@@ -65,10 +65,10 @@ namespace impact {
 	   
 	   if( ! theFile.is_open() ) {
 	     
-	       msError e("can not open the file "+filename,
+	       msException e("can not open the file "+filename,
 			 "boost::shared_ptr<msTreeMapper> msLoaderXml::open( string filename, boost::shared_ptr<msTreeMapper> mapper)",
 			 getFullId());
-	       BOOST_THROW_EXCEPTION(e);
+	       IMPACT_THROW_EXCEPTION(e);
 	   }
 	   LOGGER_WRITE(msLogger::DEBUG,"file '"+filename+ "' open." );
 	   

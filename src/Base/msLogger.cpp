@@ -138,7 +138,7 @@ namespace impact
                 out<<"mismatch between open and close function. "
                 <<"Function entered: "<<getFunctionName()
                 <<", Function exited: "<<fct;
-                BOOST_THROW_EXCEPTION( msError(out.str(),
+                IMPACT_THROW_EXCEPTION( msException(out.str(),
                                                "void msLogElement::closeFunction(std::string fct)",
                                                ""
                                                ));
@@ -325,7 +325,7 @@ namespace impact
     std::vector<boost::shared_ptr<msLogElement> > msLogger::getTreeRepresentation(){
         
         if(!TreeRepresentation)
-            BOOST_THROW_EXCEPTION( msError("The tree representation has not been started, no representation available"
+            IMPACT_THROW_EXCEPTION( msException("The tree representation has not been started, no representation available"
                                            ,"std::vector<boost::shared_ptr<msLogElement> > msLogger::getTreeRepresentation()"
                                            ,"singleton Logger" ));
         
@@ -414,7 +414,7 @@ namespace impact
             try {
                 CurrentElement->closeFunction(fct);
             }
-            catch (msError& e) {
+            catch (msException& e) {
                 e.addContext("void msLogger::exitFunction(std::string fct)");
                 throw e;
             }

@@ -107,7 +107,7 @@ namespace impact{
             Parameters->setAffiliation(mySharedPtr());
             updateParameters();
         }
-        catch(msError& e){
+        catch(msException& e){
             
             e.addContext("void msPhysicalInterface::setParameters(boost::shared_ptr<msParamsManager> param)");
 	    throw e;
@@ -127,7 +127,7 @@ namespace impact{
             Parameters->setParameter(key,value,*Units);
             updateParameters();
         }
-        catch(msError& e){
+        catch(msException& e){
             
             e.addContext("void msPhysicalInterface::setParameter(string key,string value)");
         }

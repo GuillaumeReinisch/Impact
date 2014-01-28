@@ -98,9 +98,9 @@ namespace impact
             <<"Formula:  " << e.GetExpr() << "\n"
             <<"Token:    " << e.GetToken()<< "\n"
             <<"Position: " << e.GetPos()  <<"."<<endl;
-            msError e2(out.str(), "double msParser::Evaluate()", getFullId());
+            msException e2(out.str(), "double msParser::Evaluate()", getFullId());
             
-            BOOST_THROW_EXCEPTION(e2);
+            IMPACT_THROW_EXCEPTION(e2);
         }
         return e;
     }

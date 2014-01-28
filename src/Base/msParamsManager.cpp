@@ -155,7 +155,7 @@ namespace impact{
         {
             LOGGER_WRITE(msLogger::ERROR,"Parameter "+name+" not found");
             
-            throw msError("Parameter "+name+" not found","void msParamsManager::setParameter(string name , double value ,  const msUnitsManager& unit)",getFullId());
+            throw msException("Parameter "+name+" not found","void msParamsManager::setParameter(string name , double value ,  const msUnitsManager& unit)",getFullId());
             return mySharedPtr();
         }
         else
@@ -179,7 +179,7 @@ namespace impact{
         {
             LOGGER_WRITE(msLogger::ERROR,"Parameter "+name+" not found");
             
-            throw msError("Parameter "+name+" not found","void msParamsManager::setParameter(string name , double value ,  const msUnitsManager& unit)",getFullId());
+            throw msException("Parameter "+name+" not found","void msParamsManager::setParameter(string name , double value ,  const msUnitsManager& unit)",getFullId());
             return mySharedPtr();
         }
         
@@ -199,10 +199,10 @@ namespace impact{
         it=Parameters.find(name);
         
         if(it==Parameters.end())
-            BOOST_THROW_EXCEPTION( msError("Parameter "+name+" not found","void msParamsManager::setParameter(string name , double value ,  const msUnitsManager& unit)",getFullId()) );
+            IMPACT_THROW_EXCEPTION( msException("Parameter "+name+" not found","void msParamsManager::setParameter(string name , double value ,  const msUnitsManager& unit)",getFullId()) );
         
         if( !msUnit(unit).isConsistent( *( (*it)->Unit) ) )
-            BOOST_THROW_EXCEPTION( msError("Parameter's unit not consistent with the original ( given: "+unit+", original:"+(*it)->Unit->getStr(),
+            IMPACT_THROW_EXCEPTION( msException("Parameter's unit not consistent with the original ( given: "+unit+", original:"+(*it)->Unit->getStr(),
                                            "void msParamsManager::setParameter(string name , double value ,  const msUnitsManager& unit)", getFullId()) );
         
         (*it)->Value=output::getString<double>(value);
@@ -255,10 +255,10 @@ namespace impact{
         if( it != Parameters.end() ) {
             val=(*it)->getValue(); return SUCESS;
         }
-        msError e("The parameter queried ("+name+") does not exist",
+        msException e("The parameter queried ("+name+") does not exist",
                   "msParamsManager::status_query msParamsManager::queryDoubleValue(string name , double& val, const msUnitsManager& u )",
                   getFullId());
-        BOOST_THROW_EXCEPTION(e);
+        IMPACT_THROW_EXCEPTION(e);
         return NOT_FOUND;
     }
     
@@ -279,10 +279,10 @@ namespace impact{
             val = atoi( (*it)->getValue().c_str() );
             return SUCESS;
         }
-        msError e("The parameter queried ("+name+") does not exist",
+        msException e("The parameter queried ("+name+") does not exist",
                   "msParamsManager::status_query msParamsManager::queryDoubleValue(string name , double& val, const msUnitsManager& u )",
                   getFullId());
-        BOOST_THROW_EXCEPTION(e);
+        IMPACT_THROW_EXCEPTION(e);
         return NOT_FOUND;
     }
     
@@ -302,16 +302,16 @@ namespace impact{
             }
             catch(boost::bad_lexical_cast &e) {
 	      
-	      msError e_("Can not convert the string '"+(*it)->getValue()+"' to double",
+	      msException e_("Can not convert the string '"+(*it)->getValue()+"' to double",
 		        " msParamsManager::status_query msParamsManager::queryDoubleValue(string name , double& val, const msUnitsManager& u )",
 			getFullId());
-	     BOOST_THROW_EXCEPTION(e_);
+	     IMPACT_THROW_EXCEPTION(e_);
 	    }
         }
-        msError e("The parameter queried ("+name+") does not exist",
+        msException e("The parameter queried ("+name+") does not exist",
                   "msParamsManager::status_query msParamsManager::queryDoubleValue(string name , double& val, const msUnitsManager& u )",
                   getFullId());
-        BOOST_THROW_EXCEPTION(e);
+        IMPACT_THROW_EXCEPTION(e);
         return NOT_FOUND;
     }
     

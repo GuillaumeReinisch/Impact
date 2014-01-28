@@ -143,9 +143,9 @@ namespace impact
                 catch( mu::Parser::exception_type &e){
                     stringstream out;
                     out<<"Error in the parser variable definition.\n"<<e.GetMsg()<<endl;
-                    msError e2(out.str(), "double msParser::setVariables()", getFullId());
+                    msException e2(out.str(), "double msParser::setVariables()", getFullId());
                     
-                    BOOST_THROW_EXCEPTION(e2);
+                    IMPACT_THROW_EXCEPTION(e2);
                 }
                 
             }

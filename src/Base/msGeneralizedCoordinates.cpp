@@ -92,7 +92,7 @@ namespace impact
         
         for(;it!=Variables.end();++it)
             if( (*it)->getId()==var->getId())
-                BOOST_THROW_EXCEPTION( msError("can not add the variable: variable of same Id already exists"
+                IMPACT_THROW_EXCEPTION( msException("can not add the variable: variable of same Id already exists"
                                                ,"boost::shared_ptr<msTreeMapper> msGeneralizedCoordinates::addVar(boost::shared_ptr<msScalarVariable> var)"
                                                ,getFullId()) );
         
@@ -174,7 +174,7 @@ namespace impact
         
         std::stringstream out;
         out<<"Try to access variable out of range (i="<<i<<", ndof="<<Variables.size()<<")";
-        BOOST_THROW_EXCEPTION( msError(out.str(),
+        IMPACT_THROW_EXCEPTION( msException(out.str(),
                                        "boost::shared_ptr<msScalarVariable> msGeneralizedCoordinates::getVariable(size_t i)",getFullId()
                                        )
                               );
@@ -231,7 +231,7 @@ namespace impact
     boost::shared_ptr<msTreeMapper> msGeneralizedCoordinates::setCoordinate(size_t i,double val)
     {
         if( i >= Variables.size() )
-            BOOST_THROW_EXCEPTION( msError("indice 'i' out of bounds."
+            IMPACT_THROW_EXCEPTION( msException("indice 'i' out of bounds."
                                            ,"boost::shared_ptr<msTreeMapper> msGeneralizedCoordinates::setCoordinate(size_t i,double val)",getFullId()) );
         getVariable(i)->Value = val;
         return mySharedPtr();

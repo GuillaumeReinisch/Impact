@@ -101,10 +101,10 @@ namespace impact
             
             if( !ScalarFunction ){
                 
-                msError e("The scalar function object has not been set",
+                msException e("The scalar function object has not been set",
                           "boost::shared_ptr<msTreeMapper> msTrackerScalarFunction::addValue(double timeIndicator)" ,
                           getFullId());
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
             }
             msTracker::addValue( timeIndicator, ScalarFunction->evaluate() );
             return mySharedPtr();

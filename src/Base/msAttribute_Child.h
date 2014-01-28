@@ -259,7 +259,6 @@ namespace impact
         virtual msTreeMapper* getBasePtr() 		const {return ptr.get();}
         
         
-        
         T* get() 		const {return ptr.get();}
         
         T* operator->() 	const {return ptr.get();}
@@ -405,11 +404,30 @@ namespace impact
                 }
             }
             
-            BOOST_THROW_EXCEPTION(msError("can not find the element of id "+id+" in the children list",
+            IMPACT_THROW_EXCEPTION(msException("can not find the element of id "+id+" in the children list",
                                           "boost::shared_ptr<T> msChildren::getElementById(std::string id) const ","")
                                   );
         }
         
+        msChildren<T>::const_iterator exceptIfNotIncluded(boost::shared_ptr<T> target) const {
+       
+	   msChildren<T>::const_iterator it = find(target); 
+		
+	   if(it==Elements.end()) {
+		  
+	       msException e("Can not find the element of Id "+target->getId()+" in the 'Elements' list.",
+	  	              target->getFullId());
+	       IMPACT_THROW_EXCEPTION(e); 
+	       }
+	   return it;
+	}/*
+	msChildren<T>::iterator exceptIfNotIncluded(boost::shared_ptr<T> target) {
+       
+	   msChildren<T>::iterator it = find(target); 
+	   exceptIf( [&] () { return (it==Elements.end()); },
+		     "Can not find the element of Id "+target->getId()+" in the 'Elements' list");
+	   return it;
+	}*/
     private:
         
         std::vector<  boost::shared_ptr<T> > Elements;
@@ -442,6 +460,35 @@ namespace impact
         void resize(size_t s){Elements.resize(s); }
     };
     
+    
+
+    template<class ReturnType,class ChildType,class Func>
+    ReturnType children_sum(Func func,typename msChildren<ChildType>::const_iterator it0,typename msChildren<ChildType>::const_iterator it1) {
+  
+        ReturnType r=func( *((*it0)) );
+        for(++it0;it0!=it1;++it0) r +=func( *((*it0)) );
+	
+        return r;
+    };
+        
+    template<class ReturnType,class IteratorType,class Func>
+    ReturnType foreach_sum(typename IteratorType::const_iterator it0,typename IteratorType::const_iterator it1,Func func) {
+  
+        ReturnType r=func( *((*it0)) );
+        for(++it0;it0!=it1;++it0) r +=func( it0) ;
+	
+        return r;
+    };
+    template<class ChildType,class Func>
+    void foreach_iterator( typename ChildType::iterator it0,typename ChildType::iterator it1,Func func) {
+  
+        for(;it0!=it1;++it0) func(it0);
+    };  
+    template<class ChildType,class Func>
+    void foreach_constiterator( typename ChildType::const_iterator it0,typename ChildType::const_iterator it1,Func func) {
+  
+        for(;it0!=it1;++it0) func(it0);
+    }; 
 }
 
 #endif

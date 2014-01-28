@@ -272,7 +272,7 @@ namespace impact
          */
         virtual bool getNextPoint(boost::shared_ptr<msGeneralizedCoordinates> coors){
             
-            BOOST_THROW_EXCEPTION( msError("The function getNextPoint() is not implemented in this class, you need to use derived class"
+            IMPACT_THROW_EXCEPTION( msException("The function getNextPoint() is not implemented in this class, you need to use derived class"
                                            ,"msSamplingData msSampler::getNextPoint(boost::shared_ptr<msGeneralizedCoordinates> coors)", getFullId()) );
         }
 
@@ -280,7 +280,7 @@ namespace impact
          bool getNextPoint(){
             
 	    if(!getCoordinates()) {
-                BOOST_THROW_EXCEPTION( msError("The coordinates have not been set yet."
+                IMPACT_THROW_EXCEPTION( msException("The coordinates have not been set yet."
                                            ,"msSamplingData msSampler::getNextPoint()", getFullId()) );
 	    }
 	    return getNextPoint(getCoordinates());

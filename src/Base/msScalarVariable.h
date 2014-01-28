@@ -115,7 +115,7 @@ namespace impact
             
             try{ Unit->set( unit );
             }
-            catch(msError& e){
+            catch(msException& e){
                 e.addContext("can not set the unit of the variable (boost::shared_ptr<msTreeMapper> set(double v,double min,double max,double _dq,double _Dq, string unit))");
                 throw e;
             }
@@ -205,7 +205,7 @@ namespace impact
         void setUnit(string unit){
             try{ Unit->set( unit );
             }
-            catch(msError& e){
+            catch(msException& e){
                 e.addContext("can not set the unit of the variable (boost::shared_ptr<msTreeMapper> set(double v,double min,double max,double _dq,double _Dq, string unit))");
                 throw e;
             }

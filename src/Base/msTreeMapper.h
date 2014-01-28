@@ -25,6 +25,7 @@
 #include <msLogger.h>
 #include <msAttribute_Child.h>
 
+
 namespace impact
 {
     
@@ -218,13 +219,20 @@ namespace impact
         //@}
         
         struct VarDatabase
-        {friend class msTreeMapper;
-            std::string Name; std::string Id; std::string Comments;
+        {
+	    friend class msTreeMapper;
+            
             VarDatabase(){};
-            VarDatabase(std::string name, std::string type,std::string id){
+            VarDatabase(std::string name, std::string type,std::string id) {
+	      
                 Name=name;Type=type;Id=id;
             }
+	    std::string Name; 
+	    std::string Id; 
+	    std::string Comments;
+	    
         private:
+	  
             std::string Type;
         };
         
@@ -251,24 +259,17 @@ namespace impact
         }
         
         //! update the class members from the  attributes & childs of the tree structure. see @ref registration
-        virtual void update() {
-            LOGGER_ENTER_FUNCTION_DBG("void msTreeMapper::update()",getFullId());
-            LOGGER_WRITE(msLogger::DEBUG,"update object '" + VariableAttributs.Name + "'");
-            LOGGER_EXIT_FUNCTION2("void msTreeMapper::update()");
-	    }
+        virtual void update() { IMPACT_LOGIN();IMPACT_LOGOUT(); }
         
     public:
         
         //! declare the attributes & childs of the tree structure. see @ref registration
         virtual void initialize() {
             
-            LOGGER_ENTER_FUNCTION_DBG("void msTreeMapper::initialize()",getFullId());
+            IMPACT_LOGIN();
             declareAttribute(VariableAttributs.Id,"Id");
 	    declareAttribute(VariableAttributs.Comments, "Comments");
-	    
-            LOGGER_WRITE(msLogger::DEBUG,"Begin declaration of child and attributs of '"+VariableAttributs.Name+"'");
-            LOGGER_EXIT_FUNCTION2("void msTreeMapper::initialize()");
-            //declareAttribute();
+	    IMPACT_LOGOUT();
         };
         
         msTreeMapper();
@@ -277,13 +278,9 @@ namespace impact
         
         boost::shared_ptr<msTreeMapper> deepCopy();  	//!< return a deep copy of the object
         
-        
-        //! @Name Function to operate on the children / attributes
-        //@{
-        //! return the string cast of the attribute of 'id'
-        std::string getAttributeInString(std::string id )  ;
-        
-        attributeIterator beginAttributes(){return Attributes.begin();};
+        //! @Name iterators of children / attributes
+        //@{ 
+	attributeIterator beginAttributes(){return Attributes.begin();};
         attributeIterator endAttributes(){return Attributes.end();};
         
         const_attributeIterator beginAttributes() const {return Attributes.begin();};
@@ -294,7 +291,13 @@ namespace impact
         
         const_childIterator beginChildren() const {return Children.begin();};
         const_childIterator endChildren()const {return Children.end();};
-        
+	//@}
+	
+        //! @Name Function to operate on the children / attributes
+        //@{
+        //! return the string cast of the attribute of 'id'
+        std::string getAttributeInString(std::string id )  ;
+              
         //! return the first child matching the given 'id'
         boost::shared_ptr<msTreeMapper> getChild(const std::string& id) const;
         
@@ -315,6 +318,7 @@ namespace impact
         std::vector< std::string> getAttributes() const ;
         
         /** \brief set an attribute
+	 * 
          * The string representation of the attribute w/ to their type are given in the file
          * msAttribute_Child.h
          * \param id key id
@@ -336,13 +340,13 @@ namespace impact
         
         std::string getType() const; 		//!< return full type
         
-        std::string getLastType() const; 		//!< return full type
+        std::string getLastType() const; 	//!< return full type
         
         std::string getId()   const;		//!< return the Id
         
-        std::string getComments()   const;		//!< return the comments
+        std::string getComments()   const;	//!< return the comments
         
-        std::string getFullId()   const;		//!< return Affiliation+Id
+        std::string getFullId()   const;	//!< return Affiliation+Id
         
         //! return a vector of the object's variable name on the path to the root element.
         std::vector<std::string> getVariableNames() const;
@@ -357,13 +361,13 @@ namespace impact
         
         boost::shared_ptr<msTreeMapper> getParent() const {
             
+	    IMPACT_LOGIN();
             boost::shared_ptr<msTreeMapper> ptr;
-            if( (ptr=Parent.lock()) ) return ptr;
-            
-            BOOST_THROW_EXCEPTION( msError("Can not lock the Parent weak pointer"
-                                           ,"boost::shared_ptr<msTreeMapper> msTreeMapper::getParent() "
-                                           ,getFullId() ) );
-            
+	    IMPACT_EXCEPT_IF( [&] (){ return !(ptr=Parent.lock()); },
+		       "Can not lock the Parent weak pointer");
+	   
+	    IMPACT_LOGOUT();
+	    return ptr;
         }
         
         boost::shared_ptr<msTreeMapper> setId(std::string id);			    //!< set the Id
@@ -371,20 +375,21 @@ namespace impact
 	boost::shared_ptr<msTreeMapper> setComments(std::string comment);		    //!< set the comments
 		
         void setAffiliation(boost::shared_ptr<msTreeMapper> parent){
+	  
+	    IMPACT_LOGIN()
             Parent.reset();
-            Parent = boost::weak_ptr<msTreeMapper>(parent->mySharedPtr());
             boost::shared_ptr<msTreeMapper> ptr;
-            if( !(ptr=Parent.lock()) )
-                
-                BOOST_THROW_EXCEPTION( msError("Can not lock the Parent weak pointer"
-                                               ,"void msTreeMapper::setAffiliation(boost::shared_ptr<msTreeMapper> parent)"
-                                               ,getFullId() ) );
+	   /* IMPACT_EXCEPT_IF( [&] () { return !(ptr=Parent.lock()); },
+		       "Can not lock the Parent weak pointer");*/
+	    Parent = boost::weak_ptr<msTreeMapper>(parent->mySharedPtr());
+	    
+	    IMPACT_LOGOUT()
         }
         
         //! return 1 if the object is derived from the class 'target'
         bool isDerivedFrom(std::string target) const;
         
-	void exceptIfNotDerivedFrom(std::string target,std::string method) const;
+	void exceptIfNotDerivedFrom(std::string target, std::string method) const;
 			     
         //! return 1 if the object has a parent
         bool hasParent() const { boost::shared_ptr<msTreeMapper> ptr;
@@ -418,14 +423,28 @@ namespace impact
             try{ me = shared_from_this();
 	        }
             catch(...){
-                msError e("Can not get the shared pointer of the object, did you create it using the ::New operator?",
+                msException e("Can not get the shared pointer of the object, did you create it using the ::New operator?",
                           "boost::shared_ptr<msTreeMapper> msTreeMapper::mySharedPtr()",
                           getFullId());
-                BOOST_THROW_EXCEPTION(e);
+                IMPACT_THROW_EXCEPTION(e);
+            }
+            return  me;
+        };
+  
+	boost::shared_ptr<const msTreeMapper> myConstSharedPtr() const {
+            
+            boost::shared_ptr<const msTreeMapper> me;
+            try{ me = shared_from_this();
+	        }
+            catch(...){
+                msException e("Can not get the shared pointer of the object, did you create it using the ::New operator?",
+                              "boost::shared_ptr<const msTreeMapper> msTreeMapper::mySharedPtr()",
+                               getFullId());
+                IMPACT_THROW_EXCEPTION(e);
             }
             return me;
         };
-        
+	
         virtual bool sanityCheck(){return 1;};
         
     protected:
@@ -548,11 +567,6 @@ namespace impact
         
         void writeAffiliationVariable(std::ostream& out) const;
         
-        
-        
-        static boost::python::class_<msTreeMapper, boost::python::bases<msRegister>, boost::shared_ptr<msTreeMapper> >* PythonClass;
-        
-        
     private:
         
         bool toBeSaved;
@@ -577,6 +591,7 @@ namespace impact
     
     //-------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------
+    
     template<class T>
     std::vector< boost::shared_ptr<T> > msTreeMapper::getChildrenDerivedFrom(std::string type) const {
         
@@ -618,7 +633,7 @@ namespace impact
         
         if( !value->isDerivedFrom("msTreeMapper") )
             
-            BOOST_THROW_EXCEPTION( msError("The child you want to register is not derived from msTreeMapper, only msTreeMapper derived object can be declared as child",
+            IMPACT_THROW_EXCEPTION( msException("The child you want to register is not derived from msTreeMapper, only msTreeMapper derived object can be declared as child",
                                            "void msTreeMapper::declareChild(msChild<T>& refchild, boost::shared_ptr<T> value, std::string name)",
                                            getFullId()
                                            ));
@@ -670,7 +685,7 @@ namespace impact
         LOGGER_WRITE(msLogger::DEBUG,"Id of the updated child:"+lhschild->getFullId());
         
         if( lhschild.getSharedPtr() == boost::shared_ptr<T>() )
-            BOOST_THROW_EXCEPTION( msError("the original (lhschild) child is not initialized, did you declare it?",
+            IMPACT_THROW_EXCEPTION( msException("the original (lhschild) child is not initialized, did you declare it?",
                                            "void msTreeMapper::update(msChild<T>& lhschild,boost::shared_ptr<T> rhschild)",
                                            getFullId()
                                            ));
@@ -682,7 +697,7 @@ namespace impact
             if( it->second->getBasePtr() == lhschild.getBasePtr() )  varname = it->first;
         
         if( varname=="")
-            BOOST_THROW_EXCEPTION( msError("ref. to lhschild no found",
+            IMPACT_THROW_EXCEPTION( msException("ref. to lhschild no found",
                                            "void msTreeMapper::update(msChild<T>& lhschild,boost::shared_ptr<T> rhschild)",
                                            getFullId()
                                            ));
@@ -705,6 +720,8 @@ namespace impact
         
         LOGGER_ENTER_FUNCTION_DBG("void msTreeMapper::addElementToChildren(msChildren<T>& vector,boost::shared_ptr<T> elem)",getFullId());
         
+	if(!elem->hasParent()) elem->setAffiliation(mySharedPtr());
+	
         std::map< std::string , msChildrenBase * >::iterator  it;
         it=RegistredVectorsOfChildren.begin();
         std::string varname="";
@@ -714,7 +731,7 @@ namespace impact
         LOGGER_WRITE(msLogger::DEBUG,"elem's id: "+elem->getId()+"; vector name: "+varname);
         
         if( varname=="")
-            BOOST_THROW_EXCEPTION( msError("reference to the children not found, did you declare it in the constructor ?"
+            IMPACT_THROW_EXCEPTION( msException("reference to the children not found, did you declare it in the constructor ?"
                                            ,"msTreeMapper::addElementToChildren(msChildren<T>& vector,boost::shared_ptr<T> elem)"
                                            ,getFullId() ) );
         
@@ -746,7 +763,7 @@ namespace impact
         LOGGER_WRITE(msLogger::DEBUG,"elem's id: "+elem->getId()+"; vector name: "+varname);
         
         if( varname=="")
-            BOOST_THROW_EXCEPTION( msError("reference to the children not found, did you declare it in the constructor ?"
+            IMPACT_THROW_EXCEPTION( msException("reference to the children not found, did you declare it in the constructor ?"
                                            ,"void replaceElementOfChildren(msChildren<T>& vector,size_t i,boost::shared_ptr<T> elem)"
                                            ,getFullId() ) );
         
@@ -771,7 +788,7 @@ namespace impact
             if( it->second == &vector )  varname = it->first;
         
         if( varname=="")
-            BOOST_THROW_EXCEPTION( msError("reference to the children not found, did you declare it?"
+            IMPACT_THROW_EXCEPTION( msException("reference to the children not found, did you declare it?"
                                            ,"void msTreeMapper::clearChildren(msChildren<T>& vector)"
                                            ,getFullId() ) );
         
@@ -788,7 +805,7 @@ namespace impact
             LOGGER_WRITE(msLogger::DEBUG,"erase element " + name.str() );
             
             if(Children.find(name.str())==Children.end())
-                BOOST_THROW_EXCEPTION( msError("the child "+ name.str() + " does not exist in Children"
+                IMPACT_THROW_EXCEPTION( msException("the child "+ name.str() + " does not exist in Children"
                                                ,"void msTreeMapper::clearChildren(msChildren<T>& vector)"
                                                ,getFullId() ) );
             Children.erase(name.str());

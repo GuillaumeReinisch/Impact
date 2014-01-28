@@ -54,7 +54,7 @@ typedef Eigen::VectorXd vector_type;
 typedef Eigen::MatrixXd matrix_type;
 typedef Eigen::Vector3d vector_type3d;
 typedef Eigen::Matrix3d matrix_type3d;
-    
+ 
  }
 
 template<class T>

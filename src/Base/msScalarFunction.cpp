@@ -41,7 +41,6 @@ namespace impact
     void msScalarFunction::registryInPython()
     {
 #if USE_PYTHON
-        
         msTreeMapper::registryInPython();
         
         if( ! msScalarFunction::isScalarFunctionRegisteredInPython ) {
@@ -130,7 +129,7 @@ namespace impact
         
         if(noOfDim()<1) {
             
-            BOOST_THROW_EXCEPTION(msError("the dimension of the coordinates has to be >0",
+            IMPACT_THROW_EXCEPTION(msException("the dimension of the coordinates has to be >0",
                                           "double msScalarFunction::evaluate(double data)", getFullId())
                                   );
         }
@@ -147,7 +146,7 @@ namespace impact
         
         if(noOfDim()<2) {
             
-            BOOST_THROW_EXCEPTION(msError("the dimension of the coordinates has to be >1",
+            IMPACT_THROW_EXCEPTION(msException("the dimension of the coordinates has to be >1",
                                           "double msScalarFunction::evaluate(double x,double y)", getFullId())
                                   );
         }
@@ -165,7 +164,7 @@ namespace impact
         
         if(noOfDim()<3) {
             
-            BOOST_THROW_EXCEPTION(msError("the dimension of the coordinates has to be >2",
+            IMPACT_THROW_EXCEPTION(msException("the dimension of the coordinates has to be >2",
                                           "double msScalarFunction::evaluate(double x,double y,double z)", getFullId())
                                   );
         }
@@ -181,7 +180,7 @@ namespace impact
     double msScalarFunction::partialDerivative(size_t i) {
         
         if( i>= Coordinates->noOfDim() )
-            BOOST_THROW_EXCEPTION(msError( "Indice i ("+output::getString<int>(i)+") out of range: number of coordinates = "+ output::getString<int>(Coordinates->noOfDim()),
+            IMPACT_THROW_EXCEPTION(msException( "Indice i ("+output::getString<int>(i)+") out of range: number of coordinates = "+ output::getString<int>(Coordinates->noOfDim()),
                                           "double msScalarFunction::partialDerivative(size_t i)",
                                           getFullId()
                                           )
@@ -200,13 +199,13 @@ namespace impact
     double msScalarFunction::partialSecondDerivative(size_t i,size_t j) {
         
         if( i>= Coordinates->noOfDim() )
-            BOOST_THROW_EXCEPTION(msError( "Indice i ("+output::getString<int>(i)+") out of range: number of coordinates = "+ output::getString<int>(Coordinates->noOfDim()),
+            IMPACT_THROW_EXCEPTION(msException( "Indice i ("+output::getString<int>(i)+") out of range: number of coordinates = "+ output::getString<int>(Coordinates->noOfDim()),
                                           "double msScalarFunction::partialDerivative(size_t i)",
                                           getFullId()
                                           )
                                   );
         if( j>= Coordinates->noOfDim() )
-            BOOST_THROW_EXCEPTION(msError( "Indice j ("+output::getString<int>(j)+") out of range: number of coordinates = "+ output::getString<int>(Coordinates->noOfDim()),
+            IMPACT_THROW_EXCEPTION(msException( "Indice j ("+output::getString<int>(j)+") out of range: number of coordinates = "+ output::getString<int>(Coordinates->noOfDim()),
                                           "double msScalarFunction::partialDerivative(size_t i)",
                                           getFullId()
                                           )
