@@ -91,12 +91,14 @@ namespace impact {
 		
 		for(size_t i=0;i<noOfEntities(); ++i) {
 		  
-		     getEntityFromIndex(i)->exceptIfNotDerivedFrom("msMolecule","void msThermoMixture::update()");
+		     IMPACT_EXCEPT_IF( [&](){ return ! getEntityFromIndex(i)->isDerivedFrom("msMolecule"); },
+		                        "The entity is not derived from msMolecule");
 		     
 		     boost::shared_ptr<msMolecule> speciesTD = 
 		         getEntityFromIndex(i)->impact_static_cast<msMolecule>();
 			 
-		     speciesTD->getMotion()->exceptIfNotDerivedFrom("msMotionCEA","void msThermoMixture::update()");
+		     IMPACT_EXCEPT_IF( [&](){ return ! speciesTD->getMotion()->isDerivedFrom("msMotionCEA"); },
+		                        "The motion needs to be derived from msMotionCEA");
 		     
 		     boost::shared_ptr<msMotionCEA> motion = 
 		         speciesTD->getMotion()->impact_static_cast<msMotionCEA>();
@@ -129,21 +131,19 @@ namespace impact {
             
             static boost::shared_ptr<msThermoMixture> New(){
                 
-                LOGGER_ENTER_FUNCTION_DBG("static boost::shared_ptr<msThermoMixture> msThermoMixture::New()","");
+                IMPACT_LOGIN_STATIC();
                 boost::shared_ptr<msThermoMixture> T( new msThermoMixture() );
                 T->initialize();
                 T->update();
-                LOGGER_EXIT_FUNCTION2("static boost::shared_ptr<msThermoMixture> msThermoMixture::New()");
+                IMPACT_LOGOUT();
                 return T;
             }
             
             void initialize() {
                 
-                LOGGER_ENTER_FUNCTION_DBG("void msThermoMixture::initialize()","");
-                
-                msChemicalMixture::initialize();
-		
-                LOGGER_EXIT_FUNCTION2("void msThermoMixture::initialize()");
+                IMPACT_LOGIN();
+                msChemicalMixture::initialize();		
+                IMPACT_LOGOUT();
             }
             
             boost::shared_ptr<msTreeMapper> parseFromCanteraMechanismXml(string path);
@@ -152,17 +152,12 @@ namespace impact {
 	    
             boost::shared_ptr<msTreeMapper> addEntity( boost::shared_ptr<msEntity> entity ) {
                 
-	        LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msTreeMapper> msThermoMixture::addEntity( boost::shared_ptr<msEntity> entity )",
-					  getFullId());
-	        entity->exceptIfNotDerivedFrom("msMolecule","boost::shared_ptr<msTreeMapper> msThermoMixture::addEntity( boost::shared_ptr<msEntity> entity )");
-	        
-		try{ msChemicalMixture::addEntity(entity); 
-		}
-		catch(msException& e){
-		     e.addContext("boost::shared_ptr<msTreeMapper> msThermoMixture::addEntity( boost::shared_ptr<msEntity> entity )");
-		     IMPACT_THROW_EXCEPTION(e);
-		}
-		LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msTreeMapper> msThermoMixture::addEntity( boost::shared_ptr<msEntity> entity )");
+	        IMPACT_LOGIN();
+		IMPACT_EXCEPT_IF( [&](){ return entity->isDerivedFrom("msMolecule"); },
+		                        "The entity is not derived from msMolecule");
+		
+	        IMPACT_TRY([&](){ msChemicalMixture::addEntity(entity);} );
+		IMPACT_LOGOUT();
 	      
                 return mySharedPtr();
             }

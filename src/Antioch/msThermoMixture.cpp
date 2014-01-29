@@ -228,7 +228,7 @@ namespace impact {
         
         boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCeaAscii(string path) {
 	   
-	    LOGGER_ENTER_FUNCTION_DBG("boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCeaAscii(string path)",getFullId());
+	    IMPACT_LOGIN();
 	    
 	    ifstream in(path.c_str());
 	    
@@ -238,6 +238,15 @@ namespace impact {
 	    unsigned int n_int;
 	    std::vector<double> coeffs;
 	    double h_form, val;
+	    boost::shared_ptr<msMotion::msMotionParams> param = msMotion::msMotionParams::New();
+	    boost::shared_ptr<msTreeMapper> elementsContainer = msTreeMapper::New();
+	    
+	    std::vector<boost::shared_ptr<atomism::msAtom> > availAtoms;
+	    
+	    addChild(param,"Param_CEA");
+	    addChild(elementsContainer,"ElementsContainer");
+	    
+	    msChildren<msElement>::iterator it;
 	    
 	    while (in.good()) {
 	      
@@ -252,45 +261,48 @@ namespace impact {
 		boost::shared_ptr<msMolecule> species = msMolecule::New();
 		species->setId(name);
 		
+		LOGGER_WRITE(msLogger::DEBUG,"Create atoms "+name);
 		vector<boost::shared_ptr<atomism::msAtom> > Atoms;
+		size_t s0 = availAtoms.size();
 		
-		try{ atomism::getListAtomsFromName(name,Atoms);
-		}
-		catch(msException& e) {
-		  
-		     e.addContext("boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCeaAscii(string path)" );
-		     IMPACT_THROW_EXCEPTION(e);
-		}
-		for( size_t i=0; i<Atoms.size();++i) species->addElement(Atoms[i]);
+		IMPACT_TRY( [&]() { atomism::getListAtomsFromName(name, availAtoms,Atoms,
+		                                                  elementsContainer,getUnits());
+		});
 		
+		msChildren<msElement>::iterator it;
+		
+		for_each( Atoms.begin(), Atoms.end() , 
+		         [&](boost::shared_ptr<atomism::msAtom> atom){ species->addElement(atom);
+		});
 		
 		LOGGER_WRITE(msLogger::DEBUG,"Construct thermodynamic data");
 		
-		boost::shared_ptr<msMotionCEA> td = msMotionCEA::New();
-		
+		boost::shared_ptr<msMotionCEA> td = msMotionCEA::New();		
+		td->setParameters(param);
 		
 	        for (unsigned int interval=0; interval<n_int; interval++) {
 		    coeffs.clear();
-	            for (unsigned int n=0; n<10; n++) {
-		        in >> val, coeffs.push_back(val);
-	            }
+	            for (unsigned int n=0; n<10; n++) in >> val, coeffs.push_back(val);
 	            td->addCoeffsFit(coeffs);
 	        }
+	        
 	        td->setUnits(getUnits());
 	        species->setMotion(td);
 		species->setUnits(getUnits());
-	        msChemicalMixture::addEntity(species);
 		
+	        msChemicalMixture::addEntity(species);
             } // end while
-            LOGGER_WRITE(msLogger::DEBUG,"create antioch calculator");	    
-	    try{ update();
-		}
-	    catch(msException& e) {
-	      
-		 e.addContext("boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCeaAscii(string path)" );
-		 IMPACT_THROW_EXCEPTION(e);
-		}
-	    LOGGER_EXIT_FUNCTION2("boost::shared_ptr<msTreeMapper> msThermoMixture::parseFromCeaAscii(string path)");
+            
+            size_t i=0;
+            for_each( availAtoms.begin(), availAtoms.end() , [&](boost::shared_ptr<atomism::msAtom> atom){  
+		  
+		    elementsContainer->addChild(atom,"Elements_"+output::getString(i));
+		    i++;
+		});
+	    
+            LOGGER_WRITE(msLogger::DEBUG,"create antioch calculator");	 
+	    IMPACT_TRY( [&]() {  update();} );
+	    IMPACT_LOGOUT();
 	    return mySharedPtr();
 	}		    
     }
