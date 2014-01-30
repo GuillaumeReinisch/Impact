@@ -32,6 +32,7 @@
 #endif
 
 #define IMPACT_THROW_EXCEPTION BOOST_THROW_EXCEPTION
+#define IMPACT_THROW_NOT_IMPLEMENTED() throwNotImplemented( __PRETTY_FUNCTION__ )
 #define IMPACT_EXCEPT_IF(FUNC,MESSAGE)  exceptIf( FUNC, MESSAGE, __PRETTY_FUNCTION__  , myConstSharedPtr()->getFullId() )
 #define IMPACT_TRY(FUNC)  impact_try( FUNC, __PRETTY_FUNCTION__ )
 
@@ -104,7 +105,7 @@ namespace impact
     template<class Func>
     void impact_try(Func func,std::string method) {
       
-      try{ func(); 
+      try{ return func(); 
       }
       catch(msException& e0){
 	
@@ -117,5 +118,11 @@ namespace impact
 	  IMPACT_THROW_EXCEPTION(e);
       }  
     };
+    
+    void throwNotImplemented(std::string method) {
+      msMethodNotDefined e(method);   
+      IMPACT_THROW_EXCEPTION(e);
+    };
+    
 }
 #endif

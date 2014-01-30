@@ -37,7 +37,7 @@ namespace impact
         }
         
     msException::msException(string info,string id){ 
-  cout<<"msException::msException(std::string info, std::string function): id= "<<id<<endl;
+  
         Info=info;Id=id;
         msLogElement* elem = msLogger::CurrentElement;
         Function=elem->getFunctionName();
