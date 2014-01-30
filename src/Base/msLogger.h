@@ -55,6 +55,8 @@
 #define IMPACT_LOGIN()         msLogger::enterFunctionDbg( __PRETTY_FUNCTION__  , myConstSharedPtr()->getFullId() );
 #define IMPACT_LOGIN_STATIC()  msLogger::enterFunctionDbg( __PRETTY_FUNCTION__  , "static" );
 #define IMPACT_LOGOUT()        msLogger::exitFunction(__PRETTY_FUNCTION__);
+#define IMPACT_LOGIN_LOGOUT_RETURNME(FCT)  IMPACT_LOGIN();\ doLambda(FCT);\ IMPACT_LOGOUT();\ return mySharedPtr();
+
 //#else
 /*
  #define LOGGER_START(MIN_PRIORITY, FILE)
@@ -62,6 +64,8 @@
  #define LOGGER_WRITE(PRIORITY, MESSAGE)
  
  #endif*/
+template<class Func>
+void doLambda( Func func) {func();}
 
 using namespace std;
 namespace impact
@@ -200,6 +204,7 @@ namespace impact
         static void write4Columns(Priority priority, double a, double b, double c, double d );
         
         static void exitFunction();
+	
         static void exitFunction(std::string);
         
         static bool isDebug(){if(minPriority==0) return 1; return 0;};
@@ -238,6 +243,5 @@ namespace impact
         // static msLogger instance;
         
     };
-    
 }
 #endif // MSLOGGER_H
