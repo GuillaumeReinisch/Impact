@@ -388,9 +388,7 @@ namespace impact
         
         //! return 1 if the object is derived from the class 'target'
         bool isDerivedFrom(std::string target) const;
-        
-	void exceptIfNotDerivedFrom(std::string target, std::string method) const;
-			     
+        		     
         //! return 1 if the object has a parent
         bool hasParent() const { boost::shared_ptr<msTreeMapper> ptr;
             if( (ptr=Parent.lock()) ) return 1;

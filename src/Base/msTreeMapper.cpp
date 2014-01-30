@@ -40,7 +40,6 @@ namespace impact
             
             using namespace boost::python;
             
-	    cout<<"void msTreeMapper::registryInPython() 2"<<endl;
             class_<msTreeMapper, bases<msRegister>, boost::shared_ptr<msTreeMapper> >(
                 "msTreeMapper",
                 "class handling registration in the tree database manager and in python" ,
@@ -417,17 +416,6 @@ namespace impact
         return( std::find( strs.begin(), strs.end(), strs0.back() ) != strs.end() );
     }
     
-    void msTreeMapper::exceptIfNotDerivedFrom(std::string target,std::string method) const {
-	
-	if( !isDerivedFrom(target) ) {
-		     
-	    stringstream out;
-	    out<<"The objet "<<getFullId()<<" should be of type "<<target<<" but is of type "<<getType();
-	    msException e( out.str(),method,getFullId() );
-			
-	    IMPACT_THROW_EXCEPTION(e);
-	}
-    }
     //-------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------
     
