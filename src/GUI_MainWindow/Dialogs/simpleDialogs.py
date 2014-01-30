@@ -145,7 +145,7 @@ class queryStringDialog(QtGui.QDialog):
 
     def ok(self):
         self.variable = self.lineEdit.text() 
-        self.functionOk(self.variable)
+        self.functionOk(str(self.variable))
         self.close()
 
     def cancel(self):
