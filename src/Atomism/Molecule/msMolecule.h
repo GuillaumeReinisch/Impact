@@ -80,13 +80,13 @@ namespace impact {
                 LOGGER_ENTER_FUNCTION_DBG("void msMolecule::initialize()","");
                 
                 msEntity::initialize();
-		msTreeMapper::declareChild(Motion,msMotion::New(),"Motion");
+		msTreeMapper::declareChildren(Motions,"Motions");
 		
                 LOGGER_EXIT_FUNCTION2("void msMolecule::initialize()");
             }
   	    
   	    //! \brief return the motion
-  	    boost::shared_ptr<msMotion> getMotion() const {return Motion.getSharedPtr(); }
+  	    boost::shared_ptr<msMotion> getMotion() const {return Motions.getElements()[0]; }
   	    
   	    /** \brief set the motion
 	     * 
@@ -94,13 +94,37 @@ namespace impact {
 	     */ 
   	    boost::shared_ptr<msTreeMapper> setMotion( boost::shared_ptr<msMotion> motion) {
 	      
-	        msTreeMapper::update(Motion,motion);
+	        msTreeMapper::clearChildren(Motions);
+	        msTreeMapper::addElementToChildren(Motions,motion);
 	        return mySharedPtr();
 	    }
   	    
+  	    //! @name msMotion  methods
+            //@{
+	    
+            double S(double T) { 
+	      IMPACT_LOGIN();
+	      double v = getMotion()->S(T);	
+	      IMPACT_LOGOUT();
+	      return getUnits()->convert(getMotion()->getUnits()->getUnit(msUnit::vEnergyByQuantity),v);}
+	    
+            double Cp(double T){
+	      IMPACT_LOGIN();
+	      double v = getMotion()->Cp(T);	
+	      IMPACT_LOGOUT();
+	      return getUnits()->convert(getMotion()->getUnits()->getUnit(msUnit::vEnergyByQuantity),v);}
+ 
+             double Cv(double T){
+	      IMPACT_LOGIN();
+	      double v = getMotion()->Cv(T);	
+	      IMPACT_LOGOUT();
+	      return getUnits()->convert(getMotion()->getUnits()->getUnit(msUnit::vEnergyByQuantity),v);}
+            
+	    //@}
+	    
         private:
             
-	    msChild<msMotion> Motion;        
+	    msChildren<msMotion> Motions;        
         };
         
     }
