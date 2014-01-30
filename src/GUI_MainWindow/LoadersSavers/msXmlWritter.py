@@ -1,6 +1,7 @@
 
 from libimpact import *
 from xml.dom import minidom
+import itertools
 
 class msXmlWritter( msTreeMapper ):
     """
@@ -65,6 +66,9 @@ class msXmlWritter( msTreeMapper ):
     def __writeChild( self, node, parent, doc, nodeparent ):
    
         children = node.getChildren()
+        varnames = node.getVariableNames()
+        tupleChild = itertools.izip(children,varnames)
+        
         attributs = node.getAttributes()
         nodename = "workspace" 
         if(not nodeparent == 0):
@@ -74,13 +78,14 @@ class msXmlWritter( msTreeMapper ):
 
         for att in attributs:
                 newchild.setAttribute(att.split("=")[0][:-1],att.split("=")[1][1:])
-            
-        for child in children:
+        i = 0
+        for child,varname in tupleChild:
 
             if( child.isToBeSaved() and not child.isAffiliatedTo(node) ):
-                newSL = doc.createElement(child.getType().split(":")[-2] + "-" + node.getVariableName(child))
+	        print child.getType().split(":")[-2] + "-" + varname, node.getSymbolicLinkPath(child)[:-1]
+                newSL = doc.createElement(child.getType().split(":")[-2] + "-" + varname)
                 newSL.setAttribute("PointerTo", node.getSymbolicLinkPath(child)[:-1] )
                 newchild.appendChild(newSL)
-
+                
             if( child.isToBeSaved() and child.isAffiliatedTo(node) ):
                 self.__writeChild( child, newchild, doc,node)
