@@ -82,10 +82,12 @@ namespace impact {
             
             void update() {
                 
-                LOGGER_ENTER_FUNCTION_DBG("void msThermoMixture::update()",getFullId());
+                IMPACT_LOGIN();
                 msChemicalMixture::update();
 		
-		CeaMixture = boost::shared_ptr<Antioch::CEAThermoMixture<double> >(new Antioch::CEAThermoMixture<double>(*(getCalculator())) );
+		IMPACT_TRY([&](){
+		    CeaMixture = boost::shared_ptr<Antioch::CEAThermoMixture<double> >(new Antioch::CEAThermoMixture<double>(*(getCalculator())) );
+		});
 				
 		vector<string> names=getEntitiesNames();
 		
@@ -102,23 +104,14 @@ namespace impact {
 		     
 		     boost::shared_ptr<msMotionCEA> motion = 
 		         speciesTD->getMotion()->impact_static_cast<msMotionCEA>();
-			 
-		    try{
-		        CeaMixture->add_curve_fit( names[i], motion->getAllCoeffsOfFit() );
-		    }
-		    catch(std::exception& e0){
-		      
-		        stringstream out;
-			out<<names[i]<<": can not add a curve fit to the CeaMixture; coefs: "
-			<<motion->getAllCoeffsOfFit()<<endl<<" Antioch error:"<<e0.what();
-		        msException e(out.str(), "void msThermoMixture::update()",getFullId());
-			IMPACT_THROW_EXCEPTION(e);
-		    }
+			
+		     IMPACT_TRY([&](){ CeaMixture->add_curve_fit( names[i], motion->getAllCoeffsOfFit() );});	 
 		}
+		IMPACT_TRY([&](){
+		    ThermoCalculator = boost::shared_ptr<Antioch::CEAEvaluator<double> >( new Antioch::CEAEvaluator<double>(*CeaMixture) );
+		});
 		
-		ThermoCalculator = boost::shared_ptr<Antioch::CEAEvaluator<double> >( new Antioch::CEAEvaluator<double>(*CeaMixture) );
-		
-                LOGGER_EXIT_FUNCTION2("void msThermoMixture::update()");
+                IMPACT_LOGOUT();
             }
             
             
@@ -126,7 +119,7 @@ namespace impact {
             
             msThermoMixture(): msChemicalMixture() {
                 
-                constructVar("msThermoMixture","ThermoMixture","mixture");
+                constructVar("msThermoMixture","ThermoMixture","mixture"); 
             }
             
             static boost::shared_ptr<msThermoMixture> New(){
@@ -142,7 +135,10 @@ namespace impact {
             void initialize() {
                 
                 IMPACT_LOGIN();
-                msChemicalMixture::initialize();		
+                msChemicalMixture::initialize();
+		/*declarePhysicalVariable( msUnit("J.entity^-1.K^-1"), &R, "R");
+		R = getUnits()->convert(msUnit("J.mol^-1.K^-1"),csts::R);*/
+		declarePhysicalVariable( &R, csts::R, msUnit("J.mol^-1.K^-1"),  "R");
                 IMPACT_LOGOUT();
             }
             
@@ -155,191 +151,78 @@ namespace impact {
 	        IMPACT_LOGIN();
 		IMPACT_EXCEPT_IF( [&](){ return entity->isDerivedFrom("msMolecule"); },
 		                        "The entity is not derived from msMolecule");
-		
-	        IMPACT_TRY([&](){ msChemicalMixture::addEntity(entity);} );
+	        msChemicalMixture::addEntity(entity);
 		IMPACT_LOGOUT();
 	      
                 return mySharedPtr();
             }
             
-            vector<double> getH_RT_minus_SR() const { 
-	      
-	        double T = getTemperature();
-	        vector<double> result(noOfEntities(),0);
-	        Antioch::TempCache<double> Temp(T);
-	      
-	        for( size_t i=0; i<result.size(); i++) {
-		
-		    result[i] = ThermoCalculator->h_RT_minus_s_R( Temp ,i );
-	        }
-	        return result;
-	    } 
-	    	    
-           std::ostream& print(std::ostream& out) const {
-	     
-	       msPhysicalInterface::print(out);
-               output::printHeader(out,"Thermodynamic mixture");
-	       return out;
-	   };
+           vector<double> getH_RT_minus_SR() const;
             
 	   //! \brief Calorific capacity at constant pressure for all species
-	   vector<double> Cps() {
-	      
-	       double T = getTemperature();
-	       double R = getUnits()->convert( "J.mol^-1.K^-1",  csts::R );  
-	       vector<double> Cp(noOfEntities());
-	       Antioch::TempCache<double> temp(T);
-	       
-	       for(size_t i=0;i<noOfEntities();i++)
-		  Cp[i]=R*ThermoCalculator->cp_over_R(temp,i);
-		
-	       return Cp;
-	   }
+	   vector<double> Cps();
 
 	   //! \brief Calorific capacity at constant volume for all species
-	   vector<double> Cvs() {
-	      
-	       double T = getTemperature();
-	       double R = getUnits()->convert( "J.mol^-1.K^-1",  csts::R );  
-	       vector<double> Cp(noOfEntities());
-	       Antioch::TempCache<double> temp(T);
-	       
-	       for(size_t i=0;i<noOfEntities();i++)
-		  Cp[i]=R*ThermoCalculator->cp_over_R(temp,i) - R;
-		
-	       return Cp;
-	   }
+	   vector<double> Cvs();
 	   
 	   //! \brief Enthalpy for all species	   
-	   vector<double> Hs(){
-	       
-	       double T = getTemperature();
-	       double R = getUnits()->convert( "J.mol^-1.K^-1",  csts::R );  
-	       vector<double> H(noOfEntities());
-	       Antioch::TempCache<double> temp(T);
-	       for(size_t i=0;i<noOfEntities();i++) H[i]=R*T*ThermoCalculator->h_over_RT(temp,i);
-	       return H;
-	   }
+	   vector<double> Hs();
 	   
 	   //! \brief Entropy for all species
-	   vector<double> Ss(){
-	      
-	       double T = getTemperature();
-	       double R = getUnits()->convert( "J.mol^-1.K^-1",  csts::R );  
-	       vector<double> S(noOfEntities());
-	       Antioch::TempCache<double> temp(T);
-	       for(size_t i=0;i<noOfEntities();i++) S[i]=R*ThermoCalculator->s_over_R(temp,i);
-	       return S;
-	   }
+	   vector<double> Ss();
 	   
 	   /*! \brief Calorific capacity constant pressure of a specie
 	    *
 	    * \param i index of the specie
 	    */	   
-	   double Cp(size_t i) {
-	      
-	       double T = getTemperature();
-	       double R = getUnits()->convert( "J.mol^-1.K^-1",  csts::R );  
-	       vector<double> Cp(noOfEntities());
-	       Antioch::TempCache<double> temp(T);
-	       return R*ThermoCalculator->cp_over_R(temp,i);
-	   }
+	   double Cp(size_t i);
+	   
 	   /*! \brief Calorific capacity constant volume of a specie
 	    *
 	    * \param i index of the specie
 	    */	   
-	   double Cv(size_t i) {
-	      
-	       double T = getTemperature();
-	       double R = getUnits()->convert( "J.mol^-1.K^-1",  csts::R );  
-	       vector<double> Cv(noOfEntities());
-	       Antioch::TempCache<double> temp(T);
-	       return R*ThermoCalculator->cp_over_R(temp,i)-R;
-	   }	   
+	   double Cv(size_t i);
+	   
 	   /*! \brief Enthalpy of a specie
 	    *
 	    * \param i index of the specie
 	    */
-	   double H(size_t i){
-	       
-	       double T = getTemperature();
-	       double R = getUnits()->convert( "J.mol^-1.K^-1",  csts::R );  
-	       vector<double> H(noOfEntities());
-	       Antioch::TempCache<double> temp(T);
-	       return R*T*ThermoCalculator->h_over_RT(temp,i);
-	   }
+	   double H(size_t i);
 	   
 	   /*! \brief Entropy of a specie
 	    *
 	    * \param i index of the specie
 	    */
-	   double S(size_t i){
-	      
-	       double T = getTemperature();
-	       double R = getUnits()->convert( "J.mol^-1.K^-1",  csts::R );  
-	       vector<double> S(noOfEntities());
-	       Antioch::TempCache<double> temp(T);
-	       return R*ThermoCalculator->s_over_R(temp,i);
-	   }
+	   double S(size_t i);
 	   
 	   //! \brief Total calorific capacity constant pressure
-	   double CpTot() {
-	      
-	       vector<double> moles = getMoleFractions();
-	       //return  getUnits()->convert( "J.mol^-1.K^-1",ThermoCalculator->cp(temp,moles));
-	       double T = getTemperature();
-	       double R = getUnits()->convert( "J.mol^-1.K^-1",  csts::R );  
-	       double Cp=0;
-	       Antioch::TempCache<double> temp(T);
-	       for(size_t i=0;i<noOfEntities();i++) Cp += moles[i]*R*ThermoCalculator->cp_over_R(temp,i);
-	       return Cp;
-	   }
+	   double CpTot();
 	   
 	   //! \brief Total calorific capacity constant volume
-	   double CvTot() {
-	      
-	       vector<double> moles = getMoleFractions();
-	       //return  getUnits()->convert( "J.mol^-1.K^-1",ThermoCalculator->cp(temp,moles));
-	       double T = getTemperature();
-	       double R = getUnits()->convert( "J.mol^-1.K^-1",  csts::R );  
-	       double Cp=0;
-	       Antioch::TempCache<double> temp(T);
-	       for(size_t i=0;i<noOfEntities();i++) Cp += moles[i]*(R*ThermoCalculator->cp_over_R(temp,i)-R);
-	       return Cp;
-	   }	   
+	   double CvTot();   
 	   
 	   //! \brief Total enthalpy 
-	   double HTot(){
-	        
-	       vector<double> moles = getMoleFractions();
-	       //return getUnits()->convert( "J.mol^-1",ThermoCalculator->h(temp,moles ) );
-	       double T = getTemperature();
-	       double R = getUnits()->convert( "J.mol^-1.K^-1",  csts::R );  
-	       double H=0;
-	       Antioch::TempCache<double> temp(T);
-	       for(size_t i=0;i<noOfEntities();i++) H += moles[i]*R*T*ThermoCalculator->h_over_RT(temp,i);
-	       return H;
-	   }
+	   double HTot();
 	   
 	   //! \brief Total entropy 
-	   double STot(){
-	     
-	       vector<double> moles = getMoleFractions();
-	       //return getUnits()->convert( "J.mol^-1.K^-1",ThermoCalculator->s(temp,moles ));
-	       double T = getTemperature();
-	       double R = getUnits()->convert( "J.mol^-1.K^-1",  csts::R );  
-	       double S=0;
-	       Antioch::TempCache<double> temp(T);
-	       for(size_t i=0;i<noOfEntities();i++) S += moles[i]*R*ThermoCalculator->s_over_R(temp,i);
-	       return S;
-	   }
+	   double STot();
 	   
-            
+           bool sanityCheck();
+	   
+	   std::ostream& print(std::ostream& out) const {
+	     
+	       msPhysicalInterface::print(out);
+               output::printHeader(out,"Thermodynamic mixture");
+	       return out;
+	   };
+	   
         private:
                         
 	    boost::shared_ptr<Antioch::CEAEvaluator<double> > ThermoCalculator;
 	    
 	    boost::shared_ptr<Antioch::CEAThermoMixture<double> > CeaMixture;
+	    
+	    double R; //! physical variable, always in the this->getUnits() unit
         };
     }
 }
