@@ -88,9 +88,16 @@ namespace impact {
         }
         
         
-        void getListAtomsFromName(string name,vector<boost::shared_ptr<msAtom> >& result){
+        void getListAtomsFromName(string name,vector<boost::shared_ptr<msAtom> >& availAtoms,
+				  vector<boost::shared_ptr<msAtom> >& result,
+				  boost::shared_ptr<msTreeMapper> parent,
+				  boost::shared_ptr<msUnitsManager> units
+ 				){
 	  
+	     IMPACT_LOGIN_STATIC();
 	     int i=0;
+	     std::vector<boost::shared_ptr<msAtom> >::iterator it;
+	     boost::shared_ptr<msAtom> atom;
              while (name[i]) {
 	       
                  char c = name[i];
@@ -121,11 +128,28 @@ namespace impact {
 		        }
 		        n = atoi(count.c_str());
 		    }
-		    for( size_t j=0;j<n;j++) result.push_back( NewAtom(type) ); 
+		    for( size_t j=0;j<n;j++){
+		        
+		        it = find_if( availAtoms.begin(), availAtoms.end() ,
+			         [&] (boost::shared_ptr<msAtom> e) { return e->getName() == type;
+			});
+		        if( it == availAtoms.end() ) {
+		           LOGGER_WRITE(msLogger::DEBUG,"new element "+type);
+			   atom = NewAtom(type);
+			   atom->setAffiliation(parent);
+			   atom->setUnits(units);
+		           availAtoms.push_back(atom);
+			   result.push_back(atom);
+		        }
+		        else{
+			   LOGGER_WRITE(msLogger::DEBUG,"link element "+(*it)->getId());
+			   result.push_back(*it);}
+		      //result.push_back( NewAtom(type) ); 
+		    }
 		 }
                  else{ i++; }
              }
-	     
+	     IMPACT_LOGOUT();
 	}
 	
 	

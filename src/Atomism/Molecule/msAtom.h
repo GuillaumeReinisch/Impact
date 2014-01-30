@@ -36,7 +36,11 @@ namespace impact {
         std::string getAtomName(int atomicNumb);
 	
 	class msAtom;
-	void getListAtomsFromName(string name,vector<boost::shared_ptr<msAtom> >& result);
+	void getListAtomsFromName(string name,
+				  vector<boost::shared_ptr<msAtom> >& atomsAvail,
+				  vector<boost::shared_ptr<msAtom> >& result,
+				  boost::shared_ptr<msTreeMapper> parent,
+				  boost::shared_ptr<msUnitsManager> units);
 	
         using namespace std;
         
