@@ -69,56 +69,59 @@ namespace impact {
 	    
             void initialize() { 
 	      
+	        IMPACT_LOGIN();
 	        msPhysicalInterface::initialize();
 		msTreeMapper::declareAttribute(Coefficients,"Coefficients");
 		msTreeMapper::declareAttribute(Order,"Order");
-		//Calculator_BaseClass = boost::shared_ptr<Antioch::KineticsType<double> >(new Antioch::ArrheniusRate<double>() );
+		IMPACT_LOGOUT();
             }
             
             void update()     {  
 	      
-	        LOGGER_ENTER_FUNCTION_DBG("void msReactionRate::update()", getFullId());
+	        IMPACT_LOGIN();
 	        msPhysicalInterface::update();
 	        map<string,double>::iterator it=Coefficients.begin();
 		for(;it!=Coefficients.end();++it) setCoefficient((*it).first,(*it).second);
-		LOGGER_EXIT_FUNCTION2("void msReactionRate::update()");
+		IMPACT_LOGOUT();
 	    }
             
             static boost::shared_ptr<msReactionRate> New(){
                 
-                LOGGER_ENTER_FUNCTION_DBG("static boost::shared_ptr<msReactionRate> msReactionRate::New()","");
+                IMPACT_LOGIN_STATIC();
                 boost::shared_ptr<msReactionRate> T( new msReactionRate() );
                 T->initialize();
                 T->update();
-                LOGGER_EXIT_FUNCTION2("static boost::shared_ptr<msReactionRate> msReactionRate::New()");
+                IMPACT_LOGOUT();
                 return T;
             }
             
+            //! \brief return the calculator
             boost::shared_ptr<Antioch::KineticsType<double> > getCalculator() { 
 	      
 		return Calculator; 
 	    }
 	    
+	    /** \brief return the rate at a particular temperature
+	     * 
+	     * \param T temperature
+	     */ 
 	    double computeRate(double T) { 
 	      
-	        stringstream unit;
-		unit<<"s^-1.";
-		if(Order>0) unit<<"m^"<<3*(Order-1)<<".kmol^-"<<(Order-1);
-		
-		return getUnits()->convert(unit.str(),(*Calculator)(T));
+	        IMPACT_LOGIN();
+	        msUnit u = getUnitCalculator();
+		double r = 0;
+		IMPACT_TRY([&]() { r = getUnits()->convert( u, (*Calculator)(T) );} );
+		IMPACT_LOGOUT();
+		return r;
 	    }
 	    
-	    template<class T>
-	    boost::shared_ptr<T> getCastedCalculator() { 
-	        
-	        return boost::static_pointer_cast<T>(Calculator); 
-	    }
-	    
+	    //! \brief return the map 'name coefficient' -> 'value'
 	    map<string,double> getCoefficients() { 
 	      
 	        return Coefficients; 
 	    };
 	    
+	    //! \brief return the order of the reaction
 	    double getOrder() const { 
 	      
 	        return Order; 
@@ -126,61 +129,88 @@ namespace impact {
 	    
 	    //! \brief return the unit of the rate constant
 	    msUnit getUnit() const {
-	      
-		   stringstream unit;
-		   unit<<"s^-1.";
-		   if(Order>0)
-	              unit<<getUnits()->getLengthStr()<<"^"<<3*(Order-1)
-		       <<"."<<getUnits()->getQuantityStr()<<"^-"<<(Order-1);
-		   msUnit u;
-		   u.set(unit.str());
-		   return u;	      
+	        
+	        IMPACT_LOGIN();
+	        IMPACT_EXCEPT_IF([&](){return Order<0 || Order>1; }, "Order has to be 1 or 2");
+	        msUnit u;
+		if( Order==0 ) u.set(msUnit::vReactionRateFirstOrder, *(getUnits()));
+		if( Order==1 ) u.set(msUnit::vReactionRateSecondOrder,*(getUnits()));
+		
+		IMPACT_LOGOUT();
+		return u;	      
 	    }
 	    
+	     /** \brief set the order of the reaction
+	     * 
+	     * Note that the unit of the "Cf" coefficient is updated.
+	     * \param value Order. Only order 1  or 2 are accepted. 
+	     */ 
 	    boost::shared_ptr<msTreeMapper> setOrder(size_t value) {
 	      
-	        if(value<0) IMPACT_THROW_EXCEPTION(msException("Order has to be superior or equal to 0",
-						  "boost::shared_ptr<msTreeMapper> msReaction::setOrder(size_t value)",
-						  getFullId()));
+	        IMPACT_LOGIN();
+	        IMPACT_EXCEPT_IF([&](){return value<0; }, "Order has to be superior or equal to 0");
 		Order = value;
 		msPhysicalInterface::declarePhysicalVariable(getUnit(),&(Coefficients["Cf"]),"Cf");
+		IMPACT_LOGOUT();
 	        return mySharedPtr();
 	    }
 	    
+	    /** \brief set a particular coefficient
+	     * 
+	     * Only coefficient declared by the msReactionRateDerived classes can be set.
+	     * \param name name of the coefficient
+	     * \param value value 
+	     */ 
 	    virtual boost::shared_ptr<msTreeMapper> setCoefficient(string name,double value) {
 	      
-	        throwNotImplemented("virtual boost::shared_ptr<msTreeMapper> msReactionRate::setCoefficient(string name,double value)");
+	        IMPACT_THROW_NOT_IMPLEMENTED();
 	    } 
-	   
+	    
+	    /** \brief set all the coefficients from a Antioch::KineticsType calculator
+	     * 
+	     * The coefficient are those declared by msReactionRateDerived classes.
+	     * \param rate calculator of the type used by the derived msReactionRateDerived class
+	     */  
+	   virtual  boost::shared_ptr<msTreeMapper> setCoefficients(const Antioch::KineticsType<double>* rate){
+	        
+	        IMPACT_THROW_NOT_IMPLEMENTED();
+	    }
+	    
+	    //! \brief return the calculator casted in a desired type
+	    template<class T>
+	    boost::shared_ptr<T> getCastedCalculator() { 
+	        
+	        return boost::static_pointer_cast<T>(Calculator); 
+	    }
+	    
 	protected:
 	    	
 	    boost::shared_ptr<Antioch::KineticsType<double> > Calculator;
 		    	  
-	    map<string, double> Coefficients;
-			
-	    msUnit getUnitCalculator() {  stringstream unit; unit<<"s^-1.";
-					  if(Order>0) unit<<"m^"<<3*(Order-1)<<".kmol^-"<<(Order-1);
-					  return msUnit(unit.str());
-	                                }
+	    map<string, double> Coefficients; //!< Attributs 
+			    
+	    msUnit getUnitCalculator() { 
+	      
+	        IMPACT_LOGIN();
+	        IMPACT_EXCEPT_IF([&](){return Order<0 || Order>1; }, "Order has to be 1 or 2");
+	        stringstream unit; unit<<"s^-1.";
+	        if(Order>0) unit<<"m^"<<3*(Order-1)<<".kmol^-"<<(Order-1);
+		IMPACT_LOGOUT();
+		return msUnit(unit.str());
+	    }
 	    
 	private:
 	  	  	    
 	    size_t Order;
-	    
-	    void throwNotImplemented(string fctName) const {
-	      
-	        msException e("The class msReactionBase if virtual",fctName,getFullId());
-		IMPACT_THROW_EXCEPTION(e);
-	    }
-	    
         };
-	
 	
 	
 	template<class AntiochCalculatorType>
         class msReactionRateDerived: public msReactionRate
         {
-            
+            typedef void (AntiochCalculatorType::*setFunction)(const double);
+	    typedef double (AntiochCalculatorType::*getFunction)() const; 
+	    
         private:
             
             //!\name from msRegister
@@ -226,6 +256,8 @@ namespace impact {
 	      
 	        constructVar(msReactionRateDerived<AntiochCalculatorType >::nameType,msReactionRateDerived<AntiochCalculatorType >::nameType,
 			     msReactionRateDerived<AntiochCalculatorType >::nameType); 
+		unitsCalculator = boost::shared_ptr<msUnitsManager>(new msUnitsManager);
+		unitsCalculator->set("J kmol s m");
 	    }
 	    
             void initialize();
@@ -234,16 +266,72 @@ namespace impact {
             
             static boost::shared_ptr<msReactionRateDerived> New(){
                 
-                LOGGER_ENTER_FUNCTION_DBG("static boost::shared_ptr<msReactionRateDerived> msReactionRateDerived::New()","");
+                IMPACT_LOGIN_STATIC();
                 boost::shared_ptr<msReactionRateDerived> T( new msReactionRateDerived() );
                 T->initialize();
                 T->update();
-                LOGGER_EXIT_FUNCTION2("static boost::shared_ptr<msReactionRateDerived> msReactionRateDerived::New()");
+                IMPACT_LOGOUT();
                 return T;
             }
             
-	    boost::shared_ptr<msTreeMapper> setCoefficient(string name,double value);
+	    boost::shared_ptr<msTreeMapper> setCoefficient(string name,double value) {
+	      
+	        IMPACT_LOGIN();
+		IMPACT_EXCEPT_IF( [&]() { return Coefficients.find(name)==Coefficients.end();},
+		                  "Coefficient "+name+" not known" );
+		
+		Coefficients[name] = value;
+		
+		setFunction setFct = mapSetMethods[name].first;
+		boost::shared_ptr<AntiochCalculatorType> calc =  getCastedCalculator<AntiochCalculatorType>();
+		
+		msUnit unitCoefForCalc = mapSetMethods[name].second;
+		unitCoefForCalc.resetSymbols(*unitsCalculator);
+		double f = getUnits()->convertTo(1,getUnitCalculator());
+		
+		if( name == "Ea" ) f = getUnits()->convert(msUnit("J.mol^-1.K^-1"),csts::R);
+		(calc.get()->*setFct)( f*value );
+		
+		IMPACT_LOGOUT();
+		return mySharedPtr();
+	    }
+	    
+	    boost::shared_ptr<msTreeMapper> setCoefficients(const Antioch::KineticsType<double>* rate) {
+	      
+	        IMPACT_LOGIN();
+		const AntiochCalculatorType* calc = static_cast<const AntiochCalculatorType*>(rate);
+		
+	        for_each(Coefficients.begin(),Coefficients.end(),[&](pair<const string, double>& elem) { 
+		  
+		    getFunction getFct =     mapGetMethods[elem.first].first;		    
+		    msUnit unitCoefForCalc = mapGetMethods[elem.first].second;
+		    unitCoefForCalc.resetSymbols(*unitsCalculator);
+		    double f = getUnits()->convert(getUnitCalculator(),1);
+		    
+		    if( elem.first == "Ea" ) f = 1./getUnits()->convert(msUnit("J.mol^-1.K^-1"),csts::R);
+			 
+		    setCoefficient(elem.first, f * (calc->*getFct)());   
+		});
+		IMPACT_LOGOUT();
+		return mySharedPtr();
+	    }
 	    	
+	    
+	private:
+	  	   
+	  boost::shared_ptr<msUnitsManager> unitsCalculator;
+	  
+	  void declareRateCoefficient(string id, setFunction setFct, getFunction getFct, msUnit unit) {
+	    
+	        Coefficients[id]  =  0; 
+		mapSetMethods[id] =  pair<setFunction,msUnit>(setFct,unit);
+		mapGetMethods[id] =  pair<getFunction,msUnit>(getFct,unit);
+		if(! unit.isNoneUnit() )
+		    msPhysicalInterface::declarePhysicalVariable(unit,&(Coefficients[id]),id);
+	  }
+	  
+	  map<string, std::pair< setFunction, msUnit > > mapSetMethods;
+	  map<string, std::pair< getFunction, msUnit > > mapGetMethods;
         };
  
     }

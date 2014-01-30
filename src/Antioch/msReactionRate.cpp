@@ -74,13 +74,11 @@ namespace impact {
         bool msReactionRateDerived<Antioch::ArrheniusRate<double> >::isReactionRateDerivedRegisteredInPython = 0;
 	template<>
         msRegistrar msReactionRateDerived<Antioch::ArrheniusRate<double> >::Registrar(
-	    "msArrheniusRate", 
-	    msReactionRateDerived<Antioch::ArrheniusRate<double> >::createInstance);
+	    "msArrheniusRate", msReactionRateDerived<Antioch::ArrheniusRate<double> >::createInstance);
         template<>
-        string msReactionRateDerived<Antioch::ArrheniusRate<double> >::doc = "ArrheniusRate";
+        string msReactionRateDerived<Antioch::ArrheniusRate<double> >::doc = "rate of Arrhenius format";
         template<>
         string msReactionRateDerived<Antioch::ArrheniusRate<double> >::nameType = "msArrheniusRate";      
-	
 	
         template<>
         void msReactionRateDerived<Antioch::ArrheniusRate<double> >::initialize() { 
@@ -88,34 +86,14 @@ namespace impact {
 	        msReactionRate::initialize();
 		Calculator = boost::shared_ptr<Antioch::KineticsType<double> >(new Antioch::ArrheniusRate<double>() );
 		
-		Coefficients["Cf"] =  0;
-		Coefficients["Ea"] =  0;
-		
-		msPhysicalInterface::declarePhysicalVariable(getUnit(),&(Coefficients["Cf"]),"Cf");
-		msPhysicalInterface::declarePhysicalVariable(getUnits()->getUnit(msUnit::vEnergyByQuantity),&(Coefficients["Ea"]),"Ea");
+		declareRateCoefficient("Cf", & Antioch::ArrheniusRate<double>::set_Cf,
+				             & Antioch::ArrheniusRate<double>::Cf, 
+			                     getUnit() );
+		declareRateCoefficient("Ea", & Antioch::ArrheniusRate<double>::set_Ea,
+				             & Antioch::ArrheniusRate<double>::Ea,
+			                     getUnits()->getUnit(msUnit::vEnergyByQuantity) );
             }
-  
-        template<>
-        boost::shared_ptr<msTreeMapper>
-        msReactionRateDerived<Antioch::ArrheniusRate<double> >::setCoefficient(string name,double value) {
-	  
-	      if( name =="Cf" ) { getCastedCalculator<Antioch::ArrheniusRate<double> >()->set_Cf(getUnits()->convertTo(value,getUnitCalculator()));
-	      }
-	      else
-	      if( name =="Ea" ) { getCastedCalculator<Antioch::ArrheniusRate<double> >()->set_Ea(getUnits()->convertTo(value,msUnit("J.kmol^-1")));
-	      }     
-	      else {
-		msException e("Coefficient "+name+" not recognized",
-			  " msReactionRateDerived<Antioch::ArrheniusRate<double> >::setCoefficient(string name,double value)",
-			  getFullId());
-		
-		IMPACT_THROW_EXCEPTION(e);
-	      }
-	      Coefficients[name] = value;
-	      return mySharedPtr();
-	}
-	
-	
+ 
         //-----------------------------------------------------------------------------
         //-----------------------------------------------------------------------------
          
@@ -123,13 +101,11 @@ namespace impact {
         bool msReactionRateDerived<Antioch::KooijRate<double> >::isReactionRateDerivedRegisteredInPython = 0;
 	template<>
         msRegistrar msReactionRateDerived<Antioch::KooijRate<double> >::Registrar(
-	    "msKooijRate", 
-	    msReactionRateDerived<Antioch::KooijRate<double> >::createInstance);
+	    "msKooijRate", msReactionRateDerived<Antioch::KooijRate<double> >::createInstance);
         template<>
         string msReactionRateDerived<Antioch::KooijRate<double> >::doc = "KoojRate";
         template<>
-        string msReactionRateDerived<Antioch::KooijRate<double> >::nameType = "msKoojRate";      
-	
+        string msReactionRateDerived<Antioch::KooijRate<double> >::nameType = "rate of Kooij format";      
 	
         template<>
         void msReactionRateDerived<Antioch::KooijRate<double> >::initialize() { 
@@ -137,41 +113,17 @@ namespace impact {
 	        msReactionRate::initialize();
 		Calculator = boost::shared_ptr<Antioch::KineticsType<double> >(new Antioch::KooijRate<double>() );
 		
-		Coefficients["Cf"] =  0;
-		Coefficients["Ea"] =  0;
-		Coefficients["eta"]=  0;
-		
-		msPhysicalInterface::declarePhysicalVariable(getUnit(),&(Coefficients["Cf"]),"Cf");
-		msPhysicalInterface::declarePhysicalVariable(getUnits()->getUnit(msUnit::vEnergyByQuantity),&(Coefficients["Ea"]),"Ea");
+		declareRateCoefficient("Cf", & Antioch::KooijRate<double>::set_Cf,
+				             & Antioch::KooijRate<double>::Cf, 
+			                     getUnit() );
+		declareRateCoefficient("Ea", & Antioch::KooijRate<double>::set_Ea,
+				             & Antioch::KooijRate<double>::Ea,
+			                     getUnits()->getUnit(msUnit::vEnergyByQuantity) );
+		declareRateCoefficient("eta",& Antioch::KooijRate<double>::set_eta,
+				             & Antioch::KooijRate<double>::eta,
+			                     getUnits()->getUnit(msUnit::vNone) );
             }
-  
-        template<>
-        boost::shared_ptr<msTreeMapper>
-        msReactionRateDerived<Antioch::KooijRate<double> >::setCoefficient(string name,double value) {
-	  
-	  
-	      if( name =="Cf" ) { 
-		getCastedCalculator<Antioch::KooijRate<double> >()->set_Cf(getUnits()->convertTo(value,getUnitCalculator()));
-	      }
-	      else
-	      if( name =="Ea" ) { 
-		double Ea = value / getUnits()->convert(msUnit("J.mol^-1.K^-1"),csts::R);
-		getCastedCalculator<Antioch::KooijRate<double> >()->set_Ea(Ea);
-	      }
-	      else
-	      if( name =="eta" ) { getCastedCalculator<Antioch::KooijRate<double> >()->set_eta(value);
-	      }	      
-	      else {
-		msException e("Coefficient "+name+" not recognized",
-			  " msReactionRateDerived<Antioch::KooijRate<double> >::setCoefficient(string name,double value)",
-			  getFullId());
-		
-		IMPACT_THROW_EXCEPTION(e);
-	      }
-	      Coefficients[name] = value;
-	      return mySharedPtr();
-	}
-	
+            
         //-----------------------------------------------------------------------------
         //-----------------------------------------------------------------------------
          
@@ -193,33 +145,14 @@ namespace impact {
 	        msReactionRate::initialize();
 		Calculator = boost::shared_ptr<Antioch::KineticsType<double> >(new Antioch::BerthelotRate<double>() );
 		
-		Coefficients["Cf"] =  0;
-		Coefficients["D"]  =  0;
-		
-		msPhysicalInterface::declarePhysicalVariable(getUnit(),&(Coefficients["Cf"]),"Cf");
-		msPhysicalInterface::declarePhysicalVariable(msUnit("K^-1"),&(Coefficients["D"]),"D");
+		declareRateCoefficient("Cf", & Antioch::BerthelotRate<double>::set_Cf,
+				             & Antioch::BerthelotRate<double>::Cf, 
+			                     getUnit() );
+		declareRateCoefficient("D",  & Antioch::BerthelotRate<double>::set_D,
+				             & Antioch::BerthelotRate<double>::D,
+			                     msUnit("K^-1"));
             }
-  
-        template<>
-        boost::shared_ptr<msTreeMapper>
-        msReactionRateDerived<Antioch::BerthelotRate<double> >::setCoefficient(string name,double value) {
-	  
-	      if( name =="Cf" ) { getCastedCalculator<Antioch::BerthelotRate<double> >()->set_Cf(getUnits()->convertTo(value,getUnitCalculator()));
-	      }
-	      else
-	      if( name =="D" ) { getCastedCalculator<Antioch::BerthelotRate<double> >()->set_D(getUnits()->convertTo(value,msUnit("K^-1")));
-	      }    
-	      else {
-		msException e("Coefficient "+name+" not recognized",
-			  " msReactionRateDerived<Antioch::BerthelotRate<double> >::setCoefficient(string name,double value)",
-			  getFullId());
-		
-		IMPACT_THROW_EXCEPTION(e);
-	      }
-	      Coefficients[name] = value;
-	      return mySharedPtr();
-	}
-		
+            
         //-----------------------------------------------------------------------------
         //-----------------------------------------------------------------------------
          
@@ -241,35 +174,15 @@ namespace impact {
 	        msReactionRate::initialize();
 		Calculator = boost::shared_ptr<Antioch::KineticsType<double> >(new Antioch::HercourtEssenRate<double>() );
 		
-		Coefficients["Cf"]    =  0;
-		Coefficients["eta"]   =  0;
-		Coefficients["Tref"]  =  0;
-		
-		msPhysicalInterface::declarePhysicalVariable(getUnit(),&(Coefficients["Cf"]),"Cf");
-		msPhysicalInterface::declarePhysicalVariable(msUnit("K"),&(Coefficients["Tref"]),"Tref");
-            }
-  
-        template<>
-        boost::shared_ptr<msTreeMapper>
-        msReactionRateDerived<Antioch::HercourtEssenRate<double> >::setCoefficient(string name,double value) {
-	  
-	      if( name =="Cf" ) { getCastedCalculator<Antioch::HercourtEssenRate<double> >()->set_Cf(getUnits()->convertTo(value,getUnitCalculator()));
-	      }
-	      else
-	      if( name =="eta" ) { getCastedCalculator<Antioch::HercourtEssenRate<double> >()->set_eta(value);
-	      }    
-	      else
-	      if( name =="Tref" ) { getCastedCalculator<Antioch::HercourtEssenRate<double> >()->set_Tref(getUnits()->convertTo(value,msUnit("K")));
-	      }  
-	      else {
-		msException e("Coefficient "+name+" not recognized",
-			  " msReactionRateDerived<Antioch::HercourtEssenRate<double> >::setCoefficient(string name,double value)",
-			  getFullId());
-		
-		IMPACT_THROW_EXCEPTION(e);
-	      }
-	      Coefficients[name] = value;
-	      return mySharedPtr();
+		declareRateCoefficient("Cf",   & Antioch::HercourtEssenRate<double>::set_Cf,
+				               & Antioch::HercourtEssenRate<double>::Cf, 
+			                       getUnit() );
+		declareRateCoefficient("Tref", & Antioch::HercourtEssenRate<double>::set_Tref,
+				               & Antioch::HercourtEssenRate<double>::Tref,
+			                       msUnit("K"));
+		declareRateCoefficient("eta",  & Antioch::HercourtEssenRate<double>::set_eta,
+				               & Antioch::HercourtEssenRate<double>::eta,
+			                       getUnits()->getUnit(msUnit::vNone) );
 	}
 	
         //-----------------------------------------------------------------------------
@@ -286,7 +199,6 @@ namespace impact {
         template<>
         string msReactionRateDerived<Antioch::BerthelotHercourtEssenRate<double> >::nameType = "msBerthelotHercourtEssenRate";      
 	
-	
         template<>
         void msReactionRateDerived<Antioch::BerthelotHercourtEssenRate<double> >::initialize() { 
 	      
@@ -294,42 +206,19 @@ namespace impact {
 	        msReactionRate::initialize();
 		Calculator = boost::shared_ptr<Antioch::KineticsType<double> >(new Antioch::BerthelotHercourtEssenRate<double>() );
 		
-		Coefficients["Cf"]    =  0;
-		Coefficients["eta"]   =  0;
-		Coefficients["D"]  =  0;
-		Coefficients["Tref"]  =  0;
-		
-		msPhysicalInterface::declarePhysicalVariable(getUnit(),&(Coefficients["Cf"]),"Cf");
-		msPhysicalInterface::declarePhysicalVariable(msUnit("K"),&(Coefficients["Tref"]),"Tref");
-		msPhysicalInterface::declarePhysicalVariable(msUnit("K^-1"),&(Coefficients["D"]),"D");
-            }
-  
-        template<>
-        boost::shared_ptr<msTreeMapper>
-        msReactionRateDerived<Antioch::BerthelotHercourtEssenRate<double> >::setCoefficient(string name,double value) {
-	  
-	      if( name =="Cf" ) { getCastedCalculator<Antioch::BerthelotHercourtEssenRate<double> >()->set_Cf(getUnits()->convertTo(value,getUnitCalculator()));
-	      }
-	      else
-	      if( name =="eta" ) { getCastedCalculator<Antioch::BerthelotHercourtEssenRate<double> >()->set_eta(value);
-	      }    
-	      else
-	      if( name =="D" ) {  getCastedCalculator<Antioch::BerthelotHercourtEssenRate<double> >()->set_D(getUnits()->convertTo(value,msUnit("K^-1")));
-	      }  
-	      	      else
-	      if( name =="Tref" ) { getCastedCalculator<Antioch::BerthelotHercourtEssenRate<double> >()->set_Tref(getUnits()->convertTo(value,msUnit("K")));
-	      }  
-	      else {
-		msException e("Coefficient "+name+" not recognized",
-			  " msReactionRateDerived<Antioch::BerthelotHercourtEssenRate<double> >::setCoefficient(string name,double value)",
-			  getFullId());
-		
-		IMPACT_THROW_EXCEPTION(e);
-	      }
-	      Coefficients[name] = value;
-	      return mySharedPtr();
+		declareRateCoefficient("Cf",   & Antioch::BerthelotHercourtEssenRate<double>::set_Cf,
+				               & Antioch::BerthelotHercourtEssenRate<double>::Cf, 
+			                       getUnit() );
+		declareRateCoefficient("Tref", & Antioch::BerthelotHercourtEssenRate<double>::set_Tref,
+				               & Antioch::BerthelotHercourtEssenRate<double>::Tref,
+			                       msUnit("K"));
+		declareRateCoefficient("eta",  & Antioch::BerthelotHercourtEssenRate<double>::set_eta,
+				               & Antioch::BerthelotHercourtEssenRate<double>::eta,
+			                       getUnits()->getUnit(msUnit::vNone) );
+		declareRateCoefficient("D",    & Antioch::BerthelotHercourtEssenRate<double>::set_D,
+				               & Antioch::BerthelotHercourtEssenRate<double>::D,
+			                       msUnit("K^-1"));
 	}
-	
 	
         //-----------------------------------------------------------------------------
         //-----------------------------------------------------------------------------
@@ -353,46 +242,21 @@ namespace impact {
 	   	msReactionRate::initialize();
 		Calculator = boost::shared_ptr<Antioch::KineticsType<double> >(new Antioch::VantHoffRate<double>() );
 		
-		Coefficients["Cf"]    =  0;
-		Coefficients["eta"]   =  0;
-		Coefficients["Ea"]   =  0;
-		Coefficients["D"]  =  0;
-		Coefficients["Tref"]  =  0;
-		
-		msPhysicalInterface::declarePhysicalVariable(getUnit(),&(Coefficients["Cf"]),"Cf");
-		msPhysicalInterface::declarePhysicalVariable(msUnit("K"),&(Coefficients["Tref"]),"Tref");
-		msPhysicalInterface::declarePhysicalVariable(msUnit("K^-1"),&(Coefficients["D"]),"D");
-		msPhysicalInterface::declarePhysicalVariable(getUnits()->getUnit(msUnit::vEnergyByQuantity),&(Coefficients["Ea"]),"Ea");
-        }
-  
-        template<>
-        boost::shared_ptr<msTreeMapper>
-        msReactionRateDerived<Antioch::VantHoffRate<double> >::setCoefficient(string name,double value) {
-	  
-	      if( name =="Cf" ) { getCastedCalculator<Antioch::VantHoffRate<double> >()->set_Cf(getUnits()->convertTo(value,getUnitCalculator()));
-	      }
-	      else
-	      if( name =="eta" ) { getCastedCalculator<Antioch::VantHoffRate<double> >()->set_eta(value);
-	      }    
-	      else
-	      if( name =="Ea" ) { getCastedCalculator<Antioch::VantHoffRate<double> >()->set_Ea(getUnits()->convertTo(value,msUnit("J.kmol^-1")));
-	      }  
-	      else
-	      if( name =="D" ) { getCastedCalculator<Antioch::VantHoffRate<double> >()->set_D(getUnits()->convertTo(value,msUnit("K^-1")));
-	      }  
-	      	      else
-	      if( name =="Tref" ) { getCastedCalculator<Antioch::VantHoffRate<double> >()->set_Tref(getUnits()->convertTo(value,msUnit("K")));
-	      }  
-	      else {
-		msException e("Coefficient "+name+" not recognized",
-			  " msReactionRateDerived<Antioch::VantHoffRate<double> >::setCoefficient(string name,double value)",
-			  getFullId());
-		
-		IMPACT_THROW_EXCEPTION(e);
-	      }
-	      Coefficients[name] = value;
-	      return mySharedPtr();
+		declareRateCoefficient("Cf",   & Antioch::VantHoffRate<double>::set_Cf,
+				               & Antioch::VantHoffRate<double>::Cf, 
+			                       getUnit() );
+		declareRateCoefficient("Tref", & Antioch::VantHoffRate<double>::set_Tref,
+				               & Antioch::VantHoffRate<double>::Tref,
+			                       msUnit("K"));
+		declareRateCoefficient("eta",  & Antioch::VantHoffRate<double>::set_eta,
+				               & Antioch::VantHoffRate<double>::eta,
+			                       getUnits()->getUnit(msUnit::vNone) );
+		declareRateCoefficient("D",    & Antioch::VantHoffRate<double>::set_D,
+				               & Antioch::VantHoffRate<double>::D,
+			                       msUnit("K^-1"));
+		declareRateCoefficient("Ea",   & Antioch::VantHoffRate<double>::set_Ea,
+				               & Antioch::VantHoffRate<double>::Ea,
+			                       getUnits()->getUnit(msUnit::vEnergyByQuantity) );
 	}
-	
     }
 }
