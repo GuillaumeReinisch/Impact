@@ -143,10 +143,8 @@ namespace impact {
 	    virtual boost::shared_ptr<msTreeMapper> setDensity(double d) {
 	      
 	         IMPACT_LOGIN();
-	         IMPACT_EXCEPT_IF( [&] () { return d<=0; },
-			 "The density is null or negative");
+	         IMPACT_EXCEPT_IF( [&] () { return d<=0; }, "The density is null or negative");
 	         Density = d;
-		 
 		 IMPACT_LOGOUT();
 		 return mySharedPtr();
 	    }
@@ -154,16 +152,12 @@ namespace impact {
             boost::shared_ptr<Antioch::ChemicalMixture<double> > getCalculator(){ return Calculator; }
             
             size_t noOfEntities() const { return Entities.size(); }
-            
+                        
             virtual boost::shared_ptr<msTreeMapper> addEntity( boost::shared_ptr<msEntity> entity ) {
                 	       
 	        IMPACT_LOGIN();
-	        
 		addElementToChildren<msEntity>(Entities,entity);
-		
-		if(Entities.size()==1) MoleFractions.push_back(1);
-		else MoleFractions.push_back(0);
-		
+		MoleFractions.push_back(double(Entities.size()==1));
 		IMPACT_LOGOUT();
                 return mySharedPtr();
             }
@@ -171,13 +165,11 @@ namespace impact {
             size_t getIndex(string id) const {
 	        
 	        IMPACT_LOGIN();
-	       
 	        vector<std::string> names = getEntitiesNames();
 		vector<std::string>::iterator it =std::find(names.begin(), names.end(), id);
 		
 		IMPACT_EXCEPT_IF( [&] () { return it==names.end(); },
-			  "Can not find the specie of id "+id);
-		
+			         "Can not find the specie of id "+id);
 		IMPACT_LOGOUT();
 		return it-names.begin();
 	    }
@@ -185,9 +177,7 @@ namespace impact {
             boost::shared_ptr<msEntity> getEntityFromIndex( size_t i) {
                 
 	        IMPACT_LOGIN();
-	        boost::shared_ptr<msEntity> cons;
-		IMPACT_TRY( [&] () { cons = Entities[i].getSharedPtr(); } );
-		
+	        boost::shared_ptr<msEntity> cons = Entities[i].getSharedPtr();
 		IMPACT_LOGOUT();
                 return cons;
             }
@@ -195,14 +185,13 @@ namespace impact {
             boost::shared_ptr<msEntity> getEntityFromId( std::string id ) {
 	      
                 IMPACT_LOGIN();
-	        boost::shared_ptr<msEntity> cons;
-		IMPACT_TRY( [&] () { cons = Entities.getElementFromId(id); } );
-		
+	        boost::shared_ptr<msEntity> cons = Entities.getElementFromId(id);
 		IMPACT_LOGOUT();
                 return cons;
             }
             
-
+	    vector<boost::shared_ptr<msEntity> > getEntities() const { return Entities.getElements(); }
+	    
 	    //! \brief return the total mass                        
             double totalMass() const {
 	      
@@ -265,11 +254,23 @@ namespace impact {
                 std::vector<double> vec;
 		double mtot = totalMass();
 		
-		for_each( Entities.begin(),Entities.end(), 
-		    [&] (const boost::shared_ptr<msEntity> e) { vec.push_back(e->getMass() / mtot);} );
+		for_each( Entities.begin(),Entities.end(), [&] (const boost::shared_ptr<msEntity> e) {
+		     vec.push_back(e->getMass() / mtot);
+		});
 			
                 IMPACT_LOGOUT();		
 		return vec;
+            }
+            /*! \brief Return a specie's mole fraction
+             *
+             * \param name index of the specie
+             */
+            double getMoleFraction(size_t i) const {
+              
+                IMPACT_LOGIN();
+		IMPACT_EXCEPT_IF([&](){return i>noOfEntities();},"i > noOfEntities");
+		IMPACT_LOGOUT();
+		return MoleFractions[i];
             }
             
             /*! \brief Return a specie's mole fraction
@@ -296,8 +297,9 @@ namespace impact {
 		
 		IMPACT_TRY( [&] () { Calculator->molar_densities( density, getMassFractions(), molarDensity); });
 		
-		for_each( molarDensity.begin(),molarDensity.end(), 
-		    [&] ( double& e) { e *= getUnits()->convert("mol.m^-3",1) ;} );
+		for_each( molarDensity.begin(),molarDensity.end(), [&] ( double& e) { 
+		     e *= getUnits()->convert("mol.m^-3",1) ;
+		});
 		
 		IMPACT_LOGOUT();
                 return molarDensity;
@@ -319,17 +321,7 @@ namespace impact {
             bool sanityCheck();
 	    
             std::ostream& print(std::ostream& out) const ;
-            
-            
-        protected:
-            
-            void testCalculator(std::string fct) const{
-                
-                if( Calculator ) return;
-                msException e("The calculator is not initialized, use the 'load' function",fct,getFullId());
-                IMPACT_THROW_EXCEPTION(e);
-            }
-            
+        
         private:
             
             //!\name attributs and children
@@ -337,8 +329,6 @@ namespace impact {
             
             msChildren<msEntity>  	Entities;
             
-	    msChildren<msElement>       Elements;
-	    
             vector<double> MoleFractions;
 	    
 	    double Temperature;
