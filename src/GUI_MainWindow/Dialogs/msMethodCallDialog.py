@@ -293,7 +293,12 @@ class msMethodCallDialog(QtGui.QDialog):
             msLogger.write(DEBUG,"reload the main window's data structure")
             self.mainwindow.reload()
         
+        except msException as e:
+	    print "my error!"
+            message = str(sys.exc_info())
+            self.mainwindow.reportException(sys.exc_info())
         except:
+	    print "not my error!"
             message = str(sys.exc_info())
             self.mainwindow.reportException(sys.exc_info())
         msLogger.exitFunction("void msMethodCallDialog::execute(self)")
