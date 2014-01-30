@@ -145,6 +145,18 @@ namespace impact{
         }
     }
     
+    void msUnit::resetSymbols(const msUnitsManager& unitsystem){
+      
+      Length      = pair<uLength,int>( 	unitsystem.Length ,   Length.second );
+      Energy      = pair<uEnergy,int>( 	unitsystem.Energy ,   Energy.second );
+      Mass        = pair<uMass,int>(	unitsystem.Mass ,     Mass.second );
+      Quantity    = pair<uQuantity,int>(unitsystem.Quantity , Quantity.second );
+      Time        = pair<uTime,int>( 	unitsystem.Time ,     Time.second );
+      Angle       = pair<uAngle,int>( 	unitsystem.Angle ,    Angle.second );
+      Pressure    = pair<uPressure,int>(unitsystem.Pressure , Pressure.second );
+      Temperature = pair<uTemperature,int>( unitsystem.Temperature , Temperature.second );
+    }
+    
     msUnit& msUnit::set(uTypeVar typeVar, const msUnitsManager& unitsystem) {
         
         setNull();

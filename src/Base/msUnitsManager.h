@@ -274,7 +274,10 @@ namespace impact{
         
         //! equal the powers of the unit to those of a given msUnit object
         void setDimFrom(const msUnit& u);
-        
+	
+        //! set the symbols to those of the argument, does not change the dimenisons
+        void resetSymbols(const msUnitsManager& unitsystem);       
+	
         //! return the string representation
         string getStr() const;
         
