@@ -29,6 +29,8 @@
 #include "antioch/read_reaction_set_data_xml.h"
 #include "antioch/kinetics_type.h"
 
+#include <boost/algorithm/string/replace.hpp>
+
 namespace impact {
     
     namespace antioch {
@@ -79,12 +81,12 @@ namespace impact {
 			  IMPACT_TRY( [&](){ ReactionSet->add_reaction( r->getCalculator().get() ); 
 			  });
 		 });	  
-		
+		/*
 		LOGGER_WRITE(msLogger::DEBUG,"create calculator");
 		IMPACT_TRY( [&](){ Calculator = boost::shared_ptr<Antioch::KineticsEvaluator<double> >(
 			     new Antioch::KineticsEvaluator<double>(*ReactionSet,0) ); 
 		}); 
-				
+				*/
                 IMPACT_LOGOUT();
             }
                        
@@ -112,24 +114,21 @@ namespace impact {
                 T->initialize();
                 T->update();
                 IMPACT_LOGOUT();
-                return T;
+		return( T );
             }
             
             boost::shared_ptr<msTreeMapper> parseFromXmlCantera2(std::string file);
 	    
 	    
             boost::shared_ptr<Antioch::KineticsEvaluator<double> > getCalculator(){
-                
                 return Calculator;
             }
  
             boost::shared_ptr<Antioch::ReactionSet<double> > getReactionSet(){
-                
                 return ReactionSet;
             }
             //! \brief return the chemical mixture
             boost::shared_ptr<msChemicalMixture> getChemicalMixture() const {
-	      
 	        return ChemicalMixture.getSharedPtr();
 	    }
 	    
@@ -146,17 +145,22 @@ namespace impact {
                 IMPACT_LOGIN();
 		msTreeMapper::addElementToChildren(Reactions, reaction );
 		//update();
-                IMPACT_LOGOUT();
+		IMPACT_LOGOUT();
 		return mySharedPtr();
+	    }
+            
+            std::vector<std::string>  getReactionsNames() const{
+            
+                std::vector<std::string> reactions(noOfReactions());
+                for(size_t i=0; i<noOfReactions(); i++) reactions[i] = Reactions[i]->getId();
+                return reactions;
             }
             
-            std::vector<std::string>  getReactionsNames() const;
+            std::vector<std::string>  getSpeciesNames() const {ChemicalMixture->getEntitiesNames();}
             
-            std::vector<std::string>  getSpeciesNames() const;
+            size_t noOfReactions() const {return Reactions.size();}
             
-            size_t noOfReactions() const;
-            
-            size_t noOfSpecies() const;
+            size_t noOfSpecies() const {ChemicalMixture->noOfEntities();}
             
             
             /**
@@ -198,19 +202,6 @@ namespace impact {
             
             virtual bool sanityCheck();
 	    
-	    
-        protected:
-            
-            
-           // boost::shared_ptr<msTreeMapper> setCalculator(boost::shared_ptr<Antioch::KineticsEvaluator> calculator);
-            
-            
-            void testCalculator(std::string fct) const{
-                
-                if( Calculator ) return;
-                msException e("The calculators are not initialized, use the 'load' function",fct,getFullId());
-                IMPACT_THROW_EXCEPTION(e);
-            }
         private:
             
             //!\name attributs and children

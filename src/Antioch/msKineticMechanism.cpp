@@ -80,135 +80,36 @@ namespace impact {
             }
 #endif
         }
-        	        
-        //-------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------
-        
-        size_t msKineticMechanism::noOfSpecies() const {
-            
-            testCalculator("virtual double msKineticMechanism::noOfSpecies() const");
-            return Calculator->n_species();
-        }
-        //-------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------
-        
-        std::vector<std::string> msKineticMechanism::getSpeciesNames() const {
-            
-            testCalculator("std::vector<std::string> msKineticMechanism::getSpeciesNames() const");
-	    
-            return ChemicalMixture->getEntitiesNames();
-        }
-        //-------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------
-        
-        size_t msKineticMechanism::noOfReactions() const {
-            
-            testCalculator("virtual double msKineticMechanism::noOfReactions() const");
-            return Calculator->n_reactions();
-        }
-        
-        //-------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------
-        
-        std::vector<std::string> msKineticMechanism::getReactionsNames() const {
-            
-            testCalculator("std::vector<std::string> msKineticMechanism::getReactionsNames() const");
-            std::vector<std::string> reactions(noOfReactions());
-            
-            for(size_t i=0; i<noOfReactions(); i++)
-                reactions[i] = ReactionSet->reaction(i).equation();
-            
-            return reactions;
-        }
         
         //-------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------
         
         std::vector<double> msKineticMechanism::computeForwardRateCoefficient()  {
             
-            testCalculator("std::vector<double> msKineticMechanism::getFwdRateConstants()");
-            std::vector<double> reactions(noOfReactions(),0);
-            double T = ChemicalMixture->getTemperature();
-
-            if(noOfReactions()>0) {
+	    IMPACT_LOGIN();
+            IMPACT_EXCEPT_IF([&](){return !getCalculator();},"No calculator defined.");
+	    std::vector<double> reactions(noOfReactions(),0);
+	    
+	    if (noOfReactions()==0) { IMPACT_LOGOUT(); return reactions;} 
+	    
+	    size_t i=-1;
+            for_each(Reactions.begin(),Reactions.end(),[&](boost::shared_ptr<msReaction> r) {
 	      
-	        msChildren<msReaction>::iterator it = Reactions.begin();
-	        for(int i=0;it!=Reactions.end();++it,++i) {
-	     
-	           reactions[i] = (*it)->computeForwardRateCoefficient();
-		   reactions[i] *= getUnits()->convert( (*it)->getUnitForwardRateCoefficient(), 1 );
-	        }
-	    }   
-            // Units ?!!!
-            return reactions;
+	        double f = getUnits()->convert( r->getUnitForwardRateCoefficient(), 1 ) ;
+	        reactions[i++] = f * r->computeForwardRateCoefficient();
+	    });
+	    
+            IMPACT_LOGOUT();
+	    return reactions;
         }
         
-        //-------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------
-        /*
-        std::vector<double> msKineticMechanism::getCreationRates()  {
-            
-            testCalculator("std::vector<double> msKineticMechanism::getCreationRates()");
-            std::vector<double> species(noOfSpecies(),0);
-            
-            if(noOfReactions()==0) return species;
-            Calculator->getCreationRates(species.data());
-            std::vector<double>::iterator it = species.begin();
-            
-            double f = getUnits()->convert(msUnit("kmol.m^-3.s^-1"), 1 );
-            
-            for(;it!=species.end();++it)
-                *it *= f;
-            
-            return species;
-        }
-        
-        //-------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------
-        
-        std::vector<double> msKineticMechanism::getDestructionRates() {
-            
-            testCalculator("std::vector<double> msKineticMechanism::getDestructionRates()");
-            std::vector<double> species(noOfSpecies(),0);
-            
-            if(noOfReactions()==0) return species;
-            Calculator->getDestructionRates(species.data());
-            std::vector<double>::iterator it = species.begin();
-            
-            double f = getUnits()->convert(msUnit("kmol.m^-3.s^-1"), 1 );
-            
-            for(;it!=species.end();++it)
-                *it *= f;
-            
-            return species;
-        }
-        
-        //-------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------
-        
-        std::vector<double> msKineticMechanism::getNetProductionRates() {
-            
-            testCalculator("std::vector<double> msKineticMechanism::getNetProductionRates()");
-            std::vector<double> species(noOfSpecies(),0);
-            
-            if(noOfReactions()==0) return species;
-            Calculator->getNetProductionRates(species.data());
-            std::vector<double>::iterator it = species.begin();
-            
-            double f = getUnits()->convert(msUnit("kmol.m^-3.s^-1"), 1 );
-            
-            for(;it!=species.end();++it)
-                *it *= f;
-            
-            return species;
-        }
-        */
         //-------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------
         
         std::vector<double> msKineticMechanism::computeRateOfProgress() {
             
-            testCalculator("virtual double msKineticMechanism::computeRateOfProgress()");
+            IMPACT_LOGIN();
+            IMPACT_EXCEPT_IF([&](){return !getCalculator();},"No calculator defined.");
             std::vector<double> sources(ChemicalMixture->noOfEntities(),0);
             
             if(ChemicalMixture->noOfEntities()==0) return sources;
@@ -230,54 +131,10 @@ namespace impact {
             
             for(;it!=reactions.end();++it)
                 *it *= f;*/
-            
-            return sources;
+            IMPACT_LOGOUT();
+	    return sources;
         }
         
-        //-------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------
-        /*
-        std::vector<double> msKineticMechanism::getRevRatesOfProgress() {
-            
-            testCalculator("std::vector<double> msKineticMechanism::getRevRatesOfProgress()");
-            std::vector<double> reactions(noOfReactions(),0);
-            
-            if(noOfReactions()==0) return reactions;
-            
-            Calculator->getRevRatesOfProgress(reactions.data());
-            
-            std::vector<double>::iterator it = reactions.begin();
-            
-            double f = getUnits()->convert(msUnit("kmol.m^-3.s^-1"), 1 );
-            
-            for(;it!=reactions.end();++it)
-                *it *= f;
-            
-            return reactions;
-        }
-        
-        //-------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------
-        
-        std::vector<double> msKineticMechanism::getNetRatesOfProgress() {
-            
-            testCalculator("std::vector<double> msKineticMechanism::getNetRatesOfProgress()");
-            std::vector<double> reactions(noOfReactions(),0);
-            
-            if(noOfReactions()==0) return reactions;
-            
-            Calculator->getNetRatesOfProgress(reactions.data());
-            
-            std::vector<double>::iterator it = reactions.begin();
-            
-            double f = getUnits()->convert(msUnit("kmol.m^-3.s^-1"), 1 );
-            
-            for(;it!=reactions.end();++it)
-                *it *= f;
-            
-            return reactions;
-        }
-        */
         //-------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------
         
@@ -289,38 +146,25 @@ namespace impact {
             out<<"a description to set up"<<endl;
             return out;
         }
-        
+                
+        //-------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------
         
         bool msKineticMechanism::sanityCheck() {
 	  
-	  
-	   if( Calculator->n_species() != ChemicalMixture->noOfEntities() ){
-	     
-	     msException e("Unconsistent number of species in Calculator and ChemicalMixture",
-		"",getFullId());
-	     
-	     IMPACT_THROW_EXCEPTION(e);
-	   }
+	   IMPACT_EXCEPT_IF([&](){return Calculator->n_species() != ChemicalMixture->noOfEntities();},
+			    "Unconsistent number of species in Calculator and ChemicalMixture");
 	   
 	   vector<string> names = getReactionsNames();
-	   msChildren<msReaction>::iterator it = Reactions.begin();
-	   for(int i=0;it!=Reactions.end();++it,++i) {
+	   size_t i=-1;
+	   for_each(Reactions.begin(),Reactions.end(), [&](boost::shared_ptr<msReaction> r){
 	     
-	      if( (*it)->getId() != names[i] ){
-		 
-		   msException e ("The name of the reaction number "+output::getString<int>(i)
-		             +" is not consistent between children Reactions and calculator ReactionSet",
-		             "bool msKineticMechanism::sanityCheck()",getFullId());
-		  IMPACT_THROW_EXCEPTION(e);
-	      }
-	      if( getChemicalMixture() != (*it)->getChemicalMixture()){
-		 
-		   msException e ("The chemical mixture of the mechanism and of the reaction number "+output::getString<int>(i)
-		             +" are not consistents.",
-		             "bool msKineticMechanism::sanityCheck()",getFullId());
-		  IMPACT_THROW_EXCEPTION(e);
-	      }
-	  }
+	      IMPACT_EXCEPT_IF([&](){ return r->getId() != names[i++];},
+			       "Reaction: "+r->getId()+": unconsistent name with calculator");
+	      
+	      IMPACT_EXCEPT_IF([&](){ return getChemicalMixture() != r->getChemicalMixture();},
+			       "Reaction: "+r->getId()+": chemical mixture linked not consistent.");
+	   });
 		
 	   return 1;
         }
@@ -331,74 +175,59 @@ namespace impact {
         boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename){
 	  
 	    IMPACT_LOGIN();
-                
-	    getUnits()->set("");
-	    if( getChemicalMixture()->noOfEntities() == 0 ) {
-	             
-	         stringstream out;
-	         out << "No entities are defined in the chemical mixture";
-		 IMPACT_THROW_EXCEPTION(msException(out.str(),"boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename)",getFullId()));  
-	    }
-	    
-	    ReactionSet = boost::shared_ptr<Antioch::ReactionSet<double> >( new Antioch::ReactionSet<double>(*(getChemicalMixture()->getCalculator())) );
-	    
-	    vector<string> names = getChemicalMixture()->getEntitiesNames();
+            IMPACT_EXCEPT_IF([&](){return getChemicalMixture()->noOfEntities()==0;},
+			     "No entities are defined in the chemical mixture" ); 
 	    
 	    LOGGER_WRITE(msLogger::DEBUG,"Load the mechanism of filename "+filename);
-	    
-	    try{
-	        Antioch::read_reaction_set_data_xml(filename,1, *getReactionSet() );
-	    }
-	    catch(std::exception& e0){
-	      
-	         stringstream out;
-	         out << "Problem while parsing the file "<<filename<<" : "<<e0.what();
-		 IMPACT_THROW_EXCEPTION(msException(out.str(),"boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename)",getFullId()));  
-	    }
+	    IMPACT_TRY([&](){Antioch::read_reaction_set_data_xml(filename,1, *getReactionSet() );});
 	    
 	    LOGGER_WRITE(msLogger::DEBUG,"Create the children structure");
+	    
+	    getUnits()->set("");
+	    ReactionSet = boost::shared_ptr<Antioch::ReactionSet<double> >( 
+	                  new Antioch::ReactionSet<double>(*(getChemicalMixture()->getCalculator())));
+	    vector<string> names = getChemicalMixture()->getEntitiesNames();
 	    
 	    for(size_t i=0;i <ReactionSet->n_reactions();i++) {
 	       
 	         LOGGER_WRITE(msLogger::DEBUG,"Reaction " + ReactionSet->reaction(i).equation());
 		 
-	         const Antioch::Reaction<double>& reactionAntioch = ReactionSet->reaction(i);
-		 
-		 Antioch::ReactionType::ReactionType typeReaction;
-                 
-		 typeReaction = reactionAntioch.type();
-		 
 		 boost::shared_ptr<msReaction> reaction;
-	         
-		 if (typeReaction == Antioch::ReactionType::ELEMENTARY )
-		     reaction = msReactionDerived<Antioch::ElementaryReaction<double> >::New();
-		 else 
-		 if (typeReaction == Antioch::ReactionType::DUPLICATE )
-		     reaction = msReactionDerived<Antioch::DuplicateReaction<double> >::New();
-		 else 
-		 if (typeReaction == Antioch::ReactionType::THREE_BODY )
-		     reaction = msReactionDerived<Antioch::ThreeBodyReaction<double> >::New();
-		 else 
-		 if (typeReaction == Antioch::ReactionType::LINDEMANN_FALLOFF )
-		     reaction = msReactionDerived<  Antioch::FalloffReaction<double,Antioch::LindemannFalloff<double> > >::New();
-		 else 
-		 if (typeReaction == Antioch::ReactionType::TROE_FALLOFF )
-		     reaction = msReactionDerived< Antioch::FalloffReaction<double,Antioch::TroeFalloff<double> > >::New();
-	         else {
-		     stringstream out;
-                     out << "The reaction type is not known.";
-		     IMPACT_THROW_EXCEPTION(msException(out.str(),"boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename)",getFullId()));
-                 }
-                 
-         	 addReaction(reaction);
+	         const Antioch::Reaction<double>& reactionAntioch = ReactionSet->reaction(i);
+		 Antioch::ReactionType::ReactionType typeReaction;
+                 typeReaction = reactionAntioch.type();
+		 string id = reactionAntioch.equation();
+		 boost::replace_all(id,"[","<");boost::replace_all(id,"=","-");boost::replace_all(id,"]",">");
+		 
+	         IMPACT_EXCEPT_IF([&](){return typeReaction>4;} , "The reaction type is not known.");
+		 switch(typeReaction){
+		   
+		     case Antioch::ReactionType::ELEMENTARY :
+		          reaction = msReactionDerived<Antioch::ElementaryReaction<double> >::New(); 
+			  break;
+		     case Antioch::ReactionType::DUPLICATE :
+		          reaction = msReactionDerived<Antioch::DuplicateReaction<double> >::New(); 
+			  break;
+		     case Antioch::ReactionType::THREE_BODY :
+		          reaction = msReactionDerived<Antioch::ThreeBodyReaction<double> >::New();
+			  break;
+		     case Antioch::ReactionType::LINDEMANN_FALLOFF :
+		          reaction = msReactionDerived<Antioch::FalloffReaction<double,Antioch::LindemannFalloff<double> > >::New(); 
+			  break;
+		     case Antioch::ReactionType::TROE_FALLOFF :
+		          reaction = msReactionDerived<Antioch::FalloffReaction<double,Antioch::TroeFalloff<double> > >::New(); 
+			  break;
+		 }
+		 reaction->setId(id);
 		 reaction->setChemicalMixture(getChemicalMixture());
 		 reaction->setUnits(getUnits());
 		 reaction->setAffiliation(mySharedPtr());
 		 reaction->setId(reactionAntioch.equation());
+         	 addReaction(reaction);
 		 
                  LOGGER_WRITE(msLogger::DEBUG,"Add reactants and products");
 		 
-                 try{
+                 IMPACT_TRY( [&](){
                      for( size_t r=0; r<reactionAntioch.n_reactants(); r++)		  
 		         reaction->addReactant(ChemicalMixture->getEntityFromId(reactionAntioch.reactant_name(r)),
 			  		       reactionAntioch.reactant_stoichiometric_coefficient(r));
@@ -406,133 +235,54 @@ namespace impact {
 		     for( size_t r=0; r<reactionAntioch.n_products(); r++)		  
 		         reaction->addProduct(ChemicalMixture->getEntityFromId(reactionAntioch.product_name(r)),
 					       reactionAntioch.product_stoichiometric_coefficient(r));
-		 }
-		 catch(msException& e){
-		   
-		     e.addContext("boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename) : problem while setting reactants or products.");
-		     IMPACT_THROW_EXCEPTION(e);
-		 }
+		 });
+		 
 		 LOGGER_WRITE(msLogger::DEBUG,"Set efficiencies");
 		 
-		 for(size_t i=0;i<getChemicalMixture()->noOfEntities();i++)		  
-		     if(reactionAntioch.efficiency(i)!=1) reaction->setEfficiency(names[i],1);
+		 for(size_t j=0;j<getChemicalMixture()->noOfEntities();j++)		  
+		     if(reactionAntioch.efficiency(j)!=1) reaction->setEfficiency(names[j],1);
 		
-		 double conversionEa = getUnits()->convert("J.mol^-1.K^-1",csts::R);
-		 double conversionCf = getUnits()->convert(reaction->getUnitForwardRateCoefficient(),1);
-		 
 		 LOGGER_WRITE(msLogger::DEBUG,"Create rate constants");
+		                  
 		 for( size_t j=0 ; j<reactionAntioch.n_rate_constants(); j++) {
 		   
-		      stringstream out;
-		      out<<"Create rate constants "<<j<<" on "<<reactionAntioch.n_rate_constants()<<endl;
-		      LOGGER_WRITE(msLogger::DEBUG,out.str());
-		       
-		      const Antioch::KineticsType<double>& rateAntioch = reactionAntioch.forward_rate(j);
-		      
-		      Antioch::KineticsModel::KineticsModel kineticsModel = rateAntioch.type();
+		      LOGGER_WRITE(msLogger::DEBUG,"rate N°"+output::getString(i));
 		      
 		      boost::shared_ptr<msReactionRate> rate;
+		      const Antioch::KineticsType<double>&  rateAntioch   = reactionAntioch.forward_rate(j);
+		      Antioch::KineticsModel::KineticsModel kineticsModel = rateAntioch.type();
 		      
-		      if (kineticsModel == Antioch::KineticsModel::ARRHENIUS ){
-			
-			  LOGGER_WRITE(msLogger::DEBUG,"Create ARRHENIUS rate constants");
-			  
-			  rate = msReactionRateDerived<Antioch::ArrheniusRate<double> >::New();
-			  /*rate->setId(reactionAntioch.equation());
-			  const Antioch::ArrheniusRate<double>& rateAntiochCasted =
-			        *( static_cast<const Antioch::ArrheniusRate<double>*>(&rateAntioch) );
-		          rate->setCoefficient("Cf",rateAntiochCasted.Cf()*conversionCf);
-			  rate->setCoefficient("Ea",rateAntiochCasted.Ea()*conversionEa);*/
+		      LOGGER_WRITE(msLogger::DEBUG,"Create rate constants of type "+output::getString(kineticsModel));
+		      IMPACT_EXCEPT_IF([&](){return kineticsModel>5;} , "The kinetics type is not known.");
+		      
+		      switch(kineticsModel){
+		   
+		         case Antioch::KineticsModel::ARRHENIUS :
+		             rate =  msReactionRateDerived<Antioch::ArrheniusRate<double> >::New(); 
+			     break;
+		         case Antioch::KineticsModel::KOOIJ :
+		             rate =  msReactionRateDerived<Antioch::KooijRate<double> >::New(); 
+			     break;
+		         case Antioch::KineticsModel::BERTHELOT :
+		             rate = msReactionRateDerived<Antioch::BerthelotRate<double> >::New();
+			     break;
+		         case Antioch::KineticsModel::HERCOURT_ESSEN :
+		             rate = msReactionRateDerived<Antioch::HercourtEssenRate<double> >::New(); 
+			     break;
+		         case Antioch::KineticsModel::BHE :
+		             rate = msReactionRateDerived<Antioch::BerthelotHercourtEssenRate<double> >::New(); 
+			     break;
+		         case Antioch::KineticsModel::VANTHOFF :
+		             rate = msReactionRateDerived<Antioch::VantHoffRate<double> >::New(); 
+			     break;
 		      }
-		      else
-		      if (kineticsModel == Antioch::KineticsModel::KOOIJ ){
-			
-			  LOGGER_WRITE(msLogger::DEBUG,"Create KOOIJ rate constants");
-			  
-		          rate = msReactionRateDerived<Antioch::KooijRate<double> >::New();
-			  rate->setId(reactionAntioch.equation());
-			  const Antioch::KooijRate<double>& rateAntiochCasted =
-			        *( static_cast<const Antioch::KooijRate<double>*>(&rateAntioch) );
-		          rate->setCoefficient("Cf",rateAntiochCasted.Cf()*conversionCf);
-			  rate->setCoefficient("eta",rateAntiochCasted.eta());
-			  rate->setCoefficient("Ea",rateAntiochCasted.Ea()*conversionEa);
-		      }
-		      else
-		      if (kineticsModel == Antioch::KineticsModel::BERTHELOT ){
-			
-			  LOGGER_WRITE(msLogger::DEBUG,"Create BERTHELOT rate constants");
-			  
-			  rate = msReactionRateDerived<Antioch::BerthelotRate<double> >::New();
-			  rate->setId(reactionAntioch.equation());
-			  const Antioch::BerthelotRate<double>& rateAntiochCasted =
-			        *( static_cast<const Antioch::BerthelotRate<double>*>(&rateAntioch) );
-		          rate->setCoefficient("Cf",rateAntiochCasted.Cf()*conversionCf);
-			  rate->setCoefficient("D",rateAntiochCasted.D());
-		          rate = msReactionRateDerived<Antioch::BerthelotRate<double> >::New();
-		      }
-		      else
-		      if (kineticsModel == Antioch::KineticsModel::HERCOURT_ESSEN ){
-			
-			  LOGGER_WRITE(msLogger::DEBUG,"Create HERCOURT_ESSEN rate constants");
-			  
-		          rate = msReactionRateDerived<Antioch::HercourtEssenRate<double> >::New();
-			  rate->setId(reactionAntioch.equation());
-			  const Antioch::HercourtEssenRate<double>& rateAntiochCasted =
-			        *( static_cast<const Antioch::HercourtEssenRate<double>*>(&rateAntioch) );
-		          rate->setCoefficient("Cf",rateAntiochCasted.Cf()*conversionCf);
-			  rate->setCoefficient("eta",rateAntiochCasted.eta());
-			  rate->setCoefficient("Tref",rateAntiochCasted.Tref());
-		          rate = msReactionRateDerived<Antioch::BerthelotRate<double> >::New();
-		      }
-		      else
-		      if (kineticsModel == Antioch::KineticsModel::BHE ) {
-			
-			  LOGGER_WRITE(msLogger::DEBUG,"Create BHE rate constants");
-			  
-		          rate = msReactionRateDerived<Antioch::BerthelotHercourtEssenRate<double> >::New();
-			  rate->setId(reactionAntioch.equation());
-			  const Antioch::BerthelotHercourtEssenRate<double>& rateAntiochCasted =
-			        *( static_cast<const Antioch::BerthelotHercourtEssenRate<double>*>(&rateAntioch) );
-		          rate->setCoefficient("Cf",rateAntiochCasted.Cf()*conversionCf);
-			  rate->setCoefficient("eta",rateAntiochCasted.eta());
-			  rate->setCoefficient("Tref",rateAntiochCasted.Tref());
-			  rate->setCoefficient("D",rateAntiochCasted.D());
-		          rate = msReactionRateDerived<Antioch::BerthelotRate<double> >::New();
-		      }
-		      else
-		      if (kineticsModel == Antioch::KineticsModel::VANTHOFF ) {
-			
-			  LOGGER_WRITE(msLogger::DEBUG,"Create VANTHOFF rate constants");
-			  
-		          rate = msReactionRateDerived<Antioch::VantHoffRate<double> >::New();
-			  rate->setId(reactionAntioch.equation());
-			  const Antioch::VantHoffRate<double>& rateAntiochCasted =
-			        *( static_cast<const Antioch::VantHoffRate<double>*>(&rateAntioch) );
-		          rate->setCoefficient("Cf",rateAntiochCasted.Cf()*conversionCf);
-			  rate->setCoefficient("eta",rateAntiochCasted.eta());
-			  rate->setCoefficient("Tref",rateAntiochCasted.Tref());
-			  rate->setCoefficient("D",rateAntiochCasted.D());
-			  rate->setCoefficient("Ea",rateAntiochCasted.Ea()*conversionEa);
-		          rate = msReactionRateDerived<Antioch::BerthelotRate<double> >::New();
-		      }
-	              else {
-		          stringstream out;
-                          out << "The kinetic type is not known.";
-		          IMPACT_THROW_EXCEPTION(msException(out.str(),"boost::shared_ptr<msTreeMapper>  msKineticMechanism::parseFromXmlCantera2(std::string filename)",getFullId()));
-                      }
-                      rate->setUnits(getUnits());
+		      rate->setId("rate "+id);
+	              rate->setCoefficients(&rateAntioch);
+		      rate->setUnits(getUnits());
 		      rate->setAffiliation(reaction);
 		      //rate->setOrder(reaction->getReactantOrder());
 		      reaction->addForwardRate(rate);
 		 }
-		 
-		 string id = reactionAntioch.equation();
-		 for (int i = 0; i < id.length(); ++i) {
-		     if (id[i] == '[') id[i] = '<';
-		     if (id[i] == '=') id[i] = '-';
-		     if (id[i] == ']') id[i] = '>';
-                 }
-                 reaction->setId(id);
 	    } 
 	IMPACT_LOGOUT();
         return mySharedPtr();   
