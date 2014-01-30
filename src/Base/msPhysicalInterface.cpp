@@ -182,10 +182,22 @@ namespace impact{
 	 
         if(id=="") id = "var_"+output::getString<size_t>(PhysicalVariables.size());
       
-	cout<<getId()<<": declare physical variable "<<id<<" "<<*ptr<<" "<<unit.getStr()<<endl;
-	
         PhysicalVariables[id] = boost::shared_ptr<msPhysicalVariable>(new msPhysicalVariable(id,ptr,unit));
 	LOGGER_EXIT_FUNCTION2("void msPhysicalInterface::declarePhysicalVariable(const msUnit& unit,double* ptr,string id)");
+       //PtrOnPhysicalVariables[ptr] =  unit;
+    }
+    
+    //-------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------
+    
+    void msPhysicalInterface::declarePhysicalVariable(double* ptr,double value,const msUnit& unit,string id) {
+      
+        LOGGER_ENTER_FUNCTION_DBG("void msPhysicalInterface::declarePhysicalVariable(double* ptr,double value,const msUnit& unit,string id)", getFullId());
+	 
+        if(id=="") id = "var_"+output::getString<size_t>(PhysicalVariables.size());
+        *ptr = getUnits()->convert(unit,value);
+        PhysicalVariables[id] = boost::shared_ptr<msPhysicalVariable>(new msPhysicalVariable(id,ptr,unit));
+	LOGGER_EXIT_FUNCTION2("void msPhysicalInterface::declarePhysicalVariable(double* ptr,double value,const msUnit& unit,string id)");
        //PtrOnPhysicalVariables[ptr] =  unit;
     }
     
@@ -201,7 +213,6 @@ namespace impact{
         for(;it!=PhysicalVariables.end();++it)  {
 	  
 	    vec.push_back((*it).second);
-	    cout<<(*it).second->getName()<<" "<<(*it).second->getValue()<<endl;
 	}
         return vec;
     }

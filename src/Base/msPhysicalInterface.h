@@ -222,7 +222,6 @@ namespace impact{
 	     msPhysicalVariable(string id,double* value,const msUnit& unit){ 
 	        
 	        Name=id; Value=value; Unit.set(unit.getStr()); 
-	        cout<<"msPhysicalVariable: "<<Name<<" "<<*Value<<" "<<Unit.getStr()<<endl;
 	    }
 	     
 	     string getName(){return Name;}
@@ -255,7 +254,6 @@ namespace impact{
 	       
 	       (*Value) *= New.convert(Unit, 1 );
                Unit.reset(New);
-	       cout<<"reset physical variable "<<Name<<" "<<*Value<<" "<<Unit.getStr()<<endl;
 	     }
 	     string Name;
 	     double* Value;
@@ -348,6 +346,8 @@ namespace impact{
          */
         void declarePhysicalVariable(const msUnit& unit,double* ptr,string id="");
         
+	void declarePhysicalVariable(double* ptr,double value,const msUnit& unit,string id="");
+	
         void clearPhysicalVariables(){PtrOnPhysicalVariables.clear();}
         
         /** \brief This function is called if the Parameters attribute has been modified
