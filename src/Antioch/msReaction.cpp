@@ -28,15 +28,13 @@ namespace impact {
       
         bool msReaction::isReactionRegisteredInPython = 0;
         msRegistrar msReaction::Registrar("msReaction", msReaction::createInstance);
-        
-        
+	
         //-----------------------------------------------------------------------------
         //-----------------------------------------------------------------------------
         
         void msReaction::registryInPython() {
             
 #if USE_PYTHON
-            
             msPhysicalInterface::registryInPython();
             
             if( ! msReaction::isReactionRegisteredInPython ) {
@@ -96,26 +94,24 @@ namespace impact {
          	
         bool msReaction::sanityCheck() {
 	   
-	    stringstream errors;
+	    IMPACT_LOGIN();
+	    IMPACT_EXCEPT_IF([&](){return Reactants.size() == 0; },
+	                     "No reactants defined");
+	    IMPACT_EXCEPT_IF([&](){return Products.size() == 0; },
+	                     "No products defined");
+	    IMPACT_EXCEPT_IF([&](){return ForwardRates.size() == 0; },
+	                     "No forward rates defined");
 	    
-	    if( Reactants.size() == 0 ) errors<<" - No reactants defined"<<endl;
+	    IMPACT_EXCEPT_IF([&](){
+	        return find_if(StoechiometryReactants.begin(),StoechiometryReactants.end(),
+	                   [](double const& item) { return item<=0;}) != StoechiometryReactants.end();},
+	                   "A reactant stoechiometry coefficient is null or negative");	    
 	    
-	    if( Products.size() == 0 )  errors<<" - No products defined"<<endl;	 
-	    
-	    if( find_if(StoechiometryReactants.begin(),StoechiometryReactants.end(),
-	        [](double const& item) { return item<=0;}) != StoechiometryReactants.end() 
-	      )
-	        errors<<" - A reactant stoechiometry coefficient is null or negative"<<endl;
-	    
-	    if( find_if(StoechiometryProducts.begin(),StoechiometryProducts.end(), 
-	        [](double const& item) { return item<=0;}) != StoechiometryProducts.end()  
-	      )
-	        errors<<" - A product stoechiometry coefficient is null or negative"<<endl;
-	    
-	    if( ForwardRates.size() == 0 ) errors<<" - No forward rates defined "<<endl;
-	      
-	    if( errors.str() != "") 
-	        IMPACT_THROW_EXCEPTION(msException(errors.str(),"bool msReaction::sanityCheck()",getFullId()));
+	    IMPACT_EXCEPT_IF([&](){
+	        return find_if(StoechiometryProducts.begin(),StoechiometryProducts.end(),
+	                   [](double const& item) { return item<=0;}) != StoechiometryProducts.end();},
+	                   "A product stoechiometry coefficient is null or negative");
+	    IMPACT_LOGOUT();
 	}
 
         //-----------------------------------------------------------------------------
@@ -127,7 +123,6 @@ namespace impact {
         msRegistrar msReactionDerived<Antioch::ElementaryReaction<double> >::Registrar(
 	    "msElementaryReaction", 
 	     msReactionDerived<Antioch::ElementaryReaction<double> >::createInstance);
-	
         template<>
         string msReactionDerived<Antioch::ElementaryReaction<double> >::doc = "Elementary reaction";
         template<>
@@ -138,12 +133,10 @@ namespace impact {
 	
         template<>
         bool msReactionDerived<Antioch::DuplicateReaction<double> >::isReactionDerivedRegisteredInPython = 0;
-	
 	template<>
         msRegistrar msReactionDerived<Antioch::DuplicateReaction<double> >::Registrar(
 	    "msDuplicateReaction", 
 	     msReactionDerived<Antioch::DuplicateReaction<double> >::createInstance);
-	
         template<>
         string msReactionDerived<Antioch::DuplicateReaction<double> >::doc = "DuplicateReaction";
         template<>
@@ -154,12 +147,10 @@ namespace impact {
 	
 	template<>
         bool msReactionDerived<Antioch::ThreeBodyReaction<double> >::isReactionDerivedRegisteredInPython = 0;
-	
 	template<>
         msRegistrar msReactionDerived<Antioch::ThreeBodyReaction<double> >::Registrar(
 	    "msThreeBodyReaction", 
 	     msReactionDerived<Antioch::ThreeBodyReaction<double> >::createInstance);
-	
 	template<>
         string msReactionDerived<Antioch::ThreeBodyReaction<double> >::doc = "ThreeBodyReaction";
         template<>
@@ -174,7 +165,6 @@ namespace impact {
         msRegistrar msReactionDerived<Antioch::FalloffReaction<double,Antioch::LindemannFalloff<double> > >::Registrar(
 	    "msLindemannFalloff", 
 	     msReactionDerived<Antioch::FalloffReaction<double,Antioch::LindemannFalloff<double> > >::createInstance);
-	
 	template<>
         string msReactionDerived<Antioch::FalloffReaction<double,Antioch::LindemannFalloff<double> > >::doc = "LindemannFalloff";
         template<>
@@ -188,7 +178,6 @@ namespace impact {
         msRegistrar msReactionDerived<Antioch::FalloffReaction<double,Antioch::TroeFalloff<double> > >::Registrar(
 	    "msTroeFalloff", 
 	     msReactionDerived<Antioch::FalloffReaction<double,Antioch::TroeFalloff<double> > >::createInstance);
-	
 	template<>
         string msReactionDerived<Antioch::FalloffReaction<double,Antioch::TroeFalloff<double> > >::doc = "TroeFalloff";
         template<>

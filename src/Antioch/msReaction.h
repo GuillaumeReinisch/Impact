@@ -85,6 +85,7 @@ namespace impact {
  		  IMPACT_LOGOUT();
 		  return;
 		}
+		/*
 		Calculator->set_reversibility(getReversibility());
 		
 		msChildren<msEntity>::iterator it = Reactants.begin();
@@ -127,6 +128,7 @@ namespace impact {
 		    e.addContext("void msReaction::update() : set forward rate");
 		    IMPACT_THROW_EXCEPTION(e);
 		}
+		*/
 	        IMPACT_LOGOUT();
 	    }
             
@@ -159,17 +161,14 @@ namespace impact {
 	    
 	    template<class T>
 	    boost::shared_ptr<T> getCastedCalculator() const {
-	     
 	         return boost::static_pointer_cast<T>(Calculator);
 	    }
 	   
 	    boost::shared_ptr<Antioch::Reaction<double> > getCalculator() const {
-	     
 	        return Calculator;
 	    }
             //! \brief return the chemical mixture
             boost::shared_ptr<msChemicalMixture> getChemicalMixture() const {
-	      
 	        return ChemicalMixture.getSharedPtr();
 	    }
 	    /** \brief set the chemical mixture the reaction is working with
@@ -281,8 +280,10 @@ namespace impact {
             boost::shared_ptr<msTreeMapper> setEfficiency(std::string name, double v){ 
 	      
 	      IMPACT_LOGIN();
+	      IMPACT_EXCEPT_IF([&]() {return Efficiencies.find(name)==Efficiencies.end();},
+		               "Id of the specie "+name+" not found.");
 	      Efficiencies[name]=v;
-	      update();
+	      IMPACT_TRY([&](){update();});
 	      IMPACT_LOGOUT();
 	      return mySharedPtr();
 	    }
@@ -343,6 +344,7 @@ namespace impact {
 		return msUnit();
 	    }
 	    
+	    //! \brief print in a stream
 	    std::ostream& print(std::ostream& out) const {
 	     
 	        msPhysicalInterface::print(out);
@@ -356,33 +358,25 @@ namespace impact {
              * @name Virtual methods
              */
             //@{
-            
             //! \brief compute the forward rate coefficient for the mixture state
-	    virtual double  computeForwardRateCoefficient() { 
-	      
-	      IMPACT_THROW_EXCEPTION( msMethodNotDefined ("double  msReaction::computeForwardRateCoefficient( const double& T)"));
-	    };
+	    virtual double  computeForwardRateCoefficient() {  IMPACT_THROW_NOT_IMPLEMENTED(); };
 	    
             //! \brief compute the rate of progress for the mixture state
-	    virtual double  computeRateOfProgress() { 
-	      
-	      IMPACT_THROW_EXCEPTION( msMethodNotDefined ("double  msReaction::computeForwardRateCoefficient( const double& T)"));
-	    };
-	    
+	    virtual double  computeRateOfProgress() { IMPACT_THROW_NOT_IMPLEMENTED(); };
 	    //@}
 	    
 	    bool sanityCheck();
 	    	    
 	protected:
 	  
-	    void setCalculator(boost::shared_ptr< Antioch::Reaction<double> > calc){
-	        Calculator = calc;
-		}
+	    void setCalculator(boost::shared_ptr< Antioch::Reaction<double> > calc){ Calculator = calc;}
 		
 	    bool isCalculatorLocked;
 	    
 	private:
 	    
+	    //! @name Attributs & children
+            //@{
 	    bool isReversible;
 	    	    
 	    msChildren<msReactionRate> ForwardRates;
@@ -396,6 +390,7 @@ namespace impact {
 	    vector<double> StoechiometryProducts;
 	   	    
 	    map<string,double> Efficiencies;
+	    //@}
 	    
 	    boost::shared_ptr< Antioch::Reaction<double> >     Calculator; 	    
 	    
