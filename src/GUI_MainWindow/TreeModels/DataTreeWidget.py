@@ -78,9 +78,11 @@ class DataTreeWidget(QtGui.QTreeView):
         self.widget.mainwindow.msWidgetsContainer.update(myobject)
         
         msLogger.write(DEBUG,"Update the documentation")
+        """
         last = self.widget.mainwindow.getDoxygenName(myobject.getType()).split(':')
         self._loadHtmlDocumentation(last[-2])
-        
+        """
+        self._loadHtmlDocumentation(myobject)
         msLogger.exitFunction("void DataTreeWidget::reload(self)")
 
 
@@ -138,13 +140,17 @@ class DataTreeWidget(QtGui.QTreeView):
 
         msLogger.exitFunction("void _loadMenu()")
 
-    def _loadHtmlDocumentation(self,name):
+    def _loadHtmlDocumentation(self,myobject):
         msLogger.enterFunction("void _loadHtmlDocumentation()","")
+        """
         files = [ f for f in listdir(self.docDirectory) if isfile(join(self.docDirectory,f)) ]
         for file in files:
             if str( str(name)+".html") in file:
+	        self.mainwindow.webView.pathFileLoaded = self.docDirectory + file
+	        self.mainwindow.webView.method = name
                 self.mainwindow.webView.load(self.docDirectory+file+"#details")
-    
+        """
+        self.mainwindow.webView.loadFile(myobject)
         msLogger.exitFunction("void _loadHtmlDocumentation()")
 
     def keyPressEvent(self,e):
@@ -228,6 +234,7 @@ class DataWidget(QtGui.QWidget):
                             line = line[0:line.find(str(">"+method+"</a>"))]
                             line =line.split("href=\"")[-1]
                             line = line.split("\"")[0]
+                            print self.docDirectory+line
                             self.dataTreeWidget.widget.mainwindow.webView.load(self.docDirectory+line)
                             return
         except:

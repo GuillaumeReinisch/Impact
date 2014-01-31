@@ -14,7 +14,7 @@ from os import listdir
 from os.path import isfile, join
 from subprocess import call
 
-# Load Pyside basic modules
+# Load Pyside modules
 from PySide import QtCore, QtGui, QtWebKit
 
 try:
@@ -36,7 +36,7 @@ from TreeModels      import *
 from ScriptTemplates.NewClassScriptTemplateWidget      import *
 from ScriptTemplates.uiNewGraphicScriptTemplate      import *
 from TreeModels.TreeMapperModel      import *
-from Misc            import *
+from Misc.Misc            import *
 from LoadersSavers.msXmlLoader   import *
 from LoadersSavers.msXmlWritter  import *
 
@@ -146,7 +146,7 @@ class MainWindow(QtGui.QMainWindow):
 
         outDock2   = QtGui.QDockWidget("Doc", self)
         #docTab  = QtGui.QTabWidget()
-        self.webView=QtWebKit.QWebView()
+        self.webView = msDoxygenHtmlView(self)
         
         try:
 	    with open(self.config["DOC_INSTALL_PREFIX"]+"/html/index.html"):
