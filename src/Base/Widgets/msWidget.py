@@ -14,6 +14,9 @@ Created on Sat Aug 24 15:38:04 2013
 from libimpact import *
 from PySide import QtCore, QtGui
 
+
+
+        
 class msWidget(QtGui.QWidget):
     """ This class defines the base widget of all ms*Widget classes 
     """    

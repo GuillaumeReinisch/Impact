@@ -295,26 +295,34 @@ namespace impact
 	
         //! @Name Function to operate on the children / attributes
         //@{
-        //! return the string cast of the attribute of 'id'
+        //! \brief return the string cast of the attribute of 'id'
         std::string getAttributeInString(std::string id )  ;
               
-        //! return the first child matching the given 'id'
+        /** \brief return the first child matching an id
+	 * 
+	 * \param id target id
+	 */
         boost::shared_ptr<msTreeMapper> getChild(const std::string& id) const;
         
         //! return all the children
         std::vector< boost::shared_ptr<msTreeMapper> > getChildren() const;
         
-        //! return all the children derived from a given type
+        /** \brief return all the children derived from a particular type, 
+	 * 
+	 * A recursive scheme is used to find the items
+	 * \param type type wanted
+	 */
         template<class T>
         std::vector< boost::shared_ptr<T> > getChildrenDerivedFrom(std::string type) const;
         
-        //! add a child 'child' with variable name 'varName', exception if variable name already exists
+        /** \brief add a child 'child' to the tree structure 
+	 * 
+	 * \param child object to add to the object
+	 * \param varName variable name to use
+	 */
         void addChild( boost::shared_ptr<msTreeMapper> child, std::string varName);
-        
-        //! add a child 'child' with variable name 'varName', replace a previous item if one already exist under varName
-        void replaceChild( boost::shared_ptr<msTreeMapper> child, std::string varName);
-        
-        //! return the attributes in a list. Each element is of type 'key : value'
+                
+        //! \brief return the attributes in a list. Each element is of type 'key : value'
         std::vector< std::string> getAttributes() const ;
         
         /** \brief set an attribute
@@ -337,28 +345,34 @@ namespace impact
         boost::shared_ptr<T> impact_static_cast() { return boost::static_pointer_cast<T>(mySharedPtr());
         }
         
+        //! \brief return full type
+        std::string getType() const; 		
         
-        std::string getType() const; 		//!< return full type
+        //! \brief return the last type
+        std::string getLastType() const; 	
         
-        std::string getLastType() const; 	//!< return full type
+        //! \brief return the Id
+        std::string getId()   const;		
         
-        std::string getId()   const;		//!< return the Id
+        //! \brief return he comments
+        std::string getComments()   const;	
         
-        std::string getComments()   const;	//!< return the comments
+        //! \brief return Affiliation+Id
+        std::string getFullId()   const;	
         
-        std::string getFullId()   const;	//!< return Affiliation+Id
-        
-        //! return a vector of the object's variable name on the path to the root element.
+        //! \brief return a vector of the object's variable name on the path to the root element.
         std::vector<std::string> getVariableNames() const;
         
-        //! return the variable name of a particular child
+        //! \brief  return the variable name of a particular child
         std::string getVariableName( const boost::shared_ptr<const msTreeMapper> child ) const;
         
-        //! return the variable name of a particular child
+        //! \brief  return the variable name of a particular child
         std::string getVariableName( boost::shared_ptr<msTreeMapper> child ) const;
         
-        std::string getFullVariableName()   const;	//!< return variable name chain from root
+	//! \brief  return variable name chain from root
+        std::string getFullVariableName()   const;	
         
+	//! \brief  return the parent
         boost::shared_ptr<msTreeMapper> getParent() const {
             
 	    IMPACT_LOGIN();
@@ -370,11 +384,11 @@ namespace impact
 	    return ptr;
         }
         
-        boost::shared_ptr<msTreeMapper> setId(std::string id);			    //!< set the Id
-
-	boost::shared_ptr<msTreeMapper> setComments(std::string comment);		    //!< set the comments
-		
-        void setAffiliation(boost::shared_ptr<msTreeMapper> parent){
+        /** \brief set the parent (owner) object 
+	 * 
+         * \param parent parent object
+         */
+         void setAffiliation(boost::shared_ptr<msTreeMapper> parent){
 	  
 	    IMPACT_LOGIN()
             Parent.reset();
@@ -386,14 +400,29 @@ namespace impact
 	    IMPACT_LOGOUT()
         }
         
-        //! return 1 if the object is derived from the class 'target'
+        /** \brief  set the id of the object 
+	 * 
+	 * \param id identification string
+	 */ 
+        boost::shared_ptr<msTreeMapper> setId(std::string id);			    
+
+        /** \brief  set the comments of the object 
+	 * 
+	 * \param comment the comment
+	 */ 
+	boost::shared_ptr<msTreeMapper> setComments(std::string comment);		   
+		
+       
+        
+        //! \brief return 1 if the object is derived from the class 'target'
         bool isDerivedFrom(std::string target) const;
         		     
-        //! return 1 if the object has a parent
+        //! \brief return 1 if the object has a parent
         bool hasParent() const { boost::shared_ptr<msTreeMapper> ptr;
             if( (ptr=Parent.lock()) ) return 1;
             return 0;
         }
+        
         bool hasChildOfName(const string name ) { return Children.find(name)!=Children.end();
         }
         bool isAffiliatedTo(boost::shared_ptr<msTreeMapper> parent) { boost::shared_ptr<msTreeMapper> p = Parent.lock();
@@ -443,6 +472,10 @@ namespace impact
             return me;
         };
 	
+	/** \brief check if the object is correctly initialized/working
+	 * 
+	 * Exception is raised for each problem encountered
+	 */
         virtual bool sanityCheck(){return 1;};
         
     protected:

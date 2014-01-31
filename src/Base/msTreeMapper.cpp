@@ -483,45 +483,6 @@ namespace impact
     
     //-------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------
-    
-    void msTreeMapper::replaceChild( boost::shared_ptr<msTreeMapper> ptr, std::string varName){
-        
-        LOGGER_ENTER_FUNCTION("void msTreeMapper::replaceChild( boost::shared_ptr<msTreeMapper> ptr, std::string varName)"
-                              ,getFullId());
-        
-        if(Children.find(varName)==Children.end())
-            IMPACT_THROW_EXCEPTION( msException("can not find the child to replace with variable name "+varName
-                                           ,"void msTreeMapper::replaceChild( boost::shared_ptr<msTreeMapper> ptr, std::string varName) "
-                                           ,getFullId() ) );
-        
-        stringstream out;
-        out<<"replace child of variable name "<<varName<<" and adress "<<static_cast<void*>(&Children[varName]);
-        LOGGER_WRITE(msLogger::DEBUG, out.str());
-        
-        if(!ptr->hasParent()) ptr->setAffiliation(mySharedPtr());
-        
-        std::vector<std::string> strs;
-        boost::split(strs,varName, boost::is_any_of("_"));
-        
-        if( RegistredVectorsOfChildren.find(strs[0])!=
-           RegistredVectorsOfChildren.end()){
-            
-            LOGGER_WRITE(msLogger::DEBUG, "child included in a vector");
-            Children[varName] = new msChild<msTreeMapper>(ptr);
-            RegistredVectorsOfChildren[strs[0]]->set(atoi(strs[1].c_str()) , ptr);
-        }else{
-            
-            //update(Children[varName],ptr);
-            //Children[varName]->getBasePtr()->setId("update");
-            Children[varName]->set(ptr);
-            
-        }
-        
-        LOGGER_EXIT_FUNCTION2("void msTreeMapper::replaceChild( boost::shared_ptr<msTreeMapper> ptr, std::string varName)");
-    }
-    
-    //-------------------------------------------------------------------------------
-    //-------------------------------------------------------------------------------
     /*
      msChild<msTreeMapper> msTreeMapper::getSymLink(msDbNodeReader* node)  {
      

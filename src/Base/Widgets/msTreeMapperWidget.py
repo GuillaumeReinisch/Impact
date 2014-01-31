@@ -12,6 +12,9 @@ import inspect
 from Dialogs import *
 from TreeModels.simpletreemodel import *
 from Dialogs.simpleDialogs import *
+import sys
+from msExceptionWidget  import *
+from Misc.Misc            import *
 
 class MethodsTreeModel(TreeModel):
     def __init__(self, data, parent=None):
@@ -46,25 +49,25 @@ class msTreeMapperWidget(msWidget):
         self.vbox.addWidget(label0)
         
         hbox = QtGui.QHBoxLayout()
-        setIdBttn = QtGui.QPushButton("Set id")
+        setIdBttn = msPushButtonWithDoc("Set id","setId",self.data,mainwindows.webView)
         setIdBttn.clicked.connect(self.setId)
         hbox.addWidget(setIdBttn)
         
-        setComment = QtGui.QPushButton("Set comment")
+        setComment = msPushButtonWithDoc("Set comment","setComment",self.data,mainwindows.webView)
         setComment.clicked.connect(self.setComment)
         hbox.addWidget(setComment)
         hbox.addStretch(1)
         self.vbox.addLayout(hbox)
         
         hbox = QtGui.QHBoxLayout()
-        sanityBttn = QtGui.QPushButton("Sanity check")
-        sanityBttn.clicked.connect(data.sanityCheck)
+        sanityBttn = msPushButtonWithDoc("Sanity check","sanityCheck",self.data,mainwindows.webView)
+        sanityBttn.clicked.connect(self.sanityCheck)
         hbox.addWidget(sanityBttn)
         hbox.addStretch(1)
         self.vbox.addLayout(hbox)
         
         hbox = QtGui.QHBoxLayout()
-        addChildBttn = QtGui.QPushButton("Add child")
+        addChildBttn = msPushButtonWithDoc("Add child","addChild",self.data,mainwindows.webView)
         addChildBttn.clicked.connect(self.addChild)
         hbox.addWidget(addChildBttn)
         
@@ -94,7 +97,18 @@ class msTreeMapperWidget(msWidget):
         self.setMaximumSize(550,150)
         #print label1.size().width()
         self.groupbox.setTitle("Tree mapper")
-
+        
+    def sanityCheck(self):
+      
+        try:
+	    self.data.sanityCheck()
+	except msException as e:
+	    dialog = msExceptionDialog(e)
+	    dialog.exec_()
+	except:
+	    message = str(sys.exc_info())
+            self.mainwindows.reportException(sys.exc_info())
+	    
     def addChild(self):
         widget=msMethodCallDialog( self.data.addChild,self.mainwindows.rootObject,self.mainwindows)
         widget.exec_()
