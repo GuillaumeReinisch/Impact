@@ -35,7 +35,7 @@ namespace impact {
         void msMotion::registryInPython()
         {
 #if USE_PYTHON
-            msTreeMapper::registryInPython();
+            msPhysicalInterface::registryInPython();
             
             if( ! msMotion::isMotionRegisteredInPython ) {
                 
@@ -104,41 +104,41 @@ namespace impact {
         
         void msMotion::updateParameters() {
             
-            LOGGER_ENTER_FUNCTION_DBG("void msMotion::updateParameters()", getFullId());
-            
-            try{
-                initLocalParameters();
-                stringstream out;
-                out<<"dE="<<dE<<", Emax="<<Emax<<", dT="<<dT<<", De_dos="<<dE_dos<<", Tmin="<<Tmin<<", Tmax="<<Tmax<<", DeltaT="<<DeltaT;
-                LOGGER_WRITE(msLogger::DEBUG, "parameters values: "+ out.str());
-            }
-            catch( msException& e)
-            {
-                e.addContext("void msMotion::updateParameters()");
-                throw e;
-            }
-            LOGGER_EXIT_FUNCTION2("void msMotion::updateParameters()");
+            IMPACT_LOGIN();
+            IMPACT_TRY([&](){initLocalParameters();});
+	    stringstream out;
+            out<<"dE="<<dE<<", Emax="<<Emax<<", dT="<<dT<<", De_dos="<<dE_dos<<", Tmin="<<Tmin<<", Tmax="<<Tmax<<", DeltaT="<<DeltaT;
+            LOGGER_WRITE(msLogger::DEBUG, "parameters values: "+ out.str());
+            IMPACT_LOGOUT();
         }
-        
+           
         //-------------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------
         
-        double msMotion::SOS( double E )
-        {
-            LOGGER_ENTER_FUNCTION("double msMotion::SOS( double E )",getFullId());
+        double msMotion::Q(double T){
+	        
+	    IMPACT_LOGIN();
+            computeDOS();
+	    double r = QfromDOS(T);
+	    IMPACT_LOGOUT();
+            return r;
+        };
+	    
+        //-------------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------
+        
+        double msMotion::SOS( double E ) {
+	  
+            IMPACT_LOGIN();
             double sos;
-            try{ getParameters();
-            }
-            catch(...)
-            {throw;
-            }
+	    IMPACT_TRY([&](){getParameters();});
             
-            if( E > Emax ) LOGGER_WRITE(msLogger::WARNING,"E out of [0-Emax] bound");
+	    if( E > Emax ) LOGGER_WRITE(msLogger::WARNING,"E out of [0-Emax] bound");
             
             if( (SumOfStates->size()==0) || (E > Emax) )  sos=SOS(E);
             else sos = (*SumOfStates)[min( E/dE,Emax/dE - 1)];
             
-            LOGGER_EXIT_FUNCTION2("double msMotion::SOS( double E )");
+            IMPACT_LOGOUT();
             return sos;
         };
         
@@ -169,11 +169,13 @@ namespace impact {
         
         void msMotion::fillSOSfromDOS(){
             
+	    IMPACT_LOGIN();
             (*SumOfStates)[0]=(*DensOfStates)[0];
             
             for(size_t i=1;i<DensOfStates->size(); i++)
                 
                 (*SumOfStates)[i]=(*SumOfStates)[i-1]+(*DensOfStates)[i]*dE;
+	    IMPACT_LOGOUT();
         }
         
         //-------------------------------------------------------------------------------------------------
@@ -181,9 +183,10 @@ namespace impact {
         
         double msMotion::dlogQ_dT_Vcst(double T)  {
             
-            LOGGER_ENTER_FUNCTION("double msMotion::dlogQ_dT_Vcst(double T)",getFullId());
-            LOGGER_EXIT_FUNCTION2("double msMotion::dlogQ_dT_Vcst(double T)");
-            return ( log( Q(T+dT) )-log( Q(T) ) )/(dT);
+            IMPACT_LOGIN();
+	    double r = (log( Q(T+dT) )-log( Q(T) ) )/(dT);
+            IMPACT_LOGOUT();
+            return r;
         }
         
         //-------------------------------------------------------------------------------------------------
@@ -191,7 +194,7 @@ namespace impact {
         
         void msMotion::FillEvAndG(vector<double>& EigenValues,vector<double>& g) {
             
-            LOGGER_ENTER_FUNCTION("void msMotion::FillEvAndG(vector<double>& EigenValues,vector<double>& g)",getFullId());
+            IMPACT_LOGIN();
             int nEV=Emax/dE;
             EigenValues.resize(nEV,0); g.resize(nEV,0);
             
@@ -199,7 +202,7 @@ namespace impact {
             
             for(int i=0;i<nEV;i++){ EigenValues[i]=i*dE; g[i]=(*DensOfStates)[i]*dE;
             }
-            LOGGER_EXIT_FUNCTION2("void msMotion::FillEvAndG(vector<double>& EigenValues,vector<double>& g)");
+            IMPACT_LOGOUT();
         }
         
         
@@ -208,7 +211,7 @@ namespace impact {
         
         void msMotion::computeDOS()  {
             
-            LOGGER_ENTER_FUNCTION("void msMotion::computeDOS()",getFullId());
+            IMPACT_LOGIN();
             
             LOGGER_WRITE(msLogger::INFO, "Compute the density of states in [0-"+output::getString<double>(Emax)
                          +";delta="+output::getString<double>(dE_dos)+"] in "+getUnits()->getEnergyStr());
@@ -216,7 +219,8 @@ namespace impact {
             int n=int(( Emax+dE)/dE_dos)+1;
             std::vector<double> e(n,0);
             std::vector<double> dos(n,0);
-            LOGGER_HEADER2COLUMNS(msLogger::INFO,"E", getUnits()->getEnergyStr(), "DOS", getUnits()->getEnergyStr()+"^-1");
+            LOGGER_HEADER2COLUMNS(msLogger::INFO,"E", getUnits()->getEnergyStr(), 
+				                 "DOS", getUnits()->getEnergyStr()+"^-1");
             
             for(int i=1; i<n ; i++) {
                 
@@ -227,7 +231,7 @@ namespace impact {
             LOGGER_WRITE(msLogger::INFO, "fit the result using quadratic function");
             
             
-            LOGGER_EXIT_FUNCTION2("void msMotion::computeDOS()");
+            IMPACT_LOGOUT();
         };
         
         //-------------------------------------------------------------------------------------------------
@@ -235,13 +239,13 @@ namespace impact {
         
         double msMotion::QfromDOS(double T) {
             
-            LOGGER_ENTER_FUNCTION("void msMotion::QfromDOS(double T)",getFullId());
+            IMPACT_LOGIN();
             
             if( DensOfStates->size() == 0 ) {  msMotion::computeDOS();
                 fillSOSfromDOS();
             }
             double Q = QfromDOS( *DensOfStates ,  T );
-            LOGGER_EXIT_FUNCTION2("void msMotion::QfromDOS(double T)");
+            IMPACT_LOGOUT();
             return Q;
         }
         
@@ -250,7 +254,7 @@ namespace impact {
         
         double msMotion::QfromDOS( msScalarFunction& DOS , double T ) {
             
-            LOGGER_ENTER_FUNCTION("void msMotion::QfromDOS( msScalarFunction& DOS  , double T)",getFullId());
+            IMPACT_LOGIN();
             
             int n    = Emax/dE;
             double Q = 0;
@@ -265,9 +269,8 @@ namespace impact {
             if( DOS.isDerivedFrom("msVectorFit1d") ){
                 
                 msVectorFit1d& dos = *( (msVectorFit1d*) &DOS);
-                
                 for( size_t i=0; i< dos.size() ; i++) Q += convDos * dos[i] * exp(- ( i*dE + dE/2. ) / (R * T) ) * dE;
-                LOGGER_EXIT_FUNCTION2("void msMotion::QfromDOS( msScalarFunction& DOS  , double T)");
+                IMPACT_LOGOUT();
                 return Q;
             }
             
@@ -281,7 +284,7 @@ namespace impact {
             LOGGER_WRITE(msLogger::INFO, " Contribution to Q at E=Emax:"
                          + output::getString<double>(DOS(n*dE)*exp(-(n-1)*dE/ (R * T) )));
             
-            LOGGER_EXIT_FUNCTION2("void msMotion::QfromDOS( msScalarFunction& DOS  , double T)");
+            IMPACT_LOGOUT();
             return Q;
         }
         //-------------------------------------------------------------------------------------------------
@@ -302,40 +305,47 @@ namespace impact {
         //-------------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------
         
-        double msMotion::Eav(double T)
-        {
+        double msMotion::Eav(double T) {
+	  
+	    IMPACT_LOGIN();
             double R  = getUnits()->convert( msUnit::J_mol,  csts::R );
             double e=R*T*T*dlogQ_dT_Vcst(T);
+	    IMPACT_LOGOUT();
             return e;
         }
         
         //-------------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------
         
-        double msMotion::S(double T)
-        {
+        double msMotion::S(double T) {
+	  
+	    IMPACT_LOGIN();
             double R  = getUnits()->convert( msUnit::J_mol,  csts::R );
             double S  = R*log( Q(T) ) + Eav(T)/T;
+	    IMPACT_LOGOUT();
             return S;
         }
         
         //-------------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------
         
-        double msMotion::Cv(double T)
-        {
-            LOGGER_ENTER_FUNCTION("void msMotion::Cv(double T)",getFullId());
+        double msMotion::Cv(double T) {
+	  
+            IMPACT_LOGIN();
             double Cv=(Eav(T+dT)-Eav(T))/dT;
-            LOGGER_EXIT_FUNCTION2("void msMotion::Cv(double T)");
+	    IMPACT_LOGOUT();
             return Cv;
         }
         
         //-------------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------
         
-        double msMotion::Cp(double T)
-        {
-            return( Cv(T) +  getUnits()->convert( msUnit::J_mol,  csts::R ) );
+        double msMotion::Cp(double T)  {
+	  
+	    IMPACT_LOGIN();
+	    double Cp=Cv(T) +  getUnits()->convert( msUnit::J_mol,  csts::R );
+	    IMPACT_LOGOUT();
+            return Cp;
         }
         
         //-------------------------------------------------------------------------------------------------

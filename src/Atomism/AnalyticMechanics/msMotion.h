@@ -30,6 +30,7 @@
 
 #include <msEntity.h>
 #include <msVectorFit1d.h>
+#include <msPhysicalInterface.h>
 
 namespace impact {
     
@@ -91,7 +92,7 @@ namespace impact {
          */
         class msMotion : public msPhysicalInterface
         {
-            protected:
+            public:
             
             /*!\class msMotionParams
              * \brief Parameters of msMotion: dT, dE, Emax, dE_dos, Tmin, Tmax, DeltaT.
@@ -148,24 +149,22 @@ namespace impact {
             
             void initialize(){
                 
+	        IMPACT_LOGIN();
                 msPhysicalInterface::initialize();
-                try{
-                    msTreeMapper::declareAttribute( Sym , "Sym" );
-                    msTreeMapper::declareAttribute( Mult , "Mult");
-                    msTreeMapper::declareAttribute( Activated , "Activated" );
-                    DensOfStates = msVectorFit1d::New();
-                    SumOfStates  = msVectorFit1d::New();
-                }
-                catch(msException& e){
-                    
-                    e.addContext("void msMotion::initialize()");
-                    IMPACT_THROW_EXCEPTION(e);
-                }
+		
+		msTreeMapper::declareAttribute( Sym , "Sym" );
+                msTreeMapper::declareAttribute( Mult , "Mult");
+                msTreeMapper::declareAttribute( Activated , "Activated" );
+                DensOfStates = msVectorFit1d::New();
+                SumOfStates  = msVectorFit1d::New();
+		
+		IMPACT_LOGOUT();
             }
             
             void update(){
-                
+                IMPACT_LOGIN();
                 msPhysicalInterface::update();
+		IMPACT_LOGOUT();
                 //msMotion::updateParameters();
             }
             
@@ -181,14 +180,13 @@ namespace impact {
             }
             
             static boost::shared_ptr<msMotion> New(){
-                LOGGER_ENTER_FUNCTION_DBG("static boost::shared_ptr<msMotion> New()","");
-                LOGGER_WRITE(msLogger::DEBUG, "New msMotion object")
                 
+                IMPACT_LOGIN_STATIC();
                 boost::shared_ptr<msMotion> T( new msMotion );
                 T->initialize();
                 T->setParameters( msMotionParams::New() );
                 T->update();
-                LOGGER_EXIT_FUNCTION2("static boost::shared_ptr<msMotion> New()");
+                IMPACT_LOGOUT();
                 return T;
             }
             
@@ -201,10 +199,7 @@ namespace impact {
             //! @name Important virtual functions
             //@{
             //! Partition function at temperature T
-            virtual double Q(double T){
-                computeDOS();
-                return QfromDOS(T);
-            };
+            virtual double Q(double T);
             
             //! Compute the DOS from 0 to Emax every dE_dos
             virtual void computeDOS();
@@ -240,7 +235,7 @@ namespace impact {
             
             virtual double Cv(double T);		//!< Calorific capacity at cst volume at temperature T
             
-            double Cp(double T);		//!< Calorific capacity at cst pressure at temperature T
+            virtual double Cp(double T);		//!< Calorific capacity at cst pressure at temperature T
             
             //! Partition function at temperature T for a particular DOS, the first variable of the function DOS is interpreted as energy.
             double QfromDOS( msScalarFunction& DOS , double T );
