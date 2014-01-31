@@ -23,8 +23,9 @@ class DebugTreeModel(TreeModel):
             function = child.getFunctionName().split("(")[0].split(" ")[-1]
             type =""
             if function.find("::")>=0:
-                type = function.split("::")[0]
-                function = function.split("::")[1]
+	        if len(function.split("::"))>1:
+                   type = function.split("::")[-2]
+                   function = function.split("::")[-1]
 
             textData.append(function)
             textData.append(type)
@@ -48,7 +49,7 @@ class DebugTreeWidget(QtGui.QTreeView):
     def __init__(self, logger, debugAttributs):
         super(DebugTreeWidget, self).__init__()
         self.logger=logger
-        self.clicked.connect(self.clickDebugTreeView)
+        #self.clicked.connect(self.clickDebugTreeView)
         self.debugAttributs = debugAttributs
 
     def update(self):
