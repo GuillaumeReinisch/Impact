@@ -15,6 +15,7 @@ from Dialogs.simpleDialogs import *
 import sys
 from msExceptionWidget  import *
 from Misc.Misc            import *
+from Dialogs.msMethodCallDialog         import *
 
 class MethodsTreeModel(TreeModel):
     def __init__(self, data, parent=None):
@@ -53,7 +54,7 @@ class msTreeMapperWidget(msWidget):
         setIdBttn.clicked.connect(self.setId)
         hbox.addWidget(setIdBttn)
         
-        setComment = msPushButtonWithDoc("Set comment","setComment",self.data,mainwindows.webView)
+        setComment = msPushButtonWithDoc("Set comment","setComments",self.data,mainwindows.webView)
         setComment.clicked.connect(self.setComment)
         hbox.addWidget(setComment)
         hbox.addStretch(1)
@@ -85,17 +86,7 @@ class msTreeMapperWidget(msWidget):
         hbox.addStretch(1)
         self.vbox.addLayout(hbox)
         
-        
-        """
-        self.vbox.addWidget(label0)
-        self.listMethods = QtGui.QTreeView()
-        self.listMethods.clicked.connect(self.execMethod)
-        self.listMethods.setModel( MethodsTreeModel(self.data,self.listMethods ) ) 
-        self.vbox.addWidget(self.listMethods)
-	"""
-        self.setMinimumSize(550,150)
-        self.setMaximumSize(550,150)
-        #print label1.size().width()
+        self.setMinimumSize(550,200)
         self.groupbox.setTitle("Tree mapper")
         
     def sanityCheck(self):
@@ -110,7 +101,7 @@ class msTreeMapperWidget(msWidget):
             self.mainwindows.reportException(sys.exc_info())
 	    
     def addChild(self):
-        widget=msMethodCallDialog( self.data.addChild,self.mainwindows.rootObject,self.mainwindows)
+        widget=msMethodCallDialog( self.data.addChild,self.data,self.mainwindows)
         widget.exec_()
  
     def setId(self):

@@ -110,7 +110,6 @@ class msEntityWidget(msWidget):
         self.vbox.addLayout(hbox)
         
         self.groupbox.setTitle("Entity")
-        self.setMaximumSize(550,450)
         self.setMinimumSize(550,450)
 
     def clickDofList(self):

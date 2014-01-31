@@ -34,7 +34,6 @@ class msQuantumMotion1dWidget(msWidget):
         hbox.addStretch(1)
         self.vbox.addLayout(hbox)
         self.setMinimumSize(550,400)
-        self.setMaximumSize(550,400)
         
     def fixKinConstant(self):
         if self.fixedKinEffCheckBox.isChecked():

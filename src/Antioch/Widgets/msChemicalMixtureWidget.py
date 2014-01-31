@@ -4,6 +4,7 @@ from PySide import QtCore, QtGui
 from msWidget import *
 from Dialogs.simpleDialogs import *
 from TreeModels.simpletreemodel import *
+from Misc.Misc            import *
 
 import itertools
 import functools
@@ -61,14 +62,14 @@ class msChemicalMixtureWidget(msWidget):
         self.gridbox.addWidget( QtGui.QLabel("Temperature :"),1,1)
         self.gridbox.addWidget( QtGui.QLabel(str(data.getTemperature())),1,2)
         self.gridbox.addWidget( QtGui.QLabel(data.getUnits().getTempStr()),1,3)
-        bttn =  QtGui.QPushButton("set")
+        bttn =  msPushButtonWithDoc("set","setTemperature",self.data,mainwindows.webView) 
         bttn.clicked.connect(self.setTemperature)
         self.gridbox.addWidget( bttn,1,4)
 
         self.gridbox.addWidget( QtGui.QLabel("Density :"),2,1)
         self.gridbox.addWidget( QtGui.QLabel(str(data.getDensity())),2,2)
         self.gridbox.addWidget( QtGui.QLabel(data.getUnits().getStr(unitTypeVar.vDensity)),2,3)
-        bttn =  QtGui.QPushButton("set")
+        bttn =  msPushButtonWithDoc("set","setDensity",self.data,mainwindows.webView) 
         bttn.clicked.connect(self.setDensity)
         self.gridbox.addWidget( bttn,2,4)
  
@@ -95,7 +96,7 @@ class msChemicalMixtureWidget(msWidget):
         hbox =  QtGui.QHBoxLayout()
         bttnMass = QtGui.QPushButton("set mass fractions")
         bttnMass.setEnabled(0)
-        bttnMole = QtGui.QPushButton("set mole fractions")
+        bttnMole = msPushButtonWithDoc("set molar fractions","setMoleFractions",self.data,mainwindows.webView) 
         bttnMole.clicked.connect(self.setMoleFractions)
         hbox.addWidget(bttnMass)
         hbox.addWidget(bttnMole)
@@ -105,7 +106,6 @@ class msChemicalMixtureWidget(msWidget):
         msLogger.exitFunction("msMicroscopicPhaseWidget::msMicroscopicPhaseWidget(self,data,mainwindows)")
         
         self.setMinimumSize(550,700 )
-        self.setMaximumSize(550,700 )
    
     def setDensity(self):
         d = self.data.getDensity()

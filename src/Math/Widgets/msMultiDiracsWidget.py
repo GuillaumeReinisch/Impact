@@ -82,7 +82,6 @@ class msMultiDiracsWidget(msWidget):
         bttn.clicked.connect(self.plot1d)
         self.groupbox.setTitle("&Multi diracs functions")
         self.setMinimumSize(500, 250)
-        self.setMaximumSize(500, 250)
     
     def queryIndexSample(self):
         widget = queryIntDialog("Explicit sampler","enter the sample index:",  self.data.getSampler().currentSampleIndex(), self.data.getSampler().setSampleIndex )

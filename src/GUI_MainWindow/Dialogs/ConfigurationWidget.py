@@ -48,7 +48,6 @@ class GeneralGroupBox(QtGui.QGroupBox):
         self.vbox.addStretch(1)
         self.setLayout(self.vbox)
         self.setMinimumSize(500,500)
-        self.setMaximumSize(500,500)
     
     def setImpactInstallDir(self,direc):
         self.installDir = direc
@@ -103,7 +102,7 @@ class DocumentationGroupBox(QtGui.QGroupBox):
         self.setLayout(self.vbox)
         self.setMinimumSize(500,500)
         self.setMaximumSize(500,500)
-
+        
     def queryAndAddIncludeDir(self):
       
         dirname = QtGui.QFileDialog.getExistingDirectory(self,

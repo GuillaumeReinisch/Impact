@@ -45,4 +45,3 @@ class msAtomWidget(msWidget):
         
         self.groupbox.setTitle("Atom (units of the blue obelisk database used)")
         self.setMinimumSize(550,400 )
-        self.setMaximumSize(550,400 )

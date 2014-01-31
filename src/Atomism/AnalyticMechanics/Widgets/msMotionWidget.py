@@ -119,7 +119,6 @@ class msMotionWidget(msWidget):
 
         self.groupbox.setTitle("Motion")
         self.setMinimumSize(550,400)
-        self.setMaximumSize(550,400)
         #self.evaluateField()
 
     def setSymmetryNumber(self):

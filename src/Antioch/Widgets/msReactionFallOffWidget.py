@@ -52,7 +52,6 @@ class msReactionFallOffWidget(msWidget):
         
         self.vbox.addLayout(self.gridbox)
         self.setMinimumSize(300,170 )
-        self.setMaximumSize(300,170 )
 
     def setCoeff(self,value,name):        
         self.data.setCoefficient(name,value)

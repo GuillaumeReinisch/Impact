@@ -65,7 +65,6 @@ class msSamplerWidget(msWidget):
         self.vbox.addWidget(self.DataList)
         
         self.setMinimumSize(550, 400)
-        self.setMaximumSize(550,400)
     
     def studyFct(self):
         

@@ -75,7 +75,6 @@ class msReactionRateWidget(msWidget):
 	self.vbox.addLayout(hbox)
 	
         self.setMinimumSize(500,300 )
-        self.setMaximumSize(500,300 )
 
     def computeRate(self,T):
         self.labelRateTittle.setText("rate("+str(T)+"K) = ")

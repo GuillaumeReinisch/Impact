@@ -66,5 +66,4 @@ class msThermoMixtureWidget(msWidget):
 
         msLogger.exitFunction("msThermoMixtureWidget::msThermoMixtureWidget(self,data,mainwindows)")
         
-        self.setMinimumSize(550,700 )
-        self.setMaximumSize(550,700 )
+        self.setMinimumSize(550,700)

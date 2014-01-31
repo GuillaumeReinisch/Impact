@@ -55,7 +55,6 @@ class msInverseProblemWidget(msWidget):
         self.LastChain  = data.getLastChainSamples()
         self.Parameters = data.getAllParametersContainer()
         self.setMinimumSize(600,500)
-        self.setMaximumSize(600,500)
         
     def updateParamChange(self):
         self.data.updateParametersModification()

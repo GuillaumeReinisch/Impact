@@ -27,4 +27,3 @@ class msLinearRigidRotorWidget(msWidget):
         self.groupbox.setTitle("Linear rigid rotor")
        
         self.setMinimumSize(550,400)
-        self.setMaximumSize(550,400)

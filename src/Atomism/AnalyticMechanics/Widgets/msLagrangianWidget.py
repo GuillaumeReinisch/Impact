@@ -86,7 +86,6 @@ class msLagrangianWidget(msWidget):
         
         self.groupbox.setTitle("Lagrangian")
         self.setMinimumSize(550,650)
-        self.setMaximumSize(550,650)
 
     def updateVelocityChange(self):
         if self.synchronization.isChecked():

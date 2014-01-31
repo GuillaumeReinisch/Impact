@@ -31,4 +31,3 @@ class msElementWidget(msWidget):
         self.vbox.addLayout(hbox)
         self.groupbox.setTitle("Element")
         self.setMinimumSize(350,200 )
-        self.setMaximumSize(350,200 )

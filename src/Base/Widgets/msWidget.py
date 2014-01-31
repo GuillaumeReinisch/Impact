@@ -33,5 +33,5 @@ class msWidget(QtGui.QWidget):
         self.mainbox.addWidget(self.groupbox)
         self.setLayout(self.mainbox)
         
-        self.setMaximumHeight(50)
+        #self.setMaximumHeight(50)
 

@@ -50,4 +50,3 @@ class msReactionThreeBodyWidget(msWidget):
         self.vbox.addWidget(self.listCoeffs)
 
         self.setMinimumSize(300,200 )
-        self.setMaximumSize(300,200 )

@@ -58,5 +58,4 @@ class msQuantumInterfaceWidget(msWidget):
         
         self.groupbox.setTitle("Quantum Interface")
         self.setMinimumSize(300,300)
-        self.setMaximumSize(300,300)
  

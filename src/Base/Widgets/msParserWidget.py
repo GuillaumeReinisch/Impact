@@ -29,7 +29,6 @@ class msParserWidget(msWidget):
         
         self.groupbox.setTitle("Parser")
         self.setMinimumSize(400,200)
-        self.setMaximumSize(400,200)
         
     
     def updateExpression(self):

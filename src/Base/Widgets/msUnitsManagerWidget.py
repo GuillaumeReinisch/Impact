@@ -126,7 +126,6 @@ class msUnitsManagerWidget(msWidget):
         self.vbox.addLayout(hbox)
         
         self.setMinimumSize(520,40 * i )
-        self.setMaximumSize(520,40 * i )
         self.groupbox.setTitle("Units manager")
 
     def update(self):

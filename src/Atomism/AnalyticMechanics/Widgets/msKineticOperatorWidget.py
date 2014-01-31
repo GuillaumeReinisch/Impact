@@ -85,7 +85,6 @@ class msKineticOperatorWidget(msWidget):
 	
 	self.groupbox.setTitle("Kinetic operator")
         self.setMaximumSize(550,450)
-        self.setMinimumSize(550,450)
 
     def evaluateField(self):               
         try:

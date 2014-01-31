@@ -44,7 +44,6 @@ class msRigidRotorWidget(msWidget):
         
         self.groupbox.setTitle("Rigid rotor")
         self.setMinimumSize(550,200)
-        self.setMaximumSize(550,200)
       
     def setSystem(self):
         widget = queryTreeMapperDialog("select the system","select the system in the tree","msSystem", self.mainwindows.rootObject,  self.data.setMmtOfInertia , self)

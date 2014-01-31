@@ -40,7 +40,6 @@ class msZMatWidget(msWidget):
         hbox.addLayout(vbox)
         self.vbox.addLayout( hbox  )
         self.setMaximumSize(550,200)
-        self.setMinimumSize(550,200)
   
     def updateStructure(self):
 

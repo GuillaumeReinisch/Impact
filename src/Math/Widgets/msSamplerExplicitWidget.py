@@ -71,7 +71,6 @@ class msSamplerExplicitWidget(msWidget):
 	    pass
         self.groupbox.setTitle("&Explicit sampler")
         self.setMinimumSize(550, 250)
-        self.setMaximumSize(550, 250)
     
     def queryIndexSample(self):
         widget = queryIntDialog("Explicit sampler","enter the sample index:",  self.data.currentSampleIndex(), self.data.setSample )

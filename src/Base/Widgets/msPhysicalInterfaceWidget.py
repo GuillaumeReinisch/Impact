@@ -54,8 +54,11 @@ class msPhysicalInterfaceWidget(msWidget):
         self.physVars.setModel( PhysicalVariableTreeModel(data) )
         self.vbox.addWidget(self.physVars)
         
+        self.setMinimumSize(550,600)
+        """
         self.setMinimumSize(550,600 )
         self.setMaximumSize(550,600 )
+        """
         self.groupbox.setTitle("&Physical interface")
 
  

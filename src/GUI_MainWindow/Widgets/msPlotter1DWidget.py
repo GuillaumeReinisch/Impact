@@ -67,7 +67,6 @@ class msPlotter1DWidget(msWidget):
         hbox.addWidget(bttn)
         self.vbox.addLayout(hbox)
         self.setMinimumSize(350,350   )
-        self.setMaximumSize(350,350  )
 
     def plot(self):
         self.data.xLabel.setValue(str(self.xTextEdit.text()))

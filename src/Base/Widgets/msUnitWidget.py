@@ -18,7 +18,6 @@ class msUnitWidget(msWidget):
         self.vbox.addLayout(hbox)
 
         self.setMinimumSize(270, 120)
-        self.setMaximumSize(270,120)
     
     def updateUnit(self):
         

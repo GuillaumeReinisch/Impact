@@ -84,7 +84,6 @@ class msLikelihoodWidget(msWidget):
         
         self.groupbox.setTitle("&Likelihood")
         self.setMinimumSize(550, 250)
-        self.setMaximumSize(550, 250)
     
     def queryIndexSample(self):
         widget = queryIntDialog("Explicit sampler","enter the sample index:",  self.data.getSampler().currentSampleIndex(), self.data.getSampler().setSampleIndex )

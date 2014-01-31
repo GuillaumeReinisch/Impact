@@ -85,7 +85,6 @@ class msReactionWidget(msWidget):
 	self.groupbox.setTitle("Reaction")
 	
         self.setMinimumSize(550,400 )
-        self.setMaximumSize(550,400 )
         
         
     def setTemperature(self):

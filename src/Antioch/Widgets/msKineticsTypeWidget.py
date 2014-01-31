@@ -51,4 +51,3 @@ class msKineticsTypeWidget(msWidget):
         self.groupbox.setTitle("Kinetic type")
         
         self.setMinimumSize(300,200 )
-        self.setMaximumSize(300,200 )

@@ -46,8 +46,7 @@ class msParamsManagerWidget(msWidget):
         
         model = ParamTreeModel(self.data)
         self.ParamList.setModel(model)
-        self.ParamList.setMaximumWidth(480)
-        self.ParamList.setMinimumWidth(480)
+        
         vbox  =  QtGui.QVBoxLayout(self)
         vbox.addWidget(self.ParamList)
         self.ParamList.clicked.connect(self.queryParam)
@@ -60,10 +59,8 @@ class msParamsManagerWidget(msWidget):
         vbox.addWidget(self.frame)
         
         self.vbox.addLayout(vbox)
-        self.setMinimumHeight(200)
-        self.setMaximumHeight(200)
-        self.setMinimumWidth(550)
-        self.setMaximumWidth(550)
+        self.setMinimumSize(550,200)
+        
         self.groupbox.setTitle("&Parameters manager")
 
     def setParam(self,value):

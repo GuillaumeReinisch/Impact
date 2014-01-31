@@ -102,4 +102,3 @@ class msSolverLagrangianWidget(msWidget):
         
         self.groupbox.setTitle("Solver Lagrangian")
         self.setMinimumSize(550,250)
-        self.setMaximumSize(550,250)
