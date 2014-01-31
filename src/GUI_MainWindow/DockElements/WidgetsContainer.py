@@ -9,6 +9,17 @@ from libimpact import *
 from widgets import *
 import inspect
 
+class msScrollAreaWidget(QtGui.QScrollArea):
+    def __init__(self, container, parent=None):
+        super(msScrollAreaWidget, self).__init__(parent)
+        self.container=container
+
+    def resizeEvent(self, event):
+        try:
+	    self.container.update(self.container.myObject)
+	except:
+	    pass
+        
 class WidgetsContainer(QtGui.QWidget):
     
     def __init__(self,mainwin):
@@ -17,7 +28,7 @@ class WidgetsContainer(QtGui.QWidget):
         self.mainWindow   = mainwin
         mainBox = QtGui.QVBoxLayout()
         
-        self.scrollArea = QtGui.QScrollArea()
+        self.scrollArea = msScrollAreaWidget(self)
 
         self.widgetsGroup = QtGui.QGroupBox()  
         self.vbox         = QtGui.QVBoxLayout()
@@ -27,7 +38,7 @@ class WidgetsContainer(QtGui.QWidget):
         mainBox.addWidget(self.scrollArea)
         
         self.setLayout(mainBox)
-        self.scrollArea.resize(700,1)
+        #self.scrollArea.resize(700,1)
         
     def changeTab(self,i):
         
@@ -35,10 +46,10 @@ class WidgetsContainer(QtGui.QWidget):
             self.MainWindowContainer.createMenus()
         if(i==1):
             self.MainWindowContainer.createMenusScript()
-             
+    """         
     def sizeHint(self):
         return QtCore.QSize(700,self.scrollArea.height())
-                 
+    """            
     def update(self,myobject):       
         """
         update( self, (msTreeMapper)myobject ) -> void       
@@ -48,13 +59,12 @@ class WidgetsContainer(QtGui.QWidget):
         
         """
         msLogger.enterFunction("void WidgetsContainer::update(self,myobject)","")
-        
+        self.myObject = myobject
         self.clear()
         self.widgets = []
         types = myobject.getType().split(':')
         self.width=0
         self.height=0
-
         mapClasses={}
         for cls in msWidget.msWidget.__subclasses__():
             mapClasses[ str(cls).split("'")[-2].split(".")[-1] ] =  cls 
@@ -80,24 +90,49 @@ class WidgetsContainer(QtGui.QWidget):
                 #pass
             if widget:
                 self.widgets.append(widget)       
-
+                
+        hmin=0
+        wmin=0
+        hmax=0
+        for widget in self.widgets:
+	    hmin = hmin + widget.minimumHeight()
+	    if widget.minimumWidth()>wmin:
+	        wmin = widget.minimumWidth()
+	    self.vbox.addWidget( widget, QtCore.Qt.AlignLeft )
+	    
+	self.widgetsGroup.setMinimumSize(wmin,hmin+100)
+        self.widgetsGroup.setMaximumHeight(hmin+100)    
         self.addWidgetsInLayout()
         msLogger.exitFunction("void WidgetsContainer::update(self,myobject)")
     
     def addWidgetsInLayout(self):
         a=100
-        self.widgetsGroup.setMinimumSize(self.width+a,self.height+a)
-        self.widgetsGroup.setMaximumSize(self.width+a,self.height+a)
+        self.widgetsGroup.setMinimumWidth(self.scrollArea.width())
+        self.widgetsGroup.setMaximumWidth(self.scrollArea.width())
+        
         self.vbox.setSpacing(0)
+        hmin=0
+        wmin=0
+        hmax=0
         for widget in self.widgets:
-            self.vbox.addWidget( widget, QtCore.Qt.AlignLeft )
-
+	    hmin = hmin + widget.minimumHeight()
+	    if widget.minimumWidth()>wmin:
+	        wmin = widget.minimumWidth()
+	    self.vbox.addWidget( widget, QtCore.Qt.AlignLeft )
+       # self.widgetsGroup.setMaximumSize(wmin,hmin+100)
+        self.widgetsGroup.setMinimumSize(wmin,hmin+100)
+        self.widgetsGroup.setMaximumHeight(hmin+100)
+        #self.scrollArea.resize(wmin,hmin)
+        self.vbox.addStretch(1)
 
     def clear(self):
         b = self.vbox.takeAt(0)
         while b:
             if(len(self.widgets)>0):
                 self.widgets.pop(0)
-            b.widget().deleteLater()
+            try:
+                b.widget().deleteLater()
+            except:
+	        pass
             b = self.vbox.takeAt(0)
             
